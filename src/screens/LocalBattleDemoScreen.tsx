@@ -12,7 +12,7 @@ import { AppleITunesProvider } from "../services/media/providers/AppleITunesProv
 import type { BracketMatchup, Player, SongSubmission } from "../types/game";
 import type { MediaTrack } from "../types/media";
 
-const ROUND_ID = "demo-round-1";
+const TOPICS = ["Beach vibes", "Road trip", "Late night", "Main character"];
 
 const PLAYERS: Player[] = [
   { id: "player-1", displayName: "Gus", isHost: true, isGuest: false },
@@ -21,21 +21,12 @@ const PLAYERS: Player[] = [
   { id: "player-4", displayName: "Nina", isHost: false, isGuest: true },
 ];
 
-const SUBMISSIONS: SongSubmission[] = [
-  createSubmission("sub-1", "player-1", "Espresso", "Sabrina Carpenter"),
-  createSubmission("sub-2", "player-2", "Blinding Lights", "The Weeknd"),
-  createSubmission("sub-3", "player-3", "Golden", "Harry Styles"),
-  createSubmission("sub-4", "player-4", "Levitating", "Dua Lipa"),
-];
-
 export function LocalBattleDemoScreen() {
   const soundRef = useRef<Audio.Sound | null>(null);
   const isLoadingPreviewRef = useRef(false);
-  const initialBracket = useMemo(
-    () => generateBracket({ roundId: ROUND_ID, submissions: SUBMISSIONS, seed: 42 }),
-    [],
-  );
-  const [topic] = useState("Beach vibes");
+  const initialRoundId = "demo-round-1";
+  const initialBracket = useMemo(() => createDemoBracket(initialRoundId, 42), []);
+  const [roundIndex, setRoundIndex] = useState(1);
   const [judgePlayerId, setJudgePlayerId] = useState("player-1");
   const [scores, setScores] = useState<PlayerScore[]>([]);
   const [activeRoundNumber, setActiveRoundNumber] = useState(1);
@@ -43,6 +34,8 @@ export function LocalBattleDemoScreen() {
   const [roundWinnerPlayerId, setRoundWinnerPlayerId] = useState<string | undefined>();
   const [audioStatus, setAudioStatus] = useState("No preview playing");
 
+  const currentRoundId = `demo-round-${roundIndex}`;
+  const topic = TOPICS[(roundIndex - 1) % TOPICS.length];
   const activeMatchup = matchups.find(
     (matchup) => matchup.roundNumber === activeRoundNumber && matchup.status === "ready",
   );
@@ -71,7 +64,7 @@ export function LocalBattleDemoScreen() {
     const currentRoundMatchups = updatedMatchups.filter(
       (matchup) => matchup.roundNumber === activeRoundNumber,
     );
-    const nextRoundMatchups = generateNextRoundMatchups(ROUND_ID, currentRoundMatchups);
+    const nextRoundMatchups = generateNextRoundMatchups(currentRoundId, currentRoundMatchups);
 
     if (nextRoundMatchups.length > 0) {
       setMatchups([...updatedMatchups, ...nextRoundMatchups]);
@@ -142,11 +135,25 @@ export function LocalBattleDemoScreen() {
 
   function resetDemo() {
     void stopSongPreview();
+    setRoundIndex(1);
     setJudgePlayerId("player-1");
     setScores([]);
     setActiveRoundNumber(1);
     setMatchups(initialBracket);
     setRoundWinnerPlayerId(undefined);
+  }
+
+  function startNextRound() {
+    void stopSongPreview();
+
+    const nextRoundIndex = roundIndex + 1;
+    const nextRoundId = `demo-round-${nextRoundIndex}`;
+
+    setRoundIndex(nextRoundIndex);
+    setActiveRoundNumber(1);
+    setMatchups(createDemoBracket(nextRoundId, 42 + nextRoundIndex));
+    setRoundWinnerPlayerId(undefined);
+    setAudioStatus("No preview playing");
   }
 
   return (
@@ -189,6 +196,9 @@ export function LocalBattleDemoScreen() {
             <Text style={styles.winner}>
               Winner: {roundWinnerPlayerId ? getPlayerName(roundWinnerPlayerId) : "Pending"}
             </Text>
+            <Pressable style={styles.primaryButton} onPress={startNextRound}>
+              <Text style={styles.primaryButtonText}>Start Next Round</Text>
+            </Pressable>
           </View>
         )}
 
@@ -250,6 +260,7 @@ function getPlayerName(playerId: string): string {
 }
 
 function createSubmission(
+  roundId: string,
   id: string,
   playerId: string,
   title: string,
@@ -258,10 +269,21 @@ function createSubmission(
   return {
     id,
     playerId,
-    roundId: ROUND_ID,
+    roundId,
     song: createTrack(title, artist),
     submittedAtMs: Date.now(),
   };
+}
+
+function createDemoBracket(roundId: string, seed: number): BracketMatchup[] {
+  const submissions: SongSubmission[] = [
+    createSubmission(roundId, `${roundId}:sub-1`, "player-1", "Espresso", "Sabrina Carpenter"),
+    createSubmission(roundId, `${roundId}:sub-2`, "player-2", "Blinding Lights", "The Weeknd"),
+    createSubmission(roundId, `${roundId}:sub-3`, "player-3", "Golden", "Harry Styles"),
+    createSubmission(roundId, `${roundId}:sub-4`, "player-4", "Levitating", "Dua Lipa"),
+  ];
+
+  return generateBracket({ roundId, submissions, seed });
 }
 
 function createTrack(title: string, artist: string): MediaTrack {
@@ -415,6 +437,18 @@ const styles = StyleSheet.create({
   },
   scoreboard: {
     gap: 8,
+  },
+  primaryButton: {
+    alignItems: "center",
+    backgroundColor: "#38BDF8",
+    borderRadius: 8,
+    justifyContent: "center",
+    minHeight: 50,
+  },
+  primaryButtonText: {
+    color: "#082F49",
+    fontSize: 16,
+    fontWeight: "900",
   },
   sectionTitle: {
     color: "#CBD5E1",
