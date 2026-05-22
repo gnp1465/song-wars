@@ -7,10 +7,11 @@
   "scripts": {
     "start": "expo start",
     "ios": "expo start --ios",
-    "test": "npm run check:media && npm run check:playback && npm run check:bracket",
+    "test": "npm run check:media && npm run check:playback && npm run check:bracket && npm run check:scoring",
     "check:media": "node --experimental-strip-types src/tests/manualMediaMocks.ts",
     "check:playback": "node --experimental-strip-types src/tests/manualPlaybackCheck.ts",
-    "check:bracket": "node --experimental-strip-types src/tests/manualBracketCheck.ts"
+    "check:bracket": "node --experimental-strip-types src/tests/manualBracketCheck.ts",
+    "check:scoring": "node --experimental-strip-types src/tests/manualScoringCheck.ts"
   },
   "dependencies": {
     "expo": "^54.0.0",
