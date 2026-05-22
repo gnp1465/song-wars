@@ -11,10 +11,17 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { MediaResolutionService } from "../services/media/MediaResolutionService";
 import { AppleITunesProvider } from "../services/media/providers/AppleITunesProvider";
 import type { MediaTrack } from "../types/media";
 
 type PlaybackStatus = "idle" | "loading" | "playing" | "stopped" | "failed";
+
+const MOCK_SPOTIFY_TRACKS: MediaTrack[] = [
+  createMockSpotifyTrack("spotify:track:espresso", "Espresso", ["Sabrina Carpenter"]),
+  createMockSpotifyTrack("spotify:track:blinding-lights", "Blinding Lights", ["The Weeknd"]),
+  createMockSpotifyTrack("spotify:track:golden", "Golden", ["Harry Styles"]),
+];
 
 export function PreviewPlaybackScreen() {
   const soundRef = useRef<Audio.Sound | null>(null);
@@ -25,6 +32,7 @@ export function PreviewPlaybackScreen() {
   const [results, setResults] = useState<MediaTrack[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [trackLabel, setTrackLabel] = useState<string | undefined>();
+  const [resolutionLabel, setResolutionLabel] = useState<string | undefined>();
 
   async function searchTracks() {
     setIsSearching(true);
@@ -68,10 +76,54 @@ export function PreviewPlaybackScreen() {
 
       soundRef.current = sound;
       setTrackLabel(formatTrackLabel(track));
+      setResolutionLabel(undefined);
       setStatus("playing");
     } catch (error) {
       setStatus("failed");
       setErrorMessage(error instanceof Error ? error.message : "Preview playback failed.");
+    } finally {
+      isSwitchingTrackRef.current = false;
+    }
+  }
+
+  async function resolveAndPlayMockSpotifyTrack(track: MediaTrack) {
+    if (isSwitchingTrackRef.current) {
+      return;
+    }
+
+    isSwitchingTrackRef.current = true;
+    setStatus("loading");
+    setErrorMessage(undefined);
+    setResolutionLabel(`Resolving ${formatTrackLabel(track)} through Apple/iTunes...`);
+
+    try {
+      await stopPreview();
+
+      const service = new MediaResolutionService({
+        providers: [new AppleITunesProvider()],
+      });
+      const result = await service.resolveTrackPreview({
+        sourceTrack: track,
+        storefrontCode: "US",
+        preferredProviderIds: ["apple_itunes"],
+      });
+
+      if (!result.track.preview?.streamUrl) {
+        throw new Error(result.reason ?? "No in-app preview was found for this mock Spotify track.");
+      }
+
+      const { sound } = await Audio.Sound.createAsync(
+        { uri: result.track.preview.streamUrl },
+        { shouldPlay: true },
+      );
+
+      soundRef.current = sound;
+      setTrackLabel(formatTrackLabel(result.track));
+      setResolutionLabel(`Resolved via ${result.resolvedProviderId ?? "preview provider"}`);
+      setStatus("playing");
+    } catch (error) {
+      setStatus("failed");
+      setErrorMessage(error instanceof Error ? error.message : "Preview resolution failed.");
     } finally {
       isSwitchingTrackRef.current = false;
     }
@@ -136,6 +188,28 @@ export function PreviewPlaybackScreen() {
         </View>
 
         {errorMessage ? <Text style={styles.error}>{errorMessage}</Text> : null}
+        {resolutionLabel ? <Text style={styles.resolution}>{resolutionLabel}</Text> : null}
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Spotify-to-preview demo</Text>
+          {MOCK_SPOTIFY_TRACKS.map((item) => (
+            <Pressable
+              key={item.id}
+              style={styles.resultRow}
+              onPress={() => resolveAndPlayMockSpotifyTrack(item)}
+            >
+              <View style={styles.resultText}>
+                <Text numberOfLines={1} style={styles.resultTitle}>
+                  {item.title}
+                </Text>
+                <Text numberOfLines={1} style={styles.resultArtist}>
+                  {item.artists.join(", ")}
+                </Text>
+              </View>
+              <Text style={styles.previewBadge}>Resolve</Text>
+            </Pressable>
+          ))}
+        </View>
 
         <FlatList
           data={results}
@@ -163,6 +237,31 @@ export function PreviewPlaybackScreen() {
 
 function formatTrackLabel(track: MediaTrack): string {
   return `${track.title} - ${track.artists.join(", ") || "Unknown artist"}`;
+}
+
+function createMockSpotifyTrack(id: string, title: string, artists: string[]): MediaTrack {
+  const spotifyTrackId = id.replace("spotify:track:", "");
+
+  return {
+    id,
+    title,
+    artists,
+    providerRefs: [
+      {
+        providerId: "spotify",
+        providerTrackId: spotifyTrackId,
+        url: `https://open.spotify.com/track/${spotifyTrackId}`,
+      },
+    ],
+    capabilities: ["metadata_only", "external_link"],
+    resolutionStatus: "unresolved",
+    attribution: [
+      {
+        providerId: "spotify",
+        providerName: "Spotify",
+      },
+    ],
+  };
 }
 
 const styles = StyleSheet.create({
@@ -253,6 +352,21 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "700",
     lineHeight: 22,
+  },
+  resolution: {
+    color: "#7DD3FC",
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  section: {
+    gap: 4,
+  },
+  sectionTitle: {
+    color: "#CBD5E1",
+    fontSize: 14,
+    fontWeight: "800",
+    marginBottom: 4,
+    textTransform: "uppercase",
   },
   stopButton: {
     alignItems: "center",
