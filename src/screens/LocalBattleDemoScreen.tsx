@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { Audio } from "expo-av";
+import { useMemo, useRef, useState } from "react";
 import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
 import {
   generateBracket,
@@ -6,6 +7,8 @@ import {
   selectMatchupWinner,
 } from "../services/game/bracket";
 import { completeRound, type PlayerScore } from "../services/game/scoring";
+import { MediaResolutionService } from "../services/media/MediaResolutionService";
+import { AppleITunesProvider } from "../services/media/providers/AppleITunesProvider";
 import type { BracketMatchup, Player, SongSubmission } from "../types/game";
 import type { MediaTrack } from "../types/media";
 
@@ -26,6 +29,8 @@ const SUBMISSIONS: SongSubmission[] = [
 ];
 
 export function LocalBattleDemoScreen() {
+  const soundRef = useRef<Audio.Sound | null>(null);
+  const isLoadingPreviewRef = useRef(false);
   const initialBracket = useMemo(
     () => generateBracket({ roundId: ROUND_ID, submissions: SUBMISSIONS, seed: 42 }),
     [],
@@ -36,6 +41,7 @@ export function LocalBattleDemoScreen() {
   const [activeRoundNumber, setActiveRoundNumber] = useState(1);
   const [matchups, setMatchups] = useState<BracketMatchup[]>(initialBracket);
   const [roundWinnerPlayerId, setRoundWinnerPlayerId] = useState<string | undefined>();
+  const [audioStatus, setAudioStatus] = useState("No preview playing");
 
   const activeMatchup = matchups.find(
     (matchup) => matchup.roundNumber === activeRoundNumber && matchup.status === "ready",
@@ -83,7 +89,57 @@ export function LocalBattleDemoScreen() {
     setRoundWinnerPlayerId(roundResult.winningPlayerId);
   }
 
+  async function playSongPreview(song: MediaTrack) {
+    if (isLoadingPreviewRef.current) {
+      return;
+    }
+
+    isLoadingPreviewRef.current = true;
+    setAudioStatus(`Loading ${song.title}...`);
+
+    try {
+      await stopSongPreview();
+
+      const service = new MediaResolutionService({
+        providers: [new AppleITunesProvider()],
+      });
+      const result = await service.resolveTrackPreview({
+        sourceTrack: song,
+        storefrontCode: "US",
+        preferredProviderIds: ["apple_itunes"],
+      });
+
+      if (!result.track.preview?.streamUrl) {
+        throw new Error(result.reason ?? "No preview found.");
+      }
+
+      const { sound } = await Audio.Sound.createAsync(
+        { uri: result.track.preview.streamUrl },
+        { shouldPlay: true },
+      );
+
+      soundRef.current = sound;
+      setAudioStatus(`Playing ${result.track.title}`);
+    } catch (error) {
+      setAudioStatus(error instanceof Error ? error.message : "Preview playback failed.");
+    } finally {
+      isLoadingPreviewRef.current = false;
+    }
+  }
+
+  async function stopSongPreview() {
+    if (!soundRef.current) {
+      return;
+    }
+
+    await soundRef.current.stopAsync();
+    await soundRef.current.unloadAsync();
+    soundRef.current = null;
+    setAudioStatus("Stopped");
+  }
+
   function resetDemo() {
+    void stopSongPreview();
     setJudgePlayerId("player-1");
     setScores([]);
     setActiveRoundNumber(1);
@@ -93,6 +149,15 @@ export function LocalBattleDemoScreen() {
 
   return (
     <SafeAreaView style={styles.root}>
+      <View style={styles.audioBar}>
+        <Text numberOfLines={1} style={styles.audioStatus}>
+          {audioStatus}
+        </Text>
+        <Pressable style={styles.stopButton} onPress={() => void stopSongPreview()}>
+          <Text style={styles.stopButtonText}>Stop</Text>
+        </Pressable>
+      </View>
+
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.header}>
           <Text style={styles.eyebrow}>Local Battle Demo</Text>
@@ -104,9 +169,17 @@ export function LocalBattleDemoScreen() {
         {activeMatchup ? (
           <View style={styles.matchup}>
             <Text style={styles.roundLabel}>Round {activeMatchup.roundNumber}</Text>
-            <SongChoice entry={activeMatchup.left} onPick={pickWinner} />
+            <SongChoice
+              entry={activeMatchup.left}
+              onPick={pickWinner}
+              onPlayPreview={playSongPreview}
+            />
             <Text style={styles.vs}>vs</Text>
-            <SongChoice entry={activeMatchup.right} onPick={pickWinner} />
+            <SongChoice
+              entry={activeMatchup.right}
+              onPick={pickWinner}
+              onPlayPreview={playSongPreview}
+            />
           </View>
         ) : (
           <View style={styles.matchup}>
@@ -138,9 +211,10 @@ export function LocalBattleDemoScreen() {
 interface SongChoiceProps {
   entry: BracketMatchup["left"];
   onPick: (submissionId: string) => void;
+  onPlayPreview: (song: MediaTrack) => void;
 }
 
-function SongChoice({ entry, onPick }: SongChoiceProps) {
+function SongChoice({ entry, onPick, onPlayPreview }: SongChoiceProps) {
   if (!entry) {
     return (
       <View style={styles.songPanel}>
@@ -150,11 +224,18 @@ function SongChoice({ entry, onPick }: SongChoiceProps) {
   }
 
   return (
-    <Pressable style={styles.songPanel} onPress={() => onPick(entry.submissionId)}>
+    <View style={styles.songPanel}>
       <Text style={styles.songTitle}>{entry.song.title}</Text>
       <Text style={styles.songArtist}>{entry.song.artists.join(", ")}</Text>
-      <Text style={styles.pickHint}>Pick winner</Text>
-    </Pressable>
+      <View style={styles.songActions}>
+        <Pressable style={styles.playButton} onPress={() => onPlayPreview(entry.song)}>
+          <Text style={styles.playButtonText}>Play Preview</Text>
+        </Pressable>
+        <Pressable style={styles.pickButton} onPress={() => onPick(entry.submissionId)}>
+          <Text style={styles.pickButtonText}>Pick Winner</Text>
+        </Pressable>
+      </View>
+    </View>
   );
 }
 
@@ -197,6 +278,36 @@ const styles = StyleSheet.create({
   root: {
     backgroundColor: "#111827",
     flex: 1,
+  },
+  audioBar: {
+    alignItems: "center",
+    backgroundColor: "#0F172A",
+    borderBottomColor: "#243244",
+    borderBottomWidth: 1,
+    flexDirection: "row",
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  audioStatus: {
+    color: "#F9FAFB",
+    flex: 1,
+    fontSize: 15,
+    fontWeight: "700",
+  },
+  stopButton: {
+    alignItems: "center",
+    borderColor: "#475569",
+    borderRadius: 8,
+    borderWidth: 1,
+    justifyContent: "center",
+    minHeight: 40,
+    paddingHorizontal: 16,
+  },
+  stopButtonText: {
+    color: "#F9FAFB",
+    fontSize: 14,
+    fontWeight: "800",
   },
   content: {
     gap: 18,
@@ -255,6 +366,38 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "800",
     marginTop: 6,
+  },
+  songActions: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 8,
+  },
+  playButton: {
+    alignItems: "center",
+    borderColor: "#38BDF8",
+    borderRadius: 8,
+    borderWidth: 1,
+    flex: 1,
+    justifyContent: "center",
+    minHeight: 44,
+  },
+  playButtonText: {
+    color: "#7DD3FC",
+    fontSize: 14,
+    fontWeight: "800",
+  },
+  pickButton: {
+    alignItems: "center",
+    backgroundColor: "#38BDF8",
+    borderRadius: 8,
+    flex: 1,
+    justifyContent: "center",
+    minHeight: 44,
+  },
+  pickButtonText: {
+    color: "#082F49",
+    fontSize: 14,
+    fontWeight: "900",
   },
   vs: {
     color: "#64748B",
