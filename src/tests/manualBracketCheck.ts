@@ -60,6 +60,35 @@ assert.equal(completedFinal.status, "complete");
 assert.equal(generateNextRoundMatchups("round-1", [completedFinal]).length, 0);
 assert.throws(() => selectMatchupWinner(finalMatchups[0], "not-in-matchup"));
 
+const sixSubmissionBracket = generateBracket({
+  roundId: "round-2",
+  submissions: [
+    createSubmission("p1-sub-1", "player-1", "Song 1"),
+    createSubmission("p1-sub-2", "player-1", "Song 2"),
+    createSubmission("p2-sub-1", "player-2", "Song 3"),
+    createSubmission("p2-sub-2", "player-2", "Song 4"),
+    createSubmission("p3-sub-1", "player-3", "Song 5"),
+    createSubmission("p3-sub-2", "player-3", "Song 6"),
+  ],
+  seed: 42,
+});
+
+assert.equal(sixSubmissionBracket.length, 4);
+assert.equal(sixSubmissionBracket.filter((matchup) => matchup.hasBye).length, 2);
+assert.equal(
+  sixSubmissionBracket.some((matchup) => !matchup.left && !matchup.right),
+  false,
+);
+
+const firstRoundPlayedMatchups = sixSubmissionBracket.filter(
+  (matchup) => matchup.left && matchup.right,
+);
+assert.equal(firstRoundPlayedMatchups.length, 2);
+assert.equal(
+  firstRoundPlayedMatchups.every((matchup) => matchup.left?.playerId !== matchup.right?.playerId),
+  true,
+);
+
 console.log("Bracket generation checks passed.");
 
 function createSubmission(id: string, playerId: string, title: string): SongSubmission {

@@ -12,27 +12,22 @@ export function generateBracket(options: GenerateBracketOptions): BracketMatchup
     options.seed ?? Date.now(),
   );
   const bracketSize = getNextPowerOfTwo(Math.max(1, shuffledEntries.length));
-  const paddedEntries = padWithByes(shuffledEntries, bracketSize);
-  const matchups: BracketMatchup[] = [];
+  const firstRoundPairs = createFirstRoundPairs(shuffledEntries, bracketSize);
 
-  for (let index = 0; index < paddedEntries.length; index += 2) {
-    const left = paddedEntries[index];
-    const right = paddedEntries[index + 1];
+  return firstRoundPairs.map(([left, right], index) => {
     const hasBye = Boolean(left && !right);
 
-    matchups.push({
-      id: `${options.roundId}:r1:m${matchups.length + 1}`,
+    return {
+      id: `${options.roundId}:r1:m${index + 1}`,
       roundNumber: 1,
-      position: matchups.length + 1,
+      position: index + 1,
       status: hasBye ? "complete" : "ready",
       left,
       right,
       winnerSubmissionId: hasBye ? left?.submissionId : undefined,
       hasBye,
-    });
-  }
-
-  return matchups;
+    };
+  });
 }
 
 export function selectMatchupWinner(
@@ -129,8 +124,44 @@ function toMatchupEntry(submission: SongSubmission): MatchupEntry {
   };
 }
 
-function padWithByes(entries: MatchupEntry[], bracketSize: number): Array<MatchupEntry | undefined> {
-  return [...entries, ...Array.from<undefined>({ length: bracketSize - entries.length })];
+function createFirstRoundPairs(
+  entries: MatchupEntry[],
+  bracketSize: number,
+): Array<[MatchupEntry, MatchupEntry | undefined]> {
+  const byeCount = bracketSize - entries.length;
+  const entriesForByes = entries.slice(0, byeCount);
+  const entriesForMatchups = entries.slice(byeCount);
+  const pairs: Array<[MatchupEntry, MatchupEntry | undefined]> = [];
+
+  for (const entry of entriesForByes) {
+    pairs.push([entry, undefined]);
+  }
+
+  while (entriesForMatchups.length > 0) {
+    const left = entriesForMatchups.shift();
+
+    if (!left) {
+      break;
+    }
+
+    const opponentIndex = findBestFirstRoundOpponentIndex(left, entriesForMatchups);
+    const [right] = entriesForMatchups.splice(opponentIndex, 1);
+
+    pairs.push([left, right]);
+  }
+
+  return pairs;
+}
+
+function findBestFirstRoundOpponentIndex(
+  left: MatchupEntry,
+  candidates: MatchupEntry[],
+): number {
+  const differentPlayerIndex = candidates.findIndex(
+    (candidate) => candidate.playerId !== left.playerId,
+  );
+
+  return differentPlayerIndex >= 0 ? differentPlayerIndex : 0;
 }
 
 function shuffleEntries(entries: MatchupEntry[], seed: number): MatchupEntry[] {
