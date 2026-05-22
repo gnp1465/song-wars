@@ -1,6 +1,8 @@
 import { Audio } from "expo-av";
 import { useMemo, useRef, useState } from "react";
 import {
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
   SafeAreaView,
   ScrollView,
@@ -245,7 +247,15 @@ export function LocalBattleDemoScreen() {
         </Pressable>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        keyboardVerticalOffset={80}
+        style={styles.keyboardArea}
+      >
+      <ScrollView
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+      >
         {!activeTopic ? (
           <View style={styles.setupPanel}>
             <Text style={styles.eyebrow}>Judge Setup</Text>
@@ -381,6 +391,7 @@ export function LocalBattleDemoScreen() {
           </>
         ) : null}
       </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -497,6 +508,9 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 15,
     fontWeight: "700",
+  },
+  keyboardArea: {
+    flex: 1,
   },
   stopButton: {
     alignItems: "center",
