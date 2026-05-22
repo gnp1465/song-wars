@@ -11,8 +11,8 @@ import type {
 } from "../types/media.ts";
 
 class MockApplePreviewProvider implements MediaProvider {
-  readonly id = "apple_itunes";
-  readonly name = "Apple Music";
+  readonly id: MediaProvider["id"] = "apple_itunes";
+  readonly name: MediaProvider["name"] = "Apple Music";
 
   async searchTracks(_options: MediaSearchOptions): Promise<MediaSearchResult[]> {
     return [];
@@ -57,8 +57,8 @@ class MockApplePreviewProvider implements MediaProvider {
 }
 
 class MockUnavailableProvider extends MockApplePreviewProvider {
-  readonly id = "youtube";
-  readonly name = "YouTube";
+  readonly id: MediaProvider["id"] = "youtube";
+  readonly name: MediaProvider["name"] = "YouTube";
 
   async resolvePreview(request: MediaResolutionRequest): Promise<MediaResolutionResult> {
     return {
