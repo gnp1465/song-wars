@@ -37,6 +37,8 @@ export function LocalBattleDemoScreen() {
   const [roundIndex, setRoundIndex] = useState(1);
   const [topicInput, setTopicInput] = useState("Beach vibes");
   const [activeTopic, setActiveTopic] = useState<string | undefined>();
+  const [submissionStepIndex, setSubmissionStepIndex] = useState(0);
+  const [selectedSubmissions, setSelectedSubmissions] = useState<SongSubmission[]>([]);
   const [judgePlayerId, setJudgePlayerId] = useState("player-1");
   const [scores, setScores] = useState<PlayerScore[]>([]);
   const [activeRoundNumber, setActiveRoundNumber] = useState(1);
@@ -47,6 +49,8 @@ export function LocalBattleDemoScreen() {
   const currentRoundId = `demo-round-${roundIndex}`;
   const fallbackTopic = TOPICS[(roundIndex - 1) % TOPICS.length];
   const topic = activeTopic ?? fallbackTopic;
+  const currentSubmittingPlayer = PLAYERS[submissionStepIndex];
+  const hasFinishedSubmissions = selectedSubmissions.length === PLAYERS.length;
   const activeMatchup = matchups.find(
     (matchup) => matchup.roundNumber === activeRoundNumber && matchup.status === "ready",
   );
@@ -149,6 +153,8 @@ export function LocalBattleDemoScreen() {
     setRoundIndex(1);
     setTopicInput("Beach vibes");
     setActiveTopic(undefined);
+    setSubmissionStepIndex(0);
+    setSelectedSubmissions([]);
     setJudgePlayerId("player-1");
     setScores([]);
     setActiveRoundNumber(1);
@@ -166,10 +172,37 @@ export function LocalBattleDemoScreen() {
     setRoundIndex(nextRoundIndex);
     setTopicInput(nextTopic);
     setActiveTopic(undefined);
+    setSubmissionStepIndex(0);
+    setSelectedSubmissions([]);
     setActiveRoundNumber(1);
-    setMatchups(createDemoBracket(nextRoundId, 42 + nextRoundIndex));
+    setMatchups([]);
     setRoundWinnerPlayerId(undefined);
     setAudioStatus("No preview playing");
+  }
+
+  function selectSubmissionSong(song: MediaTrack) {
+    const submittingPlayer = PLAYERS[submissionStepIndex];
+
+    if (!submittingPlayer) {
+      return;
+    }
+
+    const submission = createSubmission(
+      currentRoundId,
+      `${currentRoundId}:sub-${submissionStepIndex + 1}`,
+      submittingPlayer.id,
+      song.title,
+      song.artists.join(", ") || "Unknown Artist",
+    );
+    const nextSubmissions = [...selectedSubmissions, submission];
+
+    setSelectedSubmissions(nextSubmissions);
+    setSubmissionStepIndex((currentIndex) => currentIndex + 1);
+
+    if (nextSubmissions.length === PLAYERS.length) {
+      setMatchups(generateBracket({ roundId: currentRoundId, submissions: nextSubmissions, seed: 42 + roundIndex }));
+      setActiveRoundNumber(1);
+    }
   }
 
   return (
@@ -207,7 +240,31 @@ export function LocalBattleDemoScreen() {
           </View>
         ) : null}
 
-        {activeTopic ? (
+        {activeTopic && !hasFinishedSubmissions ? (
+          <View style={styles.setupPanel}>
+            <Text style={styles.eyebrow}>Submissions</Text>
+            <Text style={styles.title}>Pick a song</Text>
+            <Text style={styles.body}>Topic: {topic}</Text>
+            <Text style={styles.body}>
+              Player: {currentSubmittingPlayer?.displayName ?? "All players submitted"}
+            </Text>
+            <View style={styles.submissionChoices}>
+              {DEMO_SONG_POOL.map((song) => (
+                <Pressable
+                  key={song.id}
+                  style={styles.songPanel}
+                  onPress={() => selectSubmissionSong(song)}
+                >
+                  <Text style={styles.songTitle}>{song.title}</Text>
+                  <Text style={styles.songArtist}>{song.artists.join(", ")}</Text>
+                  <Text style={styles.pickHint}>Submit song</Text>
+                </Pressable>
+              ))}
+            </View>
+          </View>
+        ) : null}
+
+        {activeTopic && hasFinishedSubmissions ? (
           <>
         <View style={styles.header}>
           <Text style={styles.eyebrow}>Local Battle Demo</Text>
@@ -319,12 +376,17 @@ function createSubmission(
 }
 
 function createDemoBracket(roundId: string, seed: number): BracketMatchup[] {
-  const submissions: SongSubmission[] = [
-    createSubmission(roundId, `${roundId}:sub-1`, "player-1", "Espresso", "Sabrina Carpenter"),
-    createSubmission(roundId, `${roundId}:sub-2`, "player-2", "Blinding Lights", "The Weeknd"),
-    createSubmission(roundId, `${roundId}:sub-3`, "player-3", "Golden", "Harry Styles"),
-    createSubmission(roundId, `${roundId}:sub-4`, "player-4", "Levitating", "Dua Lipa"),
-  ];
+  const submissions = PLAYERS.map((player, index) => {
+    const song = DEMO_SONG_POOL[index % DEMO_SONG_POOL.length];
+
+    return createSubmission(
+      roundId,
+      `${roundId}:sub-${index + 1}`,
+      player.id,
+      song.title,
+      song.artists.join(", ") || "Unknown Artist",
+    );
+  });
 
   return generateBracket({ roundId, submissions, seed });
 }
@@ -340,6 +402,15 @@ function createTrack(title: string, artist: string): MediaTrack {
     attribution: [],
   };
 }
+
+const DEMO_SONG_POOL: MediaTrack[] = [
+  createTrack("Espresso", "Sabrina Carpenter"),
+  createTrack("Blinding Lights", "The Weeknd"),
+  createTrack("Golden", "Harry Styles"),
+  createTrack("Levitating", "Dua Lipa"),
+  createTrack("Good Days", "SZA"),
+  createTrack("As It Was", "Harry Styles"),
+];
 
 const styles = StyleSheet.create({
   root: {
@@ -451,6 +522,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 10,
     marginTop: 8,
+  },
+  submissionChoices: {
+    gap: 12,
   },
   playButton: {
     alignItems: "center",
