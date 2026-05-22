@@ -3,6 +3,7 @@ import { useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
+  Keyboard,
   Pressable,
   SafeAreaView,
   ScrollView,
@@ -35,6 +36,7 @@ export function PreviewPlaybackScreen() {
   const [resolutionLabel, setResolutionLabel] = useState<string | undefined>();
 
   async function searchTracks() {
+    Keyboard.dismiss();
     setIsSearching(true);
     setErrorMessage(undefined);
 
@@ -174,6 +176,7 @@ export function PreviewPlaybackScreen() {
             placeholder="Search songs"
             placeholderTextColor="#64748B"
             returnKeyType="search"
+            onSubmitEditing={() => void searchTracks()}
             style={styles.input}
             value={query}
           />

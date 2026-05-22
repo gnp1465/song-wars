@@ -1,6 +1,7 @@
 import { Audio } from "expo-av";
 import { useMemo, useRef, useState } from "react";
 import {
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -216,6 +217,7 @@ export function LocalBattleDemoScreen() {
   }
 
   async function searchSubmissionSongs() {
+    Keyboard.dismiss();
     setIsSearchingSubmissions(true);
     setAudioStatus("Searching songs...");
 
@@ -311,6 +313,7 @@ export function LocalBattleDemoScreen() {
                 placeholder="Search songs"
                 placeholderTextColor="#64748B"
                 returnKeyType="search"
+                onSubmitEditing={() => void searchSubmissionSongs()}
                 style={styles.input}
                 value={submissionQuery}
               />
