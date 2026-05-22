@@ -39,6 +39,9 @@ export function LocalBattleDemoScreen() {
   const [activeTopic, setActiveTopic] = useState<string | undefined>();
   const [submissionStepIndex, setSubmissionStepIndex] = useState(0);
   const [selectedSubmissions, setSelectedSubmissions] = useState<SongSubmission[]>([]);
+  const [submissionQuery, setSubmissionQuery] = useState("Espresso Sabrina Carpenter");
+  const [submissionSearchResults, setSubmissionSearchResults] = useState<MediaTrack[]>([]);
+  const [isSearchingSubmissions, setIsSearchingSubmissions] = useState(false);
   const [judgePlayerId, setJudgePlayerId] = useState("player-1");
   const [scores, setScores] = useState<PlayerScore[]>([]);
   const [activeRoundNumber, setActiveRoundNumber] = useState(1);
@@ -199,10 +202,33 @@ export function LocalBattleDemoScreen() {
 
     setSelectedSubmissions(nextSubmissions);
     setSubmissionStepIndex((currentIndex) => currentIndex + 1);
+    setSubmissionSearchResults([]);
+    setSubmissionQuery("");
 
     if (nextSubmissions.length === submittingPlayers.length) {
       setMatchups(generateBracket({ roundId: currentRoundId, submissions: nextSubmissions, seed: 42 + roundIndex }));
       setActiveRoundNumber(1);
+    }
+  }
+
+  async function searchSubmissionSongs() {
+    setIsSearchingSubmissions(true);
+    setAudioStatus("Searching songs...");
+
+    try {
+      const provider = new AppleITunesProvider();
+      const results = await provider.searchTracks({
+        query: submissionQuery,
+        storefrontCode: "US",
+        limit: 8,
+      });
+
+      setSubmissionSearchResults(results.map((result) => result.track));
+      setAudioStatus("Search ready");
+    } catch (error) {
+      setAudioStatus(error instanceof Error ? error.message : "Song search failed.");
+    } finally {
+      setIsSearchingSubmissions(false);
     }
   }
 
@@ -249,17 +275,37 @@ export function LocalBattleDemoScreen() {
             <Text style={styles.body}>
               Player: {currentSubmittingPlayer?.displayName ?? "All players submitted"}
             </Text>
+            <View style={styles.searchRow}>
+              <TextInput
+                autoCapitalize="words"
+                autoCorrect={false}
+                onChangeText={setSubmissionQuery}
+                placeholder="Search songs"
+                placeholderTextColor="#64748B"
+                returnKeyType="search"
+                style={styles.input}
+                value={submissionQuery}
+              />
+              <Pressable style={styles.searchButton} onPress={() => void searchSubmissionSongs()}>
+                <Text style={styles.searchButtonText}>
+                  {isSearchingSubmissions ? "..." : "Search"}
+                </Text>
+              </Pressable>
+            </View>
             <View style={styles.submissionChoices}>
-              {DEMO_SONG_POOL.map((song) => (
-                <Pressable
-                  key={song.id}
-                  style={styles.songPanel}
-                  onPress={() => selectSubmissionSong(song)}
-                >
+              {submissionSearchResults.map((song) => (
+                <View key={song.id} style={styles.songPanel}>
                   <Text style={styles.songTitle}>{song.title}</Text>
                   <Text style={styles.songArtist}>{song.artists.join(", ")}</Text>
-                  <Text style={styles.pickHint}>Submit song</Text>
-                </Pressable>
+                  <View style={styles.songActions}>
+                    <Pressable style={styles.playButton} onPress={() => void playSongPreview(song)}>
+                      <Text style={styles.playButtonText}>Play Preview</Text>
+                    </Pressable>
+                    <Pressable style={styles.pickButton} onPress={() => selectSubmissionSong(song)}>
+                      <Text style={styles.pickButtonText}>Submit</Text>
+                    </Pressable>
+                  </View>
+                </View>
               ))}
             </View>
           </View>
@@ -486,6 +532,24 @@ const styles = StyleSheet.create({
     fontSize: 16,
     minHeight: 52,
     paddingHorizontal: 14,
+  },
+  searchRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 10,
+  },
+  searchButton: {
+    alignItems: "center",
+    backgroundColor: "#38BDF8",
+    borderRadius: 8,
+    justifyContent: "center",
+    minHeight: 52,
+    minWidth: 86,
+  },
+  searchButtonText: {
+    color: "#082F49",
+    fontSize: 15,
+    fontWeight: "800",
   },
   matchup: {
     gap: 12,
