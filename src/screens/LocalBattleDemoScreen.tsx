@@ -17,6 +17,7 @@ import {
   generateNextRoundMatchups,
   selectMatchupWinner,
 } from "../services/game/bracket";
+import { AudioStatusBar } from "../components/game/AudioStatusBar";
 import { completeRound, type PlayerScore } from "../services/game/scoring";
 import { MediaResolutionService } from "../services/media/MediaResolutionService";
 import { AppleITunesProvider } from "../services/media/providers/AppleITunesProvider";
@@ -258,14 +259,7 @@ export function LocalBattleDemoScreen() {
 
   return (
     <SafeAreaView style={styles.root}>
-      <View style={styles.audioBar}>
-        <Text numberOfLines={1} style={styles.audioStatus}>
-          {audioStatus}
-        </Text>
-        <Pressable style={styles.stopButton} onPress={() => void stopSongPreview()}>
-          <Text style={styles.stopButtonText}>Stop</Text>
-        </Pressable>
-      </View>
+      <AudioStatusBar status={audioStatus} onStop={() => void stopSongPreview()} />
 
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -594,38 +588,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#111827",
     flex: 1,
   },
-  audioBar: {
-    alignItems: "center",
-    backgroundColor: "#0F172A",
-    borderBottomColor: "#243244",
-    borderBottomWidth: 1,
-    flexDirection: "row",
-    gap: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  audioStatus: {
-    color: "#F9FAFB",
-    flex: 1,
-    fontSize: 15,
-    fontWeight: "700",
-  },
   keyboardArea: {
     flex: 1,
-  },
-  stopButton: {
-    alignItems: "center",
-    borderColor: "#475569",
-    borderRadius: 8,
-    borderWidth: 1,
-    justifyContent: "center",
-    minHeight: 40,
-    paddingHorizontal: 16,
-  },
-  stopButtonText: {
-    color: "#F9FAFB",
-    fontSize: 14,
-    fontWeight: "800",
   },
   content: {
     gap: 18,
