@@ -1,0 +1,11 @@
+{
+  "name": "song-wars-mobile",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "npm run check:media && npm run check:playback",
+    "check:media": "node --experimental-strip-types src/tests/manualMediaMocks.ts",
+    "check:playback": "node --experimental-strip-types src/tests/manualPlaybackCheck.ts"
+  }
+}
