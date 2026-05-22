@@ -40,6 +40,7 @@ export function LocalBattleDemoScreen() {
   const [roundIndex, setRoundIndex] = useState(1);
   const [topicInput, setTopicInput] = useState("Beach vibes");
   const [activeTopic, setActiveTopic] = useState<string | undefined>();
+  const [songsPerPlayer, setSongsPerPlayer] = useState(1);
   const [submissionStepIndex, setSubmissionStepIndex] = useState(0);
   const [selectedSubmissions, setSelectedSubmissions] = useState<SongSubmission[]>([]);
   const [submissionQuery, setSubmissionQuery] = useState("Espresso Sabrina Carpenter");
@@ -57,7 +58,7 @@ export function LocalBattleDemoScreen() {
   const topic = activeTopic ?? fallbackTopic;
   const submittingPlayers = PLAYERS.filter((player) => player.id !== judgePlayerId);
   const currentSubmittingPlayer = submittingPlayers[submissionStepIndex];
-  const hasFinishedSubmissions = selectedSubmissions.length === submittingPlayers.length;
+  const hasFinishedSubmissions = selectedSubmissions.length === submittingPlayers.length * songsPerPlayer;
   const activeMatchup = matchups.find(
     (matchup) => matchup.roundNumber === activeRoundNumber && matchup.status === "ready",
   );
@@ -160,6 +161,7 @@ export function LocalBattleDemoScreen() {
     setRoundIndex(1);
     setTopicInput("Beach vibes");
     setActiveTopic(undefined);
+    setSongsPerPlayer(1);
     setSubmissionStepIndex(0);
     setSelectedSubmissions([]);
     setJudgePlayerId("player-1");
@@ -207,7 +209,7 @@ export function LocalBattleDemoScreen() {
 
     const submission = createSubmission(
       currentRoundId,
-      `${currentRoundId}:sub-${submissionStepIndex + 1}`,
+      `${currentRoundId}:sub-${selectedSubmissions.length + 1}`,
       submittingPlayer.id,
       song.title,
       song.artists.join(", ") || "Unknown Artist",
@@ -215,11 +217,18 @@ export function LocalBattleDemoScreen() {
     const nextSubmissions = [...selectedSubmissions, submission];
 
     setSelectedSubmissions(nextSubmissions);
-    setSubmissionStepIndex((currentIndex) => currentIndex + 1);
     setSubmissionSearchResults([]);
     setSubmissionQuery("");
 
-    if (nextSubmissions.length === submittingPlayers.length) {
+    const currentPlayerSubmissionCount = nextSubmissions.filter(
+      (submissionItem) => submissionItem.playerId === submittingPlayer.id,
+    ).length;
+
+    if (currentPlayerSubmissionCount >= songsPerPlayer) {
+      setSubmissionStepIndex((currentIndex) => currentIndex + 1);
+    }
+
+    if (nextSubmissions.length === submittingPlayers.length * songsPerPlayer) {
       setMatchups(generateBracket({ roundId: currentRoundId, submissions: nextSubmissions, seed: 42 + roundIndex }));
       setActiveRoundNumber(1);
     }
@@ -272,6 +281,27 @@ export function LocalBattleDemoScreen() {
             <Text style={styles.eyebrow}>Judge Setup</Text>
             <Text style={styles.title}>Choose the topic</Text>
             <Text style={styles.body}>Judge: {currentJudge}</Text>
+            <View style={styles.settingsPanel}>
+              <Text style={styles.sectionTitle}>Room settings</Text>
+              <View style={styles.settingRow}>
+                <Text style={styles.settingLabel}>Songs per player</Text>
+                <View style={styles.stepper}>
+                  <Pressable
+                    style={styles.stepperButton}
+                    onPress={() => setSongsPerPlayer((value) => Math.max(1, value - 1))}
+                  >
+                    <Text style={styles.stepperText}>-</Text>
+                  </Pressable>
+                  <Text style={styles.stepperValue}>{songsPerPlayer}</Text>
+                  <Pressable
+                    style={styles.stepperButton}
+                    onPress={() => setSongsPerPlayer((value) => Math.min(3, value + 1))}
+                  >
+                    <Text style={styles.stepperText}>+</Text>
+                  </Pressable>
+                </View>
+              </View>
+            </View>
             <TextInput
               autoCapitalize="words"
               autoCorrect={false}
@@ -295,6 +325,7 @@ export function LocalBattleDemoScreen() {
             <Text style={styles.eyebrow}>Submissions</Text>
             <Text style={styles.title}>Pick a song</Text>
             <Text style={styles.body}>Topic: {topic}</Text>
+            <Text style={styles.body}>Songs per player: {songsPerPlayer}</Text>
             <Text style={styles.body}>
               Player: {currentSubmittingPlayer?.displayName ?? "All players submitted"}
             </Text>
@@ -652,6 +683,52 @@ const styles = StyleSheet.create({
     color: "#082F49",
     fontSize: 15,
     fontWeight: "800",
+  },
+  settingsPanel: {
+    backgroundColor: "#1F2937",
+    borderColor: "#334155",
+    borderRadius: 8,
+    borderWidth: 1,
+    gap: 10,
+    padding: 14,
+  },
+  settingRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 12,
+    justifyContent: "space-between",
+  },
+  settingLabel: {
+    color: "#F9FAFB",
+    flex: 1,
+    fontSize: 15,
+    fontWeight: "700",
+  },
+  stepper: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 10,
+  },
+  stepperButton: {
+    alignItems: "center",
+    borderColor: "#475569",
+    borderRadius: 8,
+    borderWidth: 1,
+    height: 36,
+    justifyContent: "center",
+    width: 36,
+  },
+  stepperText: {
+    color: "#F9FAFB",
+    fontSize: 20,
+    fontWeight: "900",
+  },
+  stepperValue: {
+    color: "#38BDF8",
+    fontSize: 18,
+    fontWeight: "900",
+    minWidth: 20,
+    textAlign: "center",
   },
   matchup: {
     gap: 12,
