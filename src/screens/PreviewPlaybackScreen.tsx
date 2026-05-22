@@ -7,9 +7,9 @@ import {
   Text,
   View,
 } from "react-native";
+import { AppleITunesProvider } from "../services/media/providers/AppleITunesProvider";
 
-const TEST_PREVIEW_URL =
-  "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview112/v4/99/58/14/995814e4-fdbc-c7b1-6ce2-6a15f3b518f4/mzaf_15610878486760756510.plus.aac.p.m4a";
+const TEST_QUERY = "Espresso Sabrina Carpenter";
 
 type PlaybackStatus = "idle" | "loading" | "playing" | "stopped" | "failed";
 
@@ -17,6 +17,7 @@ export function PreviewPlaybackScreen() {
   const soundRef = useRef<Audio.Sound | null>(null);
   const [status, setStatus] = useState<PlaybackStatus>("idle");
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
+  const [trackLabel, setTrackLabel] = useState<string | undefined>();
 
   async function playPreview() {
     setStatus("loading");
@@ -24,13 +25,25 @@ export function PreviewPlaybackScreen() {
 
     try {
       await stopPreview();
+      const provider = new AppleITunesProvider();
+      const results = await provider.searchTracks({
+        query: TEST_QUERY,
+        storefrontCode: "US",
+        limit: 5,
+      });
+      const playableTrack = results.map((result) => result.track).find((track) => track.preview?.streamUrl);
+
+      if (!playableTrack?.preview?.streamUrl) {
+        throw new Error("No playable Apple/iTunes preview was found for the test track.");
+      }
 
       const { sound } = await Audio.Sound.createAsync(
-        { uri: TEST_PREVIEW_URL },
+        { uri: playableTrack.preview.streamUrl },
         { shouldPlay: true },
       );
 
       soundRef.current = sound;
+      setTrackLabel(`${playableTrack.title} - ${playableTrack.artists.join(", ")}`);
       setStatus("playing");
     } catch (error) {
       setStatus("failed");
@@ -56,8 +69,8 @@ export function PreviewPlaybackScreen() {
         <Text style={styles.eyebrow}>Audio Test</Text>
         <Text style={styles.title}>Song Wars Preview Playback</Text>
         <Text style={styles.body}>
-          Use this screen to confirm that an in-app preview plays on a real iPhone,
-          including when the silent switch is on.
+          This screen fetches a fresh Apple/iTunes preview, then plays it inside
+          the app so you can test real iPhone audio.
         </Text>
 
         <View style={styles.statusRow}>
@@ -65,6 +78,7 @@ export function PreviewPlaybackScreen() {
           <Text style={styles.status}>Status: {status}</Text>
         </View>
 
+        {trackLabel ? <Text style={styles.track}>{trackLabel}</Text> : null}
         {errorMessage ? <Text style={styles.error}>{errorMessage}</Text> : null}
 
         <View style={styles.actions}>
@@ -117,6 +131,12 @@ const styles = StyleSheet.create({
   status: {
     color: "#E5E7EB",
     fontSize: 16,
+  },
+  track: {
+    color: "#F9FAFB",
+    fontSize: 15,
+    fontWeight: "700",
+    lineHeight: 22,
   },
   error: {
     color: "#FCA5A5",
