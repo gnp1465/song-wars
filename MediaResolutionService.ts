@@ -5,7 +5,7 @@ import type {
   MediaResolutionResult,
   MediaTrack,
   StorefrontCode,
-} from "../../types/media";
+} from "./src/types/media";
 
 export interface ResolveTrackPreviewOptions {
   sourceTrack: MediaTrack;

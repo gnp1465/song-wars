@@ -6,7 +6,7 @@ import type {
   MediaSearchResult,
   MediaTrack,
   StorefrontCode,
-} from "../../types/media";
+} from "./src/types/media";
 
 export interface MediaSearchOptions {
   query: string;
