@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { SafeAreaView, StyleSheet } from "react-native";
 import { configurePreviewAudioMode } from "./src/services/audio/audioMode";
-import { PreviewPlaybackScreen } from "./src/screens/PreviewPlaybackScreen";
+import { LocalBattleDemoScreen } from "./src/screens/LocalBattleDemoScreen";
 
 export default function App() {
   useEffect(() => {
@@ -10,7 +10,7 @@ export default function App() {
 
   return (
     <SafeAreaView style={styles.root}>
-      <PreviewPlaybackScreen />
+      <LocalBattleDemoScreen />
     </SafeAreaView>
   );
 }
