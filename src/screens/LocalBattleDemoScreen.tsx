@@ -381,6 +381,9 @@ export function LocalBattleDemoScreen() {
             <Text style={styles.winner}>
               Winner: {roundWinnerPlayerId ? getPlayerName(roundWinnerPlayerId) : "Pending"}
             </Text>
+            <Text style={styles.body}>
+              Winning song: {getWinningSongLabel(roundWinnerPlayerId, selectedSubmissions)}
+            </Text>
             <Pressable style={styles.primaryButton} onPress={startNextRound}>
               <Text style={styles.primaryButtonText}>Start Next Round</Text>
             </Pressable>
@@ -445,6 +448,21 @@ function getScore(playerId: string, scores: PlayerScore[]): number {
 
 function getPlayerName(playerId: string): string {
   return PLAYERS.find((player) => player.id === playerId)?.displayName ?? "Unknown";
+}
+
+function getWinningSongLabel(
+  winningPlayerId: string | undefined,
+  submissions: SongSubmission[],
+): string {
+  const winningSubmission = submissions.find(
+    (submission) => submission.playerId === winningPlayerId,
+  );
+
+  if (!winningSubmission) {
+    return "Pending";
+  }
+
+  return `${winningSubmission.song.title} by ${winningSubmission.song.artists.join(", ")}`;
 }
 
 function createSubmission(
