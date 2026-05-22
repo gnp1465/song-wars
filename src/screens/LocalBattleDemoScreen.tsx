@@ -48,10 +48,12 @@ export function LocalBattleDemoScreen() {
   );
   const currentJudge = getPlayerName(judgePlayerId);
 
-  function pickWinner(winnerSubmissionId: string) {
+  async function pickWinner(winnerSubmissionId: string) {
     if (!activeMatchup) {
       return;
     }
+
+    await stopSongPreview();
 
     const completedMatchup = selectMatchupWinner(activeMatchup, winnerSubmissionId);
     const updatedMatchups = matchups.map((matchup) =>
@@ -171,13 +173,13 @@ export function LocalBattleDemoScreen() {
             <Text style={styles.roundLabel}>Round {activeMatchup.roundNumber}</Text>
             <SongChoice
               entry={activeMatchup.left}
-              onPick={pickWinner}
+              onPick={(submissionId) => void pickWinner(submissionId)}
               onPlayPreview={playSongPreview}
             />
             <Text style={styles.vs}>vs</Text>
             <SongChoice
               entry={activeMatchup.right}
-              onPick={pickWinner}
+              onPick={(submissionId) => void pickWinner(submissionId)}
               onPlayPreview={playSongPreview}
             />
           </View>
