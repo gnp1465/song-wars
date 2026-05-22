@@ -194,6 +194,15 @@ export function LocalBattleDemoScreen() {
       return;
     }
 
+    const isDuplicate = selectedSubmissions.some((submission) =>
+      isSameSong(submission.song, song),
+    );
+
+    if (isDuplicate) {
+      setAudioStatus("That song was already submitted. Pick a different one.");
+      return;
+    }
+
     await stopSongPreview();
 
     const submission = createSubmission(
@@ -480,6 +489,14 @@ function createTrack(title: string, artist: string): MediaTrack {
     resolutionStatus: "unresolved",
     attribution: [],
   };
+}
+
+function isSameSong(firstSong: MediaTrack, secondSong: MediaTrack): boolean {
+  return normalizeSongKey(firstSong) === normalizeSongKey(secondSong);
+}
+
+function normalizeSongKey(song: MediaTrack): string {
+  return `${song.title}:${song.artists.join(",")}`.toLowerCase().trim();
 }
 
 const DEMO_SONG_POOL: MediaTrack[] = [
