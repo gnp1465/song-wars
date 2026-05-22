@@ -1,5 +1,10 @@
 import assert from "node:assert/strict";
-import { generateBracket, getNextPowerOfTwo } from "../services/game/bracket.ts";
+import {
+  generateBracket,
+  generateNextRoundMatchups,
+  getNextPowerOfTwo,
+  selectMatchupWinner,
+} from "../services/game/bracket.ts";
 import type { SongSubmission } from "../types/game.ts";
 import type { MediaTrack } from "../types/media.ts";
 
@@ -30,6 +35,30 @@ const submissionIdsInBracket = bracket
   .filter((submissionId): submissionId is string => submissionId !== undefined);
 
 assert.deepEqual(new Set(submissionIdsInBracket), new Set(["sub-1", "sub-2", "sub-3"]));
+
+const readyMatchup = bracket.find((matchup) => matchup.status === "ready");
+assert.ok(readyMatchup?.left?.submissionId);
+
+const completedReadyMatchup = selectMatchupWinner(readyMatchup, readyMatchup.left.submissionId);
+const completedRoundOne = bracket.map((matchup) =>
+  matchup.id === completedReadyMatchup.id ? completedReadyMatchup : matchup,
+);
+const finalMatchups = generateNextRoundMatchups("round-1", completedRoundOne);
+
+assert.equal(finalMatchups.length, 1);
+assert.equal(finalMatchups[0].roundNumber, 2);
+assert.equal(finalMatchups[0].status, "ready");
+assert.ok(finalMatchups[0].left?.submissionId);
+assert.ok(finalMatchups[0].right?.submissionId);
+
+const completedFinal = selectMatchupWinner(
+  finalMatchups[0],
+  finalMatchups[0].left.submissionId,
+);
+
+assert.equal(completedFinal.status, "complete");
+assert.equal(generateNextRoundMatchups("round-1", [completedFinal]).length, 0);
+assert.throws(() => selectMatchupWinner(finalMatchups[0], "not-in-matchup"));
 
 console.log("Bracket generation checks passed.");
 

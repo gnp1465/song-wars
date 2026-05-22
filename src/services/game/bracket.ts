@@ -35,6 +35,70 @@ export function generateBracket(options: GenerateBracketOptions): BracketMatchup
   return matchups;
 }
 
+export function selectMatchupWinner(
+  matchup: BracketMatchup,
+  winnerSubmissionId: string,
+): BracketMatchup {
+  const validWinner =
+    matchup.left?.submissionId === winnerSubmissionId ||
+    matchup.right?.submissionId === winnerSubmissionId;
+
+  if (!validWinner) {
+    throw new Error("Winner must be one of the matchup entries.");
+  }
+
+  return {
+    ...matchup,
+    status: "complete",
+    winnerSubmissionId,
+  };
+}
+
+export function generateNextRoundMatchups(
+  roundId: string,
+  completedMatchups: BracketMatchup[],
+): BracketMatchup[] {
+  const winnerEntries = completedMatchups.map((matchup) => {
+    if (matchup.status !== "complete" || !matchup.winnerSubmissionId) {
+      throw new Error("All matchups must be complete before generating the next round.");
+    }
+
+    const winner = getWinnerEntry(matchup);
+
+    if (!winner) {
+      throw new Error("Completed matchup winner could not be found.");
+    }
+
+    return winner;
+  });
+
+  if (winnerEntries.length <= 1) {
+    return [];
+  }
+
+  const nextRoundNumber = Math.max(...completedMatchups.map((matchup) => matchup.roundNumber)) + 1;
+  const nextRoundMatchups: BracketMatchup[] = [];
+
+  for (let index = 0; index < winnerEntries.length; index += 2) {
+    const left = winnerEntries[index];
+    const right = winnerEntries[index + 1];
+    const hasBye = Boolean(left && !right);
+
+    nextRoundMatchups.push({
+      id: `${roundId}:r${nextRoundNumber}:m${nextRoundMatchups.length + 1}`,
+      roundNumber: nextRoundNumber,
+      position: nextRoundMatchups.length + 1,
+      status: hasBye ? "complete" : "ready",
+      left,
+      right,
+      winnerSubmissionId: hasBye ? left?.submissionId : undefined,
+      hasBye,
+    });
+  }
+
+  return nextRoundMatchups;
+}
+
 export function getNextPowerOfTwo(value: number): number {
   let power = 1;
 
@@ -43,6 +107,18 @@ export function getNextPowerOfTwo(value: number): number {
   }
 
   return power;
+}
+
+function getWinnerEntry(matchup: BracketMatchup): MatchupEntry | undefined {
+  if (matchup.left?.submissionId === matchup.winnerSubmissionId) {
+    return matchup.left;
+  }
+
+  if (matchup.right?.submissionId === matchup.winnerSubmissionId) {
+    return matchup.right;
+  }
+
+  return undefined;
 }
 
 function toMatchupEntry(submission: SongSubmission): MatchupEntry {
