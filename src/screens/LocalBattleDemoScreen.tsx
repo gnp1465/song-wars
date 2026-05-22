@@ -1,6 +1,14 @@
 import { Audio } from "expo-av";
 import { useMemo, useRef, useState } from "react";
-import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  Pressable,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import {
   generateBracket,
   generateNextRoundMatchups,
@@ -27,6 +35,8 @@ export function LocalBattleDemoScreen() {
   const initialRoundId = "demo-round-1";
   const initialBracket = useMemo(() => createDemoBracket(initialRoundId, 42), []);
   const [roundIndex, setRoundIndex] = useState(1);
+  const [topicInput, setTopicInput] = useState("Beach vibes");
+  const [activeTopic, setActiveTopic] = useState<string | undefined>();
   const [judgePlayerId, setJudgePlayerId] = useState("player-1");
   const [scores, setScores] = useState<PlayerScore[]>([]);
   const [activeRoundNumber, setActiveRoundNumber] = useState(1);
@@ -35,7 +45,8 @@ export function LocalBattleDemoScreen() {
   const [audioStatus, setAudioStatus] = useState("No preview playing");
 
   const currentRoundId = `demo-round-${roundIndex}`;
-  const topic = TOPICS[(roundIndex - 1) % TOPICS.length];
+  const fallbackTopic = TOPICS[(roundIndex - 1) % TOPICS.length];
+  const topic = activeTopic ?? fallbackTopic;
   const activeMatchup = matchups.find(
     (matchup) => matchup.roundNumber === activeRoundNumber && matchup.status === "ready",
   );
@@ -136,6 +147,8 @@ export function LocalBattleDemoScreen() {
   function resetDemo() {
     void stopSongPreview();
     setRoundIndex(1);
+    setTopicInput("Beach vibes");
+    setActiveTopic(undefined);
     setJudgePlayerId("player-1");
     setScores([]);
     setActiveRoundNumber(1);
@@ -148,8 +161,11 @@ export function LocalBattleDemoScreen() {
 
     const nextRoundIndex = roundIndex + 1;
     const nextRoundId = `demo-round-${nextRoundIndex}`;
+    const nextTopic = TOPICS[(nextRoundIndex - 1) % TOPICS.length];
 
     setRoundIndex(nextRoundIndex);
+    setTopicInput(nextTopic);
+    setActiveTopic(undefined);
     setActiveRoundNumber(1);
     setMatchups(createDemoBracket(nextRoundId, 42 + nextRoundIndex));
     setRoundWinnerPlayerId(undefined);
@@ -168,6 +184,31 @@ export function LocalBattleDemoScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
+        {!activeTopic ? (
+          <View style={styles.setupPanel}>
+            <Text style={styles.eyebrow}>Judge Setup</Text>
+            <Text style={styles.title}>Choose the topic</Text>
+            <Text style={styles.body}>Judge: {currentJudge}</Text>
+            <TextInput
+              autoCapitalize="words"
+              autoCorrect={false}
+              onChangeText={setTopicInput}
+              placeholder="Round topic"
+              placeholderTextColor="#64748B"
+              style={styles.input}
+              value={topicInput}
+            />
+            <Pressable
+              style={styles.primaryButton}
+              onPress={() => setActiveTopic(topicInput.trim() || fallbackTopic)}
+            >
+              <Text style={styles.primaryButtonText}>Start Battle</Text>
+            </Pressable>
+          </View>
+        ) : null}
+
+        {activeTopic ? (
+          <>
         <View style={styles.header}>
           <Text style={styles.eyebrow}>Local Battle Demo</Text>
           <Text style={styles.title}>Song Wars</Text>
@@ -215,6 +256,8 @@ export function LocalBattleDemoScreen() {
         <Pressable style={styles.resetButton} onPress={resetDemo}>
           <Text style={styles.resetButtonText}>Reset Demo</Text>
         </Pressable>
+          </>
+        ) : null}
       </ScrollView>
     </SafeAreaView>
   );
@@ -341,6 +384,9 @@ const styles = StyleSheet.create({
   header: {
     gap: 8,
   },
+  setupPanel: {
+    gap: 14,
+  },
   eyebrow: {
     color: "#38BDF8",
     fontSize: 13,
@@ -358,6 +404,16 @@ const styles = StyleSheet.create({
     color: "#CBD5E1",
     fontSize: 16,
     lineHeight: 23,
+  },
+  input: {
+    backgroundColor: "#1F2937",
+    borderColor: "#334155",
+    borderRadius: 8,
+    borderWidth: 1,
+    color: "#F9FAFB",
+    fontSize: 16,
+    minHeight: 52,
+    paddingHorizontal: 14,
   },
   matchup: {
     gap: 12,
