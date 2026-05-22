@@ -184,12 +184,14 @@ export function LocalBattleDemoScreen() {
     setAudioStatus("No preview playing");
   }
 
-  function selectSubmissionSong(song: MediaTrack) {
+  async function selectSubmissionSong(song: MediaTrack) {
     const submittingPlayer = submittingPlayers[submissionStepIndex];
 
     if (!submittingPlayer) {
       return;
     }
+
+    await stopSongPreview();
 
     const submission = createSubmission(
       currentRoundId,
@@ -301,7 +303,7 @@ export function LocalBattleDemoScreen() {
                     <Pressable style={styles.playButton} onPress={() => void playSongPreview(song)}>
                       <Text style={styles.playButtonText}>Play Preview</Text>
                     </Pressable>
-                    <Pressable style={styles.pickButton} onPress={() => selectSubmissionSong(song)}>
+                    <Pressable style={styles.pickButton} onPress={() => void selectSubmissionSong(song)}>
                       <Text style={styles.pickButtonText}>Submit</Text>
                     </Pressable>
                   </View>
