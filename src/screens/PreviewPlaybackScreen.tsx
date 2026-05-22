@@ -4,6 +4,8 @@ import {
   ActivityIndicator,
   FlatList,
   Pressable,
+  SafeAreaView,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -16,6 +18,7 @@ type PlaybackStatus = "idle" | "loading" | "playing" | "stopped" | "failed";
 
 export function PreviewPlaybackScreen() {
   const soundRef = useRef<Audio.Sound | null>(null);
+  const isSwitchingTrackRef = useRef(false);
   const [status, setStatus] = useState<PlaybackStatus>("idle");
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
   const [query, setQuery] = useState("Espresso Sabrina Carpenter");
@@ -43,6 +46,11 @@ export function PreviewPlaybackScreen() {
   }
 
   async function playPreview(track: MediaTrack) {
+    if (isSwitchingTrackRef.current) {
+      return;
+    }
+
+    isSwitchingTrackRef.current = true;
     setStatus("loading");
     setErrorMessage(undefined);
 
@@ -64,6 +72,8 @@ export function PreviewPlaybackScreen() {
     } catch (error) {
       setStatus("failed");
       setErrorMessage(error instanceof Error ? error.message : "Preview playback failed.");
+    } finally {
+      isSwitchingTrackRef.current = false;
     }
   }
 
@@ -80,7 +90,23 @@ export function PreviewPlaybackScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.stickyPlayer}>
+        <View style={styles.nowPlayingText}>
+          <Text numberOfLines={1} style={styles.status}>Status: {status}</Text>
+          <Text numberOfLines={1} style={styles.track}>
+            {trackLabel ?? "No preview playing"}
+          </Text>
+        </View>
+        <Pressable style={styles.stopButton} onPress={stopPreview}>
+          <Text style={styles.secondaryButtonText}>Stop</Text>
+        </Pressable>
+      </View>
+
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+      >
       <View style={styles.content}>
         <Text style={styles.eyebrow}>Audio Test</Text>
         <Text style={styles.title}>Song Wars Preview Playback</Text>
@@ -106,10 +132,9 @@ export function PreviewPlaybackScreen() {
 
         <View style={styles.statusRow}>
           {status === "loading" ? <ActivityIndicator color="#F9FAFB" /> : null}
-          <Text style={styles.status}>Status: {status}</Text>
+          <Text style={styles.status}>Search status: {isSearching ? "searching" : "ready"}</Text>
         </View>
 
-        {trackLabel ? <Text style={styles.track}>{trackLabel}</Text> : null}
         {errorMessage ? <Text style={styles.error}>{errorMessage}</Text> : null}
 
         <FlatList
@@ -130,14 +155,9 @@ export function PreviewPlaybackScreen() {
           )}
           scrollEnabled={false}
         />
-
-        <View style={styles.actions}>
-          <Pressable style={styles.secondaryButton} onPress={stopPreview}>
-            <Text style={styles.secondaryButtonText}>Stop</Text>
-          </Pressable>
-        </View>
       </View>
-    </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -148,11 +168,27 @@ function formatTrackLabel(track: MediaTrack): string {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#111827",
+  },
+  stickyPlayer: {
+    alignItems: "center",
+    backgroundColor: "#0F172A",
+    borderBottomColor: "#243244",
+    borderBottomWidth: 1,
+    flexDirection: "row",
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  nowPlayingText: {
+    flex: 1,
+  },
+  scrollContent: {
     padding: 24,
+    paddingBottom: 48,
   },
   content: {
     gap: 18,
-    paddingTop: 28,
   },
   eyebrow: {
     color: "#38BDF8",
@@ -218,6 +254,15 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     lineHeight: 22,
   },
+  stopButton: {
+    alignItems: "center",
+    borderColor: "#475569",
+    borderRadius: 8,
+    borderWidth: 1,
+    justifyContent: "center",
+    minHeight: 44,
+    paddingHorizontal: 18,
+  },
   resultRow: {
     alignItems: "center",
     borderBottomColor: "#243244",
@@ -248,19 +293,6 @@ const styles = StyleSheet.create({
     color: "#FCA5A5",
     fontSize: 14,
     lineHeight: 20,
-  },
-  actions: {
-    flexDirection: "row",
-    gap: 12,
-  },
-  secondaryButton: {
-    alignItems: "center",
-    borderColor: "#475569",
-    borderRadius: 8,
-    borderWidth: 1,
-    justifyContent: "center",
-    minHeight: 52,
-    paddingHorizontal: 22,
   },
   secondaryButtonText: {
     color: "#F9FAFB",
