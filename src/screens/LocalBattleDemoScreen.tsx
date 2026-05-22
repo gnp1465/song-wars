@@ -49,8 +49,9 @@ export function LocalBattleDemoScreen() {
   const currentRoundId = `demo-round-${roundIndex}`;
   const fallbackTopic = TOPICS[(roundIndex - 1) % TOPICS.length];
   const topic = activeTopic ?? fallbackTopic;
-  const currentSubmittingPlayer = PLAYERS[submissionStepIndex];
-  const hasFinishedSubmissions = selectedSubmissions.length === PLAYERS.length;
+  const submittingPlayers = PLAYERS.filter((player) => player.id !== judgePlayerId);
+  const currentSubmittingPlayer = submittingPlayers[submissionStepIndex];
+  const hasFinishedSubmissions = selectedSubmissions.length === submittingPlayers.length;
   const activeMatchup = matchups.find(
     (matchup) => matchup.roundNumber === activeRoundNumber && matchup.status === "ready",
   );
@@ -181,7 +182,7 @@ export function LocalBattleDemoScreen() {
   }
 
   function selectSubmissionSong(song: MediaTrack) {
-    const submittingPlayer = PLAYERS[submissionStepIndex];
+    const submittingPlayer = submittingPlayers[submissionStepIndex];
 
     if (!submittingPlayer) {
       return;
@@ -199,7 +200,7 @@ export function LocalBattleDemoScreen() {
     setSelectedSubmissions(nextSubmissions);
     setSubmissionStepIndex((currentIndex) => currentIndex + 1);
 
-    if (nextSubmissions.length === PLAYERS.length) {
+    if (nextSubmissions.length === submittingPlayers.length) {
       setMatchups(generateBracket({ roundId: currentRoundId, submissions: nextSubmissions, seed: 42 + roundIndex }));
       setActiveRoundNumber(1);
     }
