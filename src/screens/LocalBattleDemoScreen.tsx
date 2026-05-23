@@ -18,6 +18,7 @@ import {
   selectMatchupWinner,
 } from "../services/game/bracket";
 import { AudioStatusBar } from "../components/game/AudioStatusBar";
+import { Scoreboard } from "../components/game/Scoreboard";
 import { SongActionCard } from "../components/game/SongActionCard";
 import { completeRound, type PlayerScore } from "../services/game/scoring";
 import { MediaResolutionService } from "../services/media/MediaResolutionService";
@@ -412,15 +413,7 @@ export function LocalBattleDemoScreen() {
           </View>
         )}
 
-        <View style={styles.scoreboard}>
-          <Text style={styles.sectionTitle}>Scoreboard</Text>
-          {PLAYERS.map((player) => (
-            <View key={player.id} style={styles.scoreRow}>
-              <Text style={styles.scoreName}>{player.displayName}</Text>
-              <Text style={styles.scoreValue}>{getScore(player.id, scores)}</Text>
-            </View>
-          ))}
-        </View>
+        <Scoreboard players={PLAYERS} scores={scores} />
 
         <View style={styles.scoreboard}>
           <Text style={styles.sectionTitle}>Bracket</Text>
@@ -462,10 +455,6 @@ function SongChoice({ entry, onPick, onPlayPreview }: SongChoiceProps) {
       onSecondaryPress={entry ? () => onPlayPreview(entry.song) : undefined}
     />
   );
-}
-
-function getScore(playerId: string, scores: PlayerScore[]): number {
-  return scores.find((score) => score.playerId === playerId)?.points ?? 0;
 }
 
 function getPlayerName(playerId: string): string {
@@ -756,24 +745,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "800",
     textTransform: "uppercase",
-  },
-  scoreRow: {
-    alignItems: "center",
-    borderBottomColor: "#243244",
-    borderBottomWidth: 1,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    minHeight: 42,
-  },
-  scoreName: {
-    color: "#F9FAFB",
-    fontSize: 16,
-    fontWeight: "700",
-  },
-  scoreValue: {
-    color: "#38BDF8",
-    fontSize: 18,
-    fontWeight: "900",
   },
   bracketRow: {
     alignItems: "center",
