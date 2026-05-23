@@ -25,17 +25,9 @@ import { SubmissionProgress } from "../components/game/SubmissionProgress";
 import { completeRound, type PlayerScore } from "../services/game/scoring";
 import { MediaResolutionService } from "../services/media/MediaResolutionService";
 import { AppleITunesProvider } from "../services/media/providers/AppleITunesProvider";
-import type { BracketMatchup, Player, SongSubmission } from "../types/game";
+import { DEMO_PLAYERS, DEMO_SONG_POOL, DEMO_TOPICS, createDemoTrack } from "../data/demoGame";
+import type { BracketMatchup, SongSubmission } from "../types/game";
 import type { MediaTrack } from "../types/media";
-
-const TOPICS = ["Beach vibes", "Road trip", "Late night", "Main character"];
-
-const PLAYERS: Player[] = [
-  { id: "player-1", displayName: "Gus", isHost: true, isGuest: false },
-  { id: "player-2", displayName: "Maya", isHost: false, isGuest: true },
-  { id: "player-3", displayName: "Jay", isHost: false, isGuest: true },
-  { id: "player-4", displayName: "Nina", isHost: false, isGuest: true },
-];
 
 export function LocalBattleDemoScreen() {
   const soundRef = useRef<Audio.Sound | null>(null);
@@ -59,9 +51,9 @@ export function LocalBattleDemoScreen() {
   const [audioStatus, setAudioStatus] = useState("No preview playing");
 
   const currentRoundId = `demo-round-${roundIndex}`;
-  const fallbackTopic = TOPICS[(roundIndex - 1) % TOPICS.length];
+  const fallbackTopic = DEMO_TOPICS[(roundIndex - 1) % DEMO_TOPICS.length];
   const topic = activeTopic ?? fallbackTopic;
-  const submittingPlayers = PLAYERS.filter((player) => player.id !== judgePlayerId);
+  const submittingPlayers = DEMO_PLAYERS.filter((player) => player.id !== judgePlayerId);
   const currentSubmittingPlayer = submittingPlayers[submissionStepIndex];
   const hasFinishedSubmissions = selectedSubmissions.length === submittingPlayers.length * songsPerPlayer;
   const activeMatchup = matchups.find(
@@ -101,7 +93,7 @@ export function LocalBattleDemoScreen() {
     }
 
     const roundResult = completeRound({
-      players: PLAYERS,
+      players: DEMO_PLAYERS,
       finalMatchup: completedMatchup,
       currentScores: scores,
     });
@@ -181,7 +173,7 @@ export function LocalBattleDemoScreen() {
 
     const nextRoundIndex = roundIndex + 1;
     const nextRoundId = `demo-round-${nextRoundIndex}`;
-    const nextTopic = TOPICS[(nextRoundIndex - 1) % TOPICS.length];
+    const nextTopic = DEMO_TOPICS[(nextRoundIndex - 1) % DEMO_TOPICS.length];
 
     setRoundIndex(nextRoundIndex);
     setTopicInput(nextTopic);
@@ -400,7 +392,7 @@ export function LocalBattleDemoScreen() {
           </View>
         )}
 
-        <Scoreboard players={PLAYERS} scores={scores} />
+        <Scoreboard players={DEMO_PLAYERS} scores={scores} />
 
         <BracketProgress matchups={matchups} />
 
@@ -434,7 +426,7 @@ function SongChoice({ entry, onPick, onPlayPreview }: SongChoiceProps) {
 }
 
 function getPlayerName(playerId: string): string {
-  return PLAYERS.find((player) => player.id === playerId)?.displayName ?? "Unknown";
+  return DEMO_PLAYERS.find((player) => player.id === playerId)?.displayName ?? "Unknown";
 }
 
 function getWinningSongLabel(
@@ -463,13 +455,13 @@ function createSubmission(
     id,
     playerId,
     roundId,
-    song: createTrack(title, artist),
+    song: createDemoTrack(title, artist),
     submittedAtMs: Date.now(),
   };
 }
 
 function createDemoBracket(roundId: string, seed: number): BracketMatchup[] {
-  const submissions = PLAYERS.map((player, index) => {
+  const submissions = DEMO_PLAYERS.map((player, index) => {
     const song = DEMO_SONG_POOL[index % DEMO_SONG_POOL.length];
 
     return createSubmission(
@@ -484,18 +476,6 @@ function createDemoBracket(roundId: string, seed: number): BracketMatchup[] {
   return generateBracket({ roundId, submissions, seed });
 }
 
-function createTrack(title: string, artist: string): MediaTrack {
-  return {
-    id: `demo:${title}`,
-    title,
-    artists: [artist],
-    providerRefs: [],
-    capabilities: ["metadata_only"],
-    resolutionStatus: "unresolved",
-    attribution: [],
-  };
-}
-
 function isSameSong(firstSong: MediaTrack, secondSong: MediaTrack): boolean {
   return normalizeSongKey(firstSong) === normalizeSongKey(secondSong);
 }
@@ -503,15 +483,6 @@ function isSameSong(firstSong: MediaTrack, secondSong: MediaTrack): boolean {
 function normalizeSongKey(song: MediaTrack): string {
   return `${song.title}:${song.artists.join(",")}`.toLowerCase().trim();
 }
-
-const DEMO_SONG_POOL: MediaTrack[] = [
-  createTrack("Espresso", "Sabrina Carpenter"),
-  createTrack("Blinding Lights", "The Weeknd"),
-  createTrack("Golden", "Harry Styles"),
-  createTrack("Levitating", "Dua Lipa"),
-  createTrack("Good Days", "SZA"),
-  createTrack("As It Was", "Harry Styles"),
-];
 
 const styles = StyleSheet.create({
   root: {
