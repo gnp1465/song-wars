@@ -1,0 +1,56 @@
+import { Keyboard } from "react-native";
+import { useState } from "react";
+import { AppleITunesProvider } from "../services/media/providers/AppleITunesProvider";
+import type { MediaTrack } from "../types/media";
+
+export interface UseSongSearchOptions {
+  initialQuery?: string;
+  limit?: number;
+  storefrontCode?: string;
+}
+
+export function useSongSearch(options: UseSongSearchOptions = {}) {
+  const [query, setQuery] = useState(options.initialQuery ?? "");
+  const [results, setResults] = useState<MediaTrack[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | undefined>();
+
+  async function search(): Promise<{ ok: boolean; errorMessage?: string }> {
+    Keyboard.dismiss();
+    setIsSearching(true);
+    setErrorMessage(undefined);
+
+    try {
+      const provider = new AppleITunesProvider();
+      const searchResults = await provider.searchTracks({
+        query,
+        storefrontCode: options.storefrontCode ?? "US",
+        limit: options.limit ?? 8,
+      });
+
+      setResults(searchResults.map((result) => result.track));
+      return { ok: true };
+    } catch (error) {
+      const nextErrorMessage = error instanceof Error ? error.message : "Song search failed.";
+      setErrorMessage(nextErrorMessage);
+      return { ok: false, errorMessage: nextErrorMessage };
+    } finally {
+      setIsSearching(false);
+    }
+  }
+
+  function clearResults() {
+    setResults([]);
+  }
+
+  return {
+    clearResults,
+    errorMessage,
+    isSearching,
+    query,
+    results,
+    search,
+    setErrorMessage,
+    setQuery,
+  };
+}

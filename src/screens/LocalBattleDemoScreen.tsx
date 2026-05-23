@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
 import {
-  Keyboard,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -25,6 +24,7 @@ import { completeRound, type PlayerScore } from "../services/game/scoring";
 import { AppleITunesProvider } from "../services/media/providers/AppleITunesProvider";
 import { DEMO_PLAYERS, DEMO_SONG_POOL, DEMO_TOPICS, createDemoTrack } from "../data/demoGame";
 import { usePreviewAudio } from "../hooks/usePreviewAudio";
+import { useSongSearch } from "../hooks/useSongSearch";
 import type { BracketMatchup, SongSubmission } from "../types/game";
 import type { MediaTrack } from "../types/media";
 
@@ -38,9 +38,7 @@ export function LocalBattleDemoScreen() {
   const [songsPerPlayer, setSongsPerPlayer] = useState(1);
   const [submissionStepIndex, setSubmissionStepIndex] = useState(0);
   const [selectedSubmissions, setSelectedSubmissions] = useState<SongSubmission[]>([]);
-  const [submissionQuery, setSubmissionQuery] = useState("Espresso Sabrina Carpenter");
-  const [submissionSearchResults, setSubmissionSearchResults] = useState<MediaTrack[]>([]);
-  const [isSearchingSubmissions, setIsSearchingSubmissions] = useState(false);
+  const submissionSearch = useSongSearch({ initialQuery: "Espresso Sabrina Carpenter" });
   const [judgePlayerId, setJudgePlayerId] = useState("player-1");
   const [scores, setScores] = useState<PlayerScore[]>([]);
   const [activeRoundNumber, setActiveRoundNumber] = useState(1);
@@ -162,8 +160,8 @@ export function LocalBattleDemoScreen() {
     const nextSubmissions = [...selectedSubmissions, submission];
 
     setSelectedSubmissions(nextSubmissions);
-    setSubmissionSearchResults([]);
-    setSubmissionQuery("");
+    submissionSearch.clearResults();
+    submissionSearch.setQuery("");
 
     const currentPlayerSubmissionCount = nextSubmissions.filter(
       (submissionItem) => submissionItem.playerId === submittingPlayer.id,
@@ -180,24 +178,13 @@ export function LocalBattleDemoScreen() {
   }
 
   async function searchSubmissionSongs() {
-    Keyboard.dismiss();
-    setIsSearchingSubmissions(true);
     setAudioStatus("Searching songs...");
+    const result = await submissionSearch.search();
 
-    try {
-      const provider = new AppleITunesProvider();
-      const results = await provider.searchTracks({
-        query: submissionQuery,
-        storefrontCode: "US",
-        limit: 8,
-      });
-
-      setSubmissionSearchResults(results.map((result) => result.track));
+    if (!result.ok) {
+      setAudioStatus(result.errorMessage ?? "Song search failed.");
+    } else {
       setAudioStatus("Search ready");
-    } catch (error) {
-      setAudioStatus(error instanceof Error ? error.message : "Song search failed.");
-    } finally {
-      setIsSearchingSubmissions(false);
     }
   }
 
@@ -272,22 +259,22 @@ export function LocalBattleDemoScreen() {
               <TextInput
                 autoCapitalize="words"
                 autoCorrect={false}
-                onChangeText={setSubmissionQuery}
+                onChangeText={submissionSearch.setQuery}
                 placeholder="Search songs"
                 placeholderTextColor="#64748B"
                 returnKeyType="search"
                 onSubmitEditing={() => void searchSubmissionSongs()}
                 style={styles.input}
-                value={submissionQuery}
+                value={submissionSearch.query}
               />
               <Pressable style={styles.searchButton} onPress={() => void searchSubmissionSongs()}>
                 <Text style={styles.searchButtonText}>
-                  {isSearchingSubmissions ? "..." : "Search"}
+                  {submissionSearch.isSearching ? "..." : "Search"}
                 </Text>
               </Pressable>
             </View>
             <View style={styles.submissionChoices}>
-              {submissionSearchResults.map((song) => (
+              {submissionSearch.results.map((song) => (
                 <SongActionCard
                   key={song.id}
                   song={song}
