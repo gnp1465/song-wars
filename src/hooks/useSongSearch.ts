@@ -1,11 +1,13 @@
 import { Keyboard } from "react-native";
 import { useState } from "react";
 import { AppleITunesProvider } from "../services/media/providers/AppleITunesProvider";
+import type { MediaProvider } from "../services/media/MediaProvider";
 import type { MediaTrack } from "../types/media";
 
 export interface UseSongSearchOptions {
   initialQuery?: string;
   limit?: number;
+  provider?: MediaProvider;
   storefrontCode?: string;
 }
 
@@ -21,7 +23,7 @@ export function useSongSearch(options: UseSongSearchOptions = {}) {
     setErrorMessage(undefined);
 
     try {
-      const provider = new AppleITunesProvider();
+      const provider = options.provider ?? new AppleITunesProvider();
       const searchResults = await provider.searchTracks({
         query,
         storefrontCode: options.storefrontCode ?? "US",
