@@ -18,6 +18,7 @@ import {
   selectMatchupWinner,
 } from "../services/game/bracket";
 import { AudioStatusBar } from "../components/game/AudioStatusBar";
+import { SongActionCard } from "../components/game/SongActionCard";
 import { completeRound, type PlayerScore } from "../services/game/scoring";
 import { MediaResolutionService } from "../services/media/MediaResolutionService";
 import { AppleITunesProvider } from "../services/media/providers/AppleITunesProvider";
@@ -359,18 +360,14 @@ export function LocalBattleDemoScreen() {
             </View>
             <View style={styles.submissionChoices}>
               {submissionSearchResults.map((song) => (
-                <View key={song.id} style={styles.songPanel}>
-                  <Text style={styles.songTitle}>{song.title}</Text>
-                  <Text style={styles.songArtist}>{song.artists.join(", ")}</Text>
-                  <View style={styles.songActions}>
-                    <Pressable style={styles.playButton} onPress={() => void playSongPreview(song)}>
-                      <Text style={styles.playButtonText}>Play Preview</Text>
-                    </Pressable>
-                    <Pressable style={styles.pickButton} onPress={() => void selectSubmissionSong(song)}>
-                      <Text style={styles.pickButtonText}>Submit</Text>
-                    </Pressable>
-                  </View>
-                </View>
+                <SongActionCard
+                  key={song.id}
+                  song={song}
+                  primaryLabel="Submit"
+                  secondaryLabel="Play Preview"
+                  onPrimaryPress={() => void selectSubmissionSong(song)}
+                  onSecondaryPress={() => void playSongPreview(song)}
+                />
               ))}
             </View>
           </View>
@@ -456,27 +453,14 @@ interface SongChoiceProps {
 }
 
 function SongChoice({ entry, onPick, onPlayPreview }: SongChoiceProps) {
-  if (!entry) {
-    return (
-      <View style={styles.songPanel}>
-        <Text style={styles.songTitle}>Bye</Text>
-      </View>
-    );
-  }
-
   return (
-    <View style={styles.songPanel}>
-      <Text style={styles.songTitle}>{entry.song.title}</Text>
-      <Text style={styles.songArtist}>{entry.song.artists.join(", ")}</Text>
-      <View style={styles.songActions}>
-        <Pressable style={styles.playButton} onPress={() => onPlayPreview(entry.song)}>
-          <Text style={styles.playButtonText}>Play Preview</Text>
-        </Pressable>
-        <Pressable style={styles.pickButton} onPress={() => onPick(entry.submissionId)}>
-          <Text style={styles.pickButtonText}>Pick Winner</Text>
-        </Pressable>
-      </View>
-    </View>
+    <SongActionCard
+      song={entry?.song}
+      primaryLabel="Pick Winner"
+      secondaryLabel={entry ? "Play Preview" : undefined}
+      onPrimaryPress={entry ? () => onPick(entry.submissionId) : undefined}
+      onSecondaryPress={entry ? () => onPlayPreview(entry.song) : undefined}
+    />
   );
 }
 
@@ -702,34 +686,11 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "900",
   },
-  songPanel: {
-    backgroundColor: "#1F2937",
-    borderColor: "#334155",
-    borderRadius: 8,
-    borderWidth: 1,
-    gap: 6,
-    minHeight: 106,
-    padding: 16,
-  },
-  songTitle: {
-    color: "#F9FAFB",
-    fontSize: 20,
-    fontWeight: "900",
-  },
-  songArtist: {
-    color: "#94A3B8",
-    fontSize: 15,
-  },
   pickHint: {
     color: "#38BDF8",
     fontSize: 14,
     fontWeight: "800",
     marginTop: 6,
-  },
-  songActions: {
-    flexDirection: "row",
-    gap: 10,
-    marginTop: 8,
   },
   submissionChoices: {
     gap: 12,
@@ -762,33 +723,6 @@ const styles = StyleSheet.create({
     color: "#94A3B8",
     fontSize: 13,
     fontWeight: "800",
-  },
-  playButton: {
-    alignItems: "center",
-    borderColor: "#38BDF8",
-    borderRadius: 8,
-    borderWidth: 1,
-    flex: 1,
-    justifyContent: "center",
-    minHeight: 44,
-  },
-  playButtonText: {
-    color: "#7DD3FC",
-    fontSize: 14,
-    fontWeight: "800",
-  },
-  pickButton: {
-    alignItems: "center",
-    backgroundColor: "#38BDF8",
-    borderRadius: 8,
-    flex: 1,
-    justifyContent: "center",
-    minHeight: 44,
-  },
-  pickButtonText: {
-    color: "#082F49",
-    fontSize: 14,
-    fontWeight: "900",
   },
   vs: {
     color: "#64748B",
