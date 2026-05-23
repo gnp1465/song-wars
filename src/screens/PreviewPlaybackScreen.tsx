@@ -3,7 +3,6 @@ import { useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
-  Keyboard,
   Pressable,
   SafeAreaView,
   ScrollView,
@@ -14,6 +13,7 @@ import {
 } from "react-native";
 import { MediaResolutionService } from "../services/media/MediaResolutionService";
 import { AppleITunesProvider } from "../services/media/providers/AppleITunesProvider";
+import { useSongSearch } from "../hooks/useSongSearch";
 import type { MediaTrack } from "../types/media";
 
 type PlaybackStatus = "idle" | "loading" | "playing" | "stopped" | "failed";
@@ -29,29 +29,16 @@ export function PreviewPlaybackScreen() {
   const isSwitchingTrackRef = useRef(false);
   const [status, setStatus] = useState<PlaybackStatus>("idle");
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
-  const [query, setQuery] = useState("Espresso Sabrina Carpenter");
-  const [results, setResults] = useState<MediaTrack[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
+  const songSearch = useSongSearch({ initialQuery: "Espresso Sabrina Carpenter" });
   const [trackLabel, setTrackLabel] = useState<string | undefined>();
   const [resolutionLabel, setResolutionLabel] = useState<string | undefined>();
 
   async function searchTracks() {
-    Keyboard.dismiss();
-    setIsSearching(true);
     setErrorMessage(undefined);
+    const result = await songSearch.search();
 
-    try {
-      const provider = new AppleITunesProvider();
-      const searchResults = await provider.searchTracks({
-        query,
-        storefrontCode: "US",
-        limit: 8,
-      });
-      setResults(searchResults.map((result) => result.track));
-    } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "Song search failed.");
-    } finally {
-      setIsSearching(false);
+    if (!result.ok) {
+      setErrorMessage(result.errorMessage ?? "Song search failed.");
     }
   }
 
@@ -172,22 +159,22 @@ export function PreviewPlaybackScreen() {
           <TextInput
             autoCapitalize="words"
             autoCorrect={false}
-            onChangeText={setQuery}
+            onChangeText={songSearch.setQuery}
             placeholder="Search songs"
             placeholderTextColor="#64748B"
             returnKeyType="search"
             onSubmitEditing={() => void searchTracks()}
             style={styles.input}
-            value={query}
+            value={songSearch.query}
           />
           <Pressable style={styles.searchButton} onPress={searchTracks}>
-            <Text style={styles.searchButtonText}>{isSearching ? "..." : "Search"}</Text>
+            <Text style={styles.searchButtonText}>{songSearch.isSearching ? "..." : "Search"}</Text>
           </Pressable>
         </View>
 
         <View style={styles.statusRow}>
           {status === "loading" ? <ActivityIndicator color="#F9FAFB" /> : null}
-          <Text style={styles.status}>Search status: {isSearching ? "searching" : "ready"}</Text>
+          <Text style={styles.status}>Search status: {songSearch.isSearching ? "searching" : "ready"}</Text>
         </View>
 
         {errorMessage ? <Text style={styles.error}>{errorMessage}</Text> : null}
@@ -215,7 +202,7 @@ export function PreviewPlaybackScreen() {
         </View>
 
         <FlatList
-          data={results}
+          data={songSearch.results}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <Pressable style={styles.resultRow} onPress={() => playPreview(item)}>
