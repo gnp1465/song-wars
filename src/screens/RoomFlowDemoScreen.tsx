@@ -77,15 +77,20 @@ export function RoomFlowDemoScreen() {
           <TextInput
             autoCapitalize="words"
             autoCorrect={false}
+            editable={!hasCreatedRoom}
             onChangeText={setHostName}
             placeholder="Host name"
             placeholderTextColor="#64748B"
-            style={styles.input}
+            style={[styles.input, hasCreatedRoom ? styles.lockedInput : undefined]}
             value={hostName}
           />
-          <Pressable style={styles.primaryButton} onPress={() => setHasCreatedRoom(true)}>
-            <Text style={styles.primaryButtonText}>Create Room</Text>
-          </Pressable>
+          {hasCreatedRoom ? (
+            <Text style={styles.body}>Host name is locked after room creation.</Text>
+          ) : (
+            <Pressable style={styles.primaryButton} onPress={() => setHasCreatedRoom(true)}>
+              <Text style={styles.primaryButtonText}>Create Room</Text>
+            </Pressable>
+          )}
         </View>
 
         {hasCreatedRoom ? (
@@ -229,6 +234,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     minHeight: 52,
     paddingHorizontal: 14,
+  },
+  lockedInput: {
+    opacity: 0.65,
   },
   primaryButton: {
     alignItems: "center",
