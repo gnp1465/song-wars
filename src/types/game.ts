@@ -2,6 +2,8 @@ import type { MediaTrack } from "./media";
 
 export type RoomMode = "remote" | "single_speaker";
 
+export type RoomStatus = "lobby" | "in_round" | "complete";
+
 export type RoundStatus =
   | "waiting_for_topic"
   | "collecting_submissions"
@@ -23,6 +25,16 @@ export interface RoomSettings {
   songsPerPlayer: number;
   duplicateBlockingEnabled: boolean;
   anonymousJudgingEnabled: boolean;
+}
+
+export interface Room {
+  id: string;
+  code: string;
+  hostPlayerId: string;
+  players: Player[];
+  settings: RoomSettings;
+  status: RoomStatus;
+  createdAtMs: number;
 }
 
 export interface SongSubmission {
