@@ -51,6 +51,11 @@ Read the architecture guide:
 
 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
+Learning docs:
+
+- [docs/GLOSSARY.md](docs/GLOSSARY.md)
+- [docs/LEARNING_LOG.md](docs/LEARNING_LOG.md)
+
 Main folders:
 
 - `src/screens`: full app screens
