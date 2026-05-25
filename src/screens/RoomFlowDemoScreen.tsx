@@ -19,6 +19,9 @@ export function RoomFlowDemoScreen() {
     [guestNames, hostName],
   );
   const canStartGame = roomPlayers.length >= 3;
+  const startGameHint = canStartGame
+    ? "Ready to start."
+    : "Need at least 3 players: 1 judge and 2 contestants.";
 
   function addGuest() {
     const normalizedJoinCode = joinCodeInput.trim();
@@ -127,6 +130,8 @@ export function RoomFlowDemoScreen() {
                 </View>
               ))}
             </View>
+
+            <Text style={canStartGame ? styles.readyText : styles.errorText}>{startGameHint}</Text>
 
             <Pressable
               disabled={!canStartGame}
@@ -253,6 +258,11 @@ const styles = StyleSheet.create({
   },
   errorText: {
     color: "#FCA5A5",
+    fontSize: 14,
+    fontWeight: "700",
+  },
+  readyText: {
+    color: "#7DD3FC",
     fontSize: 14,
     fontWeight: "700",
   },
