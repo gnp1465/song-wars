@@ -36,6 +36,15 @@ export function RoomFlowDemoScreen() {
       return;
     }
 
+    const isDuplicateName = roomPlayers.some(
+      (player) => normalizeDisplayName(player.displayName) === normalizeDisplayName(nextGuestName),
+    );
+
+    if (isDuplicateName) {
+      setJoinError("A player with that name is already in the room.");
+      return;
+    }
+
     setGuestNames((currentGuestNames) => [...currentGuestNames, nextGuestName]);
     setGuestName("");
     setJoinCodeInput("");
@@ -164,6 +173,10 @@ function createRoomPlayers(hostName: string, guestNames: string[]): Player[] {
       isGuest: true,
     })),
   ];
+}
+
+function normalizeDisplayName(displayName: string): string {
+  return displayName.trim().toLowerCase();
 }
 
 const styles = StyleSheet.create({
