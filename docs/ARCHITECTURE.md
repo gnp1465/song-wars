@@ -13,6 +13,7 @@ Memorize: the entry file should stay small. It chooses top-level screens; it sho
 Screens are full app views. They coordinate user flow and state.
 
 - `src/screens/LocalBattleDemoScreen.tsx` runs the local playable game demo.
+- `src/screens/RoomFlowDemoScreen.tsx` runs the fake room/lobby flow using the shared room model.
 - `src/screens/PreviewPlaybackScreen.tsx` is a lab screen for testing search and preview playback.
 
 Memorize: screens are allowed to coordinate several pieces, but if a screen gets too large, repeated UI should move into components and repeated behavior should move into hooks.
@@ -43,6 +44,7 @@ Memorize: hooks are the "brain" a component or screen can reuse.
 Services hold business logic and provider/API logic.
 
 - `services/game/bracket.ts` creates and advances brackets.
+- `services/game/room.ts` creates and updates room objects.
 - `services/game/scoring.ts` scores completed rounds.
 - `services/media/MediaResolutionService.ts` resolves selected songs to playable previews.
 - `services/media/providers/*` adapt external music sources to the app's shared media shape.

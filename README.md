@@ -16,6 +16,7 @@ The local demo currently supports:
 - scoring
 - next judge assignment
 - next round flow
+- model-backed fake room/lobby flow
 
 ## Run The App
 

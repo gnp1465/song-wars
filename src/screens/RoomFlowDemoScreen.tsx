@@ -1,7 +1,16 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  addGuestToRoom,
+  canStartRoom,
+  createLocalRoom,
+  hasDuplicateDisplayName,
+  removeGuestFromRoom,
+  updateRoomMode,
+  updateSongsPerPlayer,
+} from "../services/game/room";
 import { LocalBattleDemoScreen } from "./LocalBattleDemoScreen";
-import type { Player, RoomMode } from "../types/game";
+import type { Room } from "../types/game";
 
 const DEMO_ROOM_CODE = "7392";
 
@@ -10,22 +19,32 @@ export function RoomFlowDemoScreen() {
   const [guestName, setGuestName] = useState("");
   const [joinCodeInput, setJoinCodeInput] = useState("");
   const [joinError, setJoinError] = useState<string | undefined>();
-  const [guestNames, setGuestNames] = useState(["Maya", "Jay", "Nina"]);
-  const [hasCreatedRoom, setHasCreatedRoom] = useState(false);
   const [hasStartedGame, setHasStartedGame] = useState(false);
-  const [roomMode, setRoomMode] = useState<RoomMode>("single_speaker");
-  const [songsPerPlayer, setSongsPerPlayer] = useState(1);
+  const [room, setRoom] = useState<Room | undefined>();
 
-  const roomPlayers = useMemo(
-    () => createRoomPlayers(hostName, guestNames),
-    [guestNames, hostName],
-  );
-  const canStartGame = roomPlayers.length >= 3;
+  const roomPlayers = room?.players ?? [];
+  const roomSettings = room?.settings;
+  const hasCreatedRoom = Boolean(room);
+  const canStartGame = room ? canStartRoom(room) : false;
   const startGameHint = canStartGame
     ? "Ready to start."
     : "Need at least 3 players: 1 judge and 2 contestants.";
 
+  function createRoom() {
+    setRoom(
+      createLocalRoom({
+        hostName,
+        roomCode: DEMO_ROOM_CODE,
+        roomId: "room-demo",
+      }),
+    );
+  }
+
   function addGuest() {
+    if (!room) {
+      return;
+    }
+
     const normalizedJoinCode = joinCodeInput.trim();
     const nextGuestName = guestName.trim();
 
@@ -38,33 +57,31 @@ export function RoomFlowDemoScreen() {
       return;
     }
 
-    const isDuplicateName = roomPlayers.some(
-      (player) => normalizeDisplayName(player.displayName) === normalizeDisplayName(nextGuestName),
-    );
-
-    if (isDuplicateName) {
+    if (hasDuplicateDisplayName(room, nextGuestName)) {
       setJoinError("A player with that name is already in the room.");
       return;
     }
 
-    setGuestNames((currentGuestNames) => [...currentGuestNames, nextGuestName]);
+    setRoom(addGuestToRoom(room, { displayName: nextGuestName }));
     setGuestName("");
     setJoinCodeInput("");
     setJoinError(undefined);
   }
 
-  function removeGuest(indexToRemove: number) {
-    setGuestNames((currentGuestNames) =>
-      currentGuestNames.filter((_guestName, index) => index !== indexToRemove),
-    );
+  function removeGuest(guestPlayerId: string) {
+    if (!room) {
+      return;
+    }
+
+    setRoom(removeGuestFromRoom(room, guestPlayerId));
   }
 
-  if (hasStartedGame) {
+  if (hasStartedGame && room) {
     return (
       <LocalBattleDemoScreen
-        initialRoomMode={roomMode}
-        initialSongsPerPlayer={songsPerPlayer}
-        players={roomPlayers}
+        initialRoomMode={room.settings.mode}
+        initialSongsPerPlayer={room.settings.songsPerPlayer}
+        players={room.players}
       />
     );
   }
@@ -95,16 +112,16 @@ export function RoomFlowDemoScreen() {
           {hasCreatedRoom ? (
             <Text style={styles.body}>Host name is locked after room creation.</Text>
           ) : (
-            <Pressable style={styles.primaryButton} onPress={() => setHasCreatedRoom(true)}>
+            <Pressable style={styles.primaryButton} onPress={createRoom}>
               <Text style={styles.primaryButtonText}>Create Room</Text>
             </Pressable>
           )}
         </View>
 
-        {hasCreatedRoom ? (
+        {room && roomSettings ? (
           <View style={styles.panel}>
             <Text style={styles.sectionTitle}>Room Code</Text>
-            <Text style={styles.roomCode}>{DEMO_ROOM_CODE}</Text>
+            <Text style={styles.roomCode}>{room.code}</Text>
             <Text style={styles.body}>Guests join with a display name.</Text>
 
             <View style={styles.settingsPanel}>
@@ -115,14 +132,14 @@ export function RoomFlowDemoScreen() {
                   <Pressable
                     style={[
                       styles.modeButton,
-                      roomMode === "single_speaker" ? styles.selectedModeButton : undefined,
+                      roomSettings.mode === "single_speaker" ? styles.selectedModeButton : undefined,
                     ]}
-                    onPress={() => setRoomMode("single_speaker")}
+                    onPress={() => setRoom(updateRoomMode(room, "single_speaker"))}
                   >
                     <Text
                       style={[
                         styles.modeButtonText,
-                        roomMode === "single_speaker" ? styles.selectedModeButtonText : undefined,
+                        roomSettings.mode === "single_speaker" ? styles.selectedModeButtonText : undefined,
                       ]}
                     >
                       Single Speaker
@@ -131,14 +148,14 @@ export function RoomFlowDemoScreen() {
                   <Pressable
                     style={[
                       styles.modeButton,
-                      roomMode === "remote" ? styles.selectedModeButton : undefined,
+                      roomSettings.mode === "remote" ? styles.selectedModeButton : undefined,
                     ]}
-                    onPress={() => setRoomMode("remote")}
+                    onPress={() => setRoom(updateRoomMode(room, "remote"))}
                   >
                     <Text
                       style={[
                         styles.modeButtonText,
-                        roomMode === "remote" ? styles.selectedModeButtonText : undefined,
+                        roomSettings.mode === "remote" ? styles.selectedModeButtonText : undefined,
                       ]}
                     >
                       Remote Sync
@@ -151,14 +168,14 @@ export function RoomFlowDemoScreen() {
                 <View style={styles.stepper}>
                   <Pressable
                     style={styles.stepperButton}
-                    onPress={() => setSongsPerPlayer((value) => Math.max(1, value - 1))}
+                    onPress={() => setRoom(updateSongsPerPlayer(room, roomSettings.songsPerPlayer - 1))}
                   >
                     <Text style={styles.stepperText}>-</Text>
                   </Pressable>
-                  <Text style={styles.stepperValue}>{songsPerPlayer}</Text>
+                  <Text style={styles.stepperValue}>{roomSettings.songsPerPlayer}</Text>
                   <Pressable
                     style={styles.stepperButton}
-                    onPress={() => setSongsPerPlayer((value) => Math.min(3, value + 1))}
+                    onPress={() => setRoom(updateSongsPerPlayer(room, roomSettings.songsPerPlayer + 1))}
                   >
                     <Text style={styles.stepperText}>+</Text>
                   </Pressable>
@@ -195,16 +212,13 @@ export function RoomFlowDemoScreen() {
             {joinError ? <Text style={styles.errorText}>{joinError}</Text> : null}
 
             <View style={styles.playerList}>
-              {roomPlayers.map((player, index) => (
+              {roomPlayers.map((player) => (
                 <View key={player.id} style={styles.playerRow}>
                   <Text style={styles.playerName}>{player.displayName}</Text>
                   {player.isHost ? (
                     <Text style={styles.playerRole}>Host</Text>
                   ) : (
-                    <Pressable
-                      style={styles.removeButton}
-                      onPress={() => removeGuest(index - 1)}
-                    >
+                    <Pressable style={styles.removeButton} onPress={() => removeGuest(player.id)}>
                       <Text style={styles.removeButtonText}>Remove</Text>
                     </Pressable>
                   )}
@@ -226,29 +240,6 @@ export function RoomFlowDemoScreen() {
       </ScrollView>
     </SafeAreaView>
   );
-}
-
-function createRoomPlayers(hostName: string, guestNames: string[]): Player[] {
-  const hostDisplayName = hostName.trim() || "Host";
-
-  return [
-    {
-      id: "player-host",
-      displayName: hostDisplayName,
-      isHost: true,
-      isGuest: false,
-    },
-    ...guestNames.map((displayName, index) => ({
-      id: `player-guest-${index + 1}`,
-      displayName,
-      isHost: false,
-      isGuest: true,
-    })),
-  ];
-}
-
-function normalizeDisplayName(displayName: string): string {
-  return displayName.trim().toLowerCase();
 }
 
 const styles = StyleSheet.create({
