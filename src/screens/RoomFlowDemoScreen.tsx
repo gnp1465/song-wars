@@ -8,6 +8,8 @@ const DEMO_ROOM_CODE = "7392";
 export function RoomFlowDemoScreen() {
   const [hostName, setHostName] = useState("Gus");
   const [guestName, setGuestName] = useState("");
+  const [joinCodeInput, setJoinCodeInput] = useState("");
+  const [joinError, setJoinError] = useState<string | undefined>();
   const [guestNames, setGuestNames] = useState(["Maya", "Jay", "Nina"]);
   const [hasCreatedRoom, setHasCreatedRoom] = useState(false);
   const [hasStartedGame, setHasStartedGame] = useState(false);
@@ -19,14 +21,22 @@ export function RoomFlowDemoScreen() {
   const canStartGame = roomPlayers.length >= 3;
 
   function addGuest() {
+    const normalizedJoinCode = joinCodeInput.trim();
     const nextGuestName = guestName.trim();
 
     if (!nextGuestName) {
       return;
     }
 
+    if (normalizedJoinCode !== DEMO_ROOM_CODE) {
+      setJoinError("Room code does not match.");
+      return;
+    }
+
     setGuestNames((currentGuestNames) => [...currentGuestNames, nextGuestName]);
     setGuestName("");
+    setJoinCodeInput("");
+    setJoinError(undefined);
   }
 
   if (hasStartedGame) {
@@ -66,6 +76,16 @@ export function RoomFlowDemoScreen() {
             <Text style={styles.roomCode}>{DEMO_ROOM_CODE}</Text>
             <Text style={styles.body}>Guests join with a display name.</Text>
 
+            <TextInput
+              autoCapitalize="none"
+              autoCorrect={false}
+              keyboardType="number-pad"
+              onChangeText={setJoinCodeInput}
+              placeholder="Room code"
+              placeholderTextColor="#64748B"
+              style={styles.input}
+              value={joinCodeInput}
+            />
             <View style={styles.joinRow}>
               <TextInput
                 autoCapitalize="words"
@@ -82,6 +102,7 @@ export function RoomFlowDemoScreen() {
                 <Text style={styles.addButtonText}>Add</Text>
               </Pressable>
             </View>
+            {joinError ? <Text style={styles.errorText}>{joinError}</Text> : null}
 
             <View style={styles.playerList}>
               {roomPlayers.map((player) => (
@@ -214,6 +235,11 @@ const styles = StyleSheet.create({
     color: "#082F49",
     fontSize: 15,
     fontWeight: "900",
+  },
+  errorText: {
+    color: "#FCA5A5",
+    fontSize: 14,
+    fontWeight: "700",
   },
   playerList: {
     backgroundColor: "#1F2937",
