@@ -6,6 +6,7 @@ import {
   createLocalRoom,
   hasDuplicateDisplayName,
   removeGuestFromRoom,
+  startRoom,
   updateRoomMode,
   updateSongsPerPlayer,
 } from "../services/game/room";
@@ -19,7 +20,6 @@ export function RoomFlowDemoScreen() {
   const [guestName, setGuestName] = useState("");
   const [joinCodeInput, setJoinCodeInput] = useState("");
   const [joinError, setJoinError] = useState<string | undefined>();
-  const [hasStartedGame, setHasStartedGame] = useState(false);
   const [room, setRoom] = useState<Room | undefined>();
 
   const roomPlayers = room?.players ?? [];
@@ -76,7 +76,15 @@ export function RoomFlowDemoScreen() {
     setRoom(removeGuestFromRoom(room, guestPlayerId));
   }
 
-  if (hasStartedGame && room) {
+  function handleStartGame() {
+    if (!room) {
+      return;
+    }
+
+    setRoom(startRoom(room));
+  }
+
+  if (room?.status === "in_round") {
     return (
       <LocalBattleDemoScreen
         initialRoomMode={room.settings.mode}
@@ -231,7 +239,7 @@ export function RoomFlowDemoScreen() {
             <Pressable
               disabled={!canStartGame}
               style={[styles.primaryButton, !canStartGame ? styles.disabledButton : undefined]}
-              onPress={() => setHasStartedGame(true)}
+              onPress={handleStartGame}
             >
               <Text style={styles.primaryButtonText}>Start Game</Text>
             </Pressable>

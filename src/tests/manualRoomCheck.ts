@@ -4,6 +4,7 @@ import {
   createLocalRoom,
   hasDuplicateDisplayName,
   removeGuestFromRoom,
+  startRoom,
   updateRoomMode,
   updateSongsPerPlayer,
 } from "../services/game/room.ts";
@@ -56,5 +57,11 @@ const clampedLowRoom = updateSongsPerPlayer(roomWithGuests, -10);
 
 assert(clampedHighRoom.settings.songsPerPlayer === 3, "Songs per player should clamp to the max.");
 assert(clampedLowRoom.settings.songsPerPlayer === 1, "Songs per player should clamp to the min.");
+
+const unstartableRoom = startRoom(room);
+const startedRoom = startRoom(roomWithGuests);
+
+assert(unstartableRoom.status === "lobby", "A room without enough players should stay in the lobby.");
+assert(startedRoom.status === "in_round", "A startable room should move into the round state.");
 
 console.log("Room model checks passed.");

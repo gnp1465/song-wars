@@ -81,6 +81,17 @@ export function updateSongsPerPlayer(room: Room, songsPerPlayer: number): Room {
   };
 }
 
+export function startRoom(room: Room): Room {
+  if (!canStartRoom(room)) {
+    return room;
+  }
+
+  return {
+    ...room,
+    status: "in_round",
+  };
+}
+
 export function canStartRoom(room: Room): boolean {
   return room.players.length >= 3;
 }
