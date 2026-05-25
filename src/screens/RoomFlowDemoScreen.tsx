@@ -39,6 +39,12 @@ export function RoomFlowDemoScreen() {
     setJoinError(undefined);
   }
 
+  function removeGuest(indexToRemove: number) {
+    setGuestNames((currentGuestNames) =>
+      currentGuestNames.filter((_guestName, index) => index !== indexToRemove),
+    );
+  }
+
   if (hasStartedGame) {
     return <LocalBattleDemoScreen players={roomPlayers} />;
   }
@@ -105,10 +111,19 @@ export function RoomFlowDemoScreen() {
             {joinError ? <Text style={styles.errorText}>{joinError}</Text> : null}
 
             <View style={styles.playerList}>
-              {roomPlayers.map((player) => (
+              {roomPlayers.map((player, index) => (
                 <View key={player.id} style={styles.playerRow}>
                   <Text style={styles.playerName}>{player.displayName}</Text>
-                  <Text style={styles.playerRole}>{player.isHost ? "Host" : "Guest"}</Text>
+                  {player.isHost ? (
+                    <Text style={styles.playerRole}>Host</Text>
+                  ) : (
+                    <Pressable
+                      style={styles.removeButton}
+                      onPress={() => removeGuest(index - 1)}
+                    >
+                      <Text style={styles.removeButtonText}>Remove</Text>
+                    </Pressable>
+                  )}
                 </View>
               ))}
             </View>
@@ -265,6 +280,20 @@ const styles = StyleSheet.create({
   playerRole: {
     color: "#38BDF8",
     fontSize: 13,
+    fontWeight: "800",
+  },
+  removeButton: {
+    alignItems: "center",
+    borderColor: "#475569",
+    borderRadius: 8,
+    borderWidth: 1,
+    justifyContent: "center",
+    minHeight: 30,
+    paddingHorizontal: 10,
+  },
+  removeButtonText: {
+    color: "#F9FAFB",
+    fontSize: 12,
     fontWeight: "800",
   },
 });
