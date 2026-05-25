@@ -25,13 +25,22 @@ import { AppleITunesProvider } from "../services/media/providers/AppleITunesProv
 import { DEMO_PLAYERS, DEMO_SONG_POOL, DEMO_TOPICS, createDemoTrack } from "../data/demoGame";
 import { usePreviewAudio } from "../hooks/usePreviewAudio";
 import { useSongSearch } from "../hooks/useSongSearch";
-import type { BracketMatchup, SongSubmission } from "../types/game";
+import type { BracketMatchup, Player, SongSubmission } from "../types/game";
 import type { MediaTrack } from "../types/media";
 
-export function LocalBattleDemoScreen() {
+export interface LocalBattleDemoScreenProps {
+  players?: Player[];
+}
+
+export function LocalBattleDemoScreen({ players = DEMO_PLAYERS }: LocalBattleDemoScreenProps) {
   const { audioStatus, playSongPreview, setAudioStatus, stopSongPreview } = usePreviewAudio();
   const initialRoundId = "demo-round-1";
-  const initialBracket = useMemo(() => createDemoBracket(initialRoundId, 42), []);
+  const roomPlayers = players.length >= 2 ? players : DEMO_PLAYERS;
+  const initialJudgePlayerId = roomPlayers[0].id;
+  const initialBracket = useMemo(
+    () => createDemoBracket(initialRoundId, 42, roomPlayers),
+    [roomPlayers],
+  );
   const [roundIndex, setRoundIndex] = useState(1);
   const [topicInput, setTopicInput] = useState("Beach vibes");
   const [activeTopic, setActiveTopic] = useState<string | undefined>();
@@ -39,7 +48,7 @@ export function LocalBattleDemoScreen() {
   const [submissionStepIndex, setSubmissionStepIndex] = useState(0);
   const [selectedSubmissions, setSelectedSubmissions] = useState<SongSubmission[]>([]);
   const submissionSearch = useSongSearch({ initialQuery: "Espresso Sabrina Carpenter" });
-  const [judgePlayerId, setJudgePlayerId] = useState("player-1");
+  const [judgePlayerId, setJudgePlayerId] = useState(initialJudgePlayerId);
   const [scores, setScores] = useState<PlayerScore[]>([]);
   const [activeRoundNumber, setActiveRoundNumber] = useState(1);
   const [matchups, setMatchups] = useState<BracketMatchup[]>(initialBracket);
@@ -48,13 +57,13 @@ export function LocalBattleDemoScreen() {
   const currentRoundId = `demo-round-${roundIndex}`;
   const fallbackTopic = DEMO_TOPICS[(roundIndex - 1) % DEMO_TOPICS.length];
   const topic = activeTopic ?? fallbackTopic;
-  const submittingPlayers = DEMO_PLAYERS.filter((player) => player.id !== judgePlayerId);
+  const submittingPlayers = roomPlayers.filter((player) => player.id !== judgePlayerId);
   const currentSubmittingPlayer = submittingPlayers[submissionStepIndex];
   const hasFinishedSubmissions = selectedSubmissions.length === submittingPlayers.length * songsPerPlayer;
   const activeMatchup = matchups.find(
     (matchup) => matchup.roundNumber === activeRoundNumber && matchup.status === "ready",
   );
-  const currentJudge = getPlayerName(judgePlayerId);
+  const currentJudge = getPlayerName(judgePlayerId, roomPlayers);
 
   async function pickWinner(winnerSubmissionId: string) {
     if (!activeMatchup) {
@@ -88,7 +97,7 @@ export function LocalBattleDemoScreen() {
     }
 
     const roundResult = completeRound({
-      players: DEMO_PLAYERS,
+      players: roomPlayers,
       finalMatchup: completedMatchup,
       currentScores: scores,
     });
@@ -107,7 +116,7 @@ export function LocalBattleDemoScreen() {
     setSongsPerPlayer(1);
     setSubmissionStepIndex(0);
     setSelectedSubmissions([]);
-    setJudgePlayerId("player-1");
+    setJudgePlayerId(initialJudgePlayerId);
     setScores([]);
     setActiveRoundNumber(1);
     setMatchups(initialBracket);
@@ -316,7 +325,7 @@ export function LocalBattleDemoScreen() {
           <View style={styles.matchup}>
             <Text style={styles.roundLabel}>Round complete</Text>
             <Text style={styles.winner}>
-              Winner: {roundWinnerPlayerId ? getPlayerName(roundWinnerPlayerId) : "Pending"}
+              Winner: {roundWinnerPlayerId ? getPlayerName(roundWinnerPlayerId, roomPlayers) : "Pending"}
             </Text>
             <Text style={styles.body}>
               Winning song: {getWinningSongLabel(roundWinnerPlayerId, selectedSubmissions)}
@@ -327,7 +336,7 @@ export function LocalBattleDemoScreen() {
           </View>
         )}
 
-        <Scoreboard players={DEMO_PLAYERS} scores={scores} />
+        <Scoreboard players={roomPlayers} scores={scores} />
 
         <BracketProgress matchups={matchups} />
 
@@ -360,8 +369,8 @@ function SongChoice({ entry, onPick, onPlayPreview }: SongChoiceProps) {
   );
 }
 
-function getPlayerName(playerId: string): string {
-  return DEMO_PLAYERS.find((player) => player.id === playerId)?.displayName ?? "Unknown";
+function getPlayerName(playerId: string, players: Player[]): string {
+  return players.find((player) => player.id === playerId)?.displayName ?? "Unknown";
 }
 
 function getWinningSongLabel(
@@ -395,8 +404,8 @@ function createSubmission(
   };
 }
 
-function createDemoBracket(roundId: string, seed: number): BracketMatchup[] {
-  const submissions = DEMO_PLAYERS.map((player, index) => {
+function createDemoBracket(roundId: string, seed: number, players: Player[]): BracketMatchup[] {
+  const submissions = players.map((player, index) => {
     const song = DEMO_SONG_POOL[index % DEMO_SONG_POOL.length];
 
     return createSubmission(
