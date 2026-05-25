@@ -25,14 +25,20 @@ import { AppleITunesProvider } from "../services/media/providers/AppleITunesProv
 import { DEMO_PLAYERS, DEMO_SONG_POOL, DEMO_TOPICS, createDemoTrack } from "../data/demoGame";
 import { usePreviewAudio } from "../hooks/usePreviewAudio";
 import { useSongSearch } from "../hooks/useSongSearch";
-import type { BracketMatchup, Player, SongSubmission } from "../types/game";
+import type { BracketMatchup, Player, RoomMode, SongSubmission } from "../types/game";
 import type { MediaTrack } from "../types/media";
 
 export interface LocalBattleDemoScreenProps {
+  initialRoomMode?: RoomMode;
+  initialSongsPerPlayer?: number;
   players?: Player[];
 }
 
-export function LocalBattleDemoScreen({ players = DEMO_PLAYERS }: LocalBattleDemoScreenProps) {
+export function LocalBattleDemoScreen({
+  initialRoomMode = "single_speaker",
+  initialSongsPerPlayer = 1,
+  players = DEMO_PLAYERS,
+}: LocalBattleDemoScreenProps) {
   const { audioStatus, playSongPreview, setAudioStatus, stopSongPreview } = usePreviewAudio();
   const initialRoundId = "demo-round-1";
   const roomPlayers = players.length >= 2 ? players : DEMO_PLAYERS;
@@ -44,7 +50,8 @@ export function LocalBattleDemoScreen({ players = DEMO_PLAYERS }: LocalBattleDem
   const [roundIndex, setRoundIndex] = useState(1);
   const [topicInput, setTopicInput] = useState("Beach vibes");
   const [activeTopic, setActiveTopic] = useState<string | undefined>();
-  const [songsPerPlayer, setSongsPerPlayer] = useState(1);
+  const [roomMode] = useState(initialRoomMode);
+  const [songsPerPlayer] = useState(initialSongsPerPlayer);
   const [submissionStepIndex, setSubmissionStepIndex] = useState(0);
   const [selectedSubmissions, setSelectedSubmissions] = useState<SongSubmission[]>([]);
   const submissionSearch = useSongSearch({ initialQuery: "Espresso Sabrina Carpenter" });
@@ -113,7 +120,6 @@ export function LocalBattleDemoScreen({ players = DEMO_PLAYERS }: LocalBattleDem
     setRoundIndex(1);
     setTopicInput("Beach vibes");
     setActiveTopic(undefined);
-    setSongsPerPlayer(1);
     setSubmissionStepIndex(0);
     setSelectedSubmissions([]);
     setJudgePlayerId(initialJudgePlayerId);
@@ -219,21 +225,11 @@ export function LocalBattleDemoScreen({ players = DEMO_PLAYERS }: LocalBattleDem
               <Text style={styles.sectionTitle}>Room settings</Text>
               <View style={styles.settingRow}>
                 <Text style={styles.settingLabel}>Songs per player</Text>
-                <View style={styles.stepper}>
-                  <Pressable
-                    style={styles.stepperButton}
-                    onPress={() => setSongsPerPlayer((value) => Math.max(1, value - 1))}
-                  >
-                    <Text style={styles.stepperText}>-</Text>
-                  </Pressable>
-                  <Text style={styles.stepperValue}>{songsPerPlayer}</Text>
-                  <Pressable
-                    style={styles.stepperButton}
-                    onPress={() => setSongsPerPlayer((value) => Math.min(3, value + 1))}
-                  >
-                    <Text style={styles.stepperText}>+</Text>
-                  </Pressable>
-                </View>
+                <Text style={styles.settingValue}>{songsPerPlayer}</Text>
+              </View>
+              <View style={styles.settingRow}>
+                <Text style={styles.settingLabel}>Audio mode</Text>
+                <Text style={styles.settingValue}>{getRoomModeLabel(roomMode)}</Text>
               </View>
             </View>
             <TextInput
@@ -303,6 +299,7 @@ export function LocalBattleDemoScreen({ players = DEMO_PLAYERS }: LocalBattleDem
           <Text style={styles.eyebrow}>Local Battle Demo</Text>
           <Text style={styles.title}>Song Wars</Text>
           <Text style={styles.body}>Topic: {topic}</Text>
+          <Text style={styles.body}>Audio mode: {getRoomModeLabel(roomMode)}</Text>
           <Text style={styles.body}>Judge: {currentJudge}</Text>
         </View>
 
@@ -428,6 +425,10 @@ function normalizeSongKey(song: MediaTrack): string {
   return `${song.title}:${song.artists.join(",")}`.toLowerCase().trim();
 }
 
+function getRoomModeLabel(roomMode: RoomMode): string {
+  return roomMode === "single_speaker" ? "Single Speaker" : "Remote Sync";
+}
+
 const styles = StyleSheet.create({
   root: {
     backgroundColor: "#111827",
@@ -513,26 +514,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "700",
   },
-  stepper: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: 10,
-  },
-  stepperButton: {
-    alignItems: "center",
-    borderColor: "#475569",
-    borderRadius: 8,
-    borderWidth: 1,
-    height: 36,
-    justifyContent: "center",
-    width: 36,
-  },
-  stepperText: {
-    color: "#F9FAFB",
-    fontSize: 20,
-    fontWeight: "900",
-  },
-  stepperValue: {
+  settingValue: {
     color: "#38BDF8",
     fontSize: 18,
     fontWeight: "900",
