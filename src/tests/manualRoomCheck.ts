@@ -2,6 +2,7 @@ import {
   addGuestToRoom,
   canStartRoom,
   createLocalRoom,
+  getRoomStatusLabel,
   hasDuplicateDisplayName,
   removeGuestFromRoom,
   startRoom,
@@ -63,5 +64,7 @@ const startedRoom = startRoom(roomWithGuests);
 
 assert(unstartableRoom.status === "lobby", "A room without enough players should stay in the lobby.");
 assert(startedRoom.status === "in_round", "A startable room should move into the round state.");
+assert(getRoomStatusLabel(room.status) === "Lobby", "Lobby status should have a readable label.");
+assert(getRoomStatusLabel(startedRoom.status) === "In Round", "In-round status should have a readable label.");
 
 console.log("Room model checks passed.");

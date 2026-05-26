@@ -4,6 +4,7 @@ import {
   addGuestToRoom,
   canStartRoom,
   createLocalRoom,
+  getRoomStatusLabel,
   hasDuplicateDisplayName,
   removeGuestFromRoom,
   startRoom,
@@ -129,7 +130,12 @@ export function RoomFlowDemoScreen() {
         {room && roomSettings ? (
           <View style={styles.panel}>
             <Text style={styles.sectionTitle}>Room Code</Text>
-            <Text style={styles.roomCode}>{room.code}</Text>
+            <View style={styles.roomSummaryRow}>
+              <Text style={styles.roomCode}>{room.code}</Text>
+              <View style={styles.statusBadge}>
+                <Text style={styles.statusBadgeText}>{getRoomStatusLabel(room.status)}</Text>
+              </View>
+            </View>
             <Text style={styles.body}>Guests join with a display name.</Text>
 
             <View style={styles.settingsPanel}>
@@ -324,6 +330,26 @@ const styles = StyleSheet.create({
     fontSize: 42,
     fontWeight: "900",
     letterSpacing: 0,
+  },
+  roomSummaryRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 12,
+    justifyContent: "space-between",
+  },
+  statusBadge: {
+    alignItems: "center",
+    backgroundColor: "#0F766E",
+    borderRadius: 8,
+    justifyContent: "center",
+    minHeight: 32,
+    paddingHorizontal: 10,
+  },
+  statusBadgeText: {
+    color: "#ECFEFF",
+    fontSize: 12,
+    fontWeight: "900",
+    textTransform: "uppercase",
   },
   joinRow: {
     alignItems: "center",

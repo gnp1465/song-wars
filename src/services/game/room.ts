@@ -1,4 +1,4 @@
-import type { Player, Room, RoomMode, RoomSettings } from "../../types/game";
+import type { Player, Room, RoomMode, RoomSettings, RoomStatus } from "../../types/game";
 
 export interface CreateLocalRoomOptions {
   hostName: string;
@@ -94,6 +94,18 @@ export function startRoom(room: Room): Room {
 
 export function canStartRoom(room: Room): boolean {
   return room.players.length >= 3;
+}
+
+export function getRoomStatusLabel(status: RoomStatus): string {
+  if (status === "lobby") {
+    return "Lobby";
+  }
+
+  if (status === "in_round") {
+    return "In Round";
+  }
+
+  return "Complete";
 }
 
 export function hasDuplicateDisplayName(room: Room, displayName: string): boolean {
