@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { selectMatchupWinner } from "../services/game/bracket.ts";
-import { completeRound, incrementPlayerScore } from "../services/game/scoring.ts";
+import { completeRound, getGameWinner, incrementPlayerScore } from "../services/game/scoring.ts";
 import type { BracketMatchup, Player } from "../types/game.ts";
 import type { MediaTrack } from "../types/media.ts";
 
@@ -46,6 +46,12 @@ assert.deepEqual(incrementPlayerScore(result.scores, "player-2"), [
   { playerId: "player-1", points: 1 },
   { playerId: "player-2", points: 2 },
 ]);
+
+assert.equal(getGameWinner(result.scores, 2), undefined);
+assert.deepEqual(getGameWinner(incrementPlayerScore(result.scores, "player-2"), 2), {
+  playerId: "player-2",
+  points: 2,
+});
 
 assert.throws(() =>
   completeRound({

@@ -60,3 +60,10 @@ export function incrementPlayerScore(
     score.playerId === playerId ? { ...score, points: score.points + 1 } : score,
   );
 }
+
+export function getGameWinner(
+  scores: PlayerScore[],
+  pointsToWin: number,
+): PlayerScore | undefined {
+  return scores.find((score) => score.points >= pointsToWin);
+}

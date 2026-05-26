@@ -17,10 +17,11 @@ import {
 } from "../services/game/bracket";
 import { AudioStatusBar } from "../components/game/AudioStatusBar";
 import { BracketProgress } from "../components/game/BracketProgress";
+import { GameOverPanel } from "../components/game/GameOverPanel";
 import { Scoreboard } from "../components/game/Scoreboard";
 import { SongActionCard } from "../components/game/SongActionCard";
 import { SubmissionProgress } from "../components/game/SubmissionProgress";
-import { completeRound, type PlayerScore } from "../services/game/scoring";
+import { completeRound, getGameWinner, type PlayerScore } from "../services/game/scoring";
 import { AppleITunesProvider } from "../services/media/providers/AppleITunesProvider";
 import { DEMO_PLAYERS, DEMO_SONG_POOL, DEMO_TOPICS, createDemoTrack } from "../data/demoGame";
 import { usePreviewAudio } from "../hooks/usePreviewAudio";
@@ -31,13 +32,17 @@ import type { MediaTrack } from "../types/media";
 export interface LocalBattleDemoScreenProps {
   initialRoomMode?: RoomMode;
   initialSongsPerPlayer?: number;
+  onResetRoom?: () => void;
   players?: Player[];
+  pointsToWin?: number;
 }
 
 export function LocalBattleDemoScreen({
   initialRoomMode = "single_speaker",
   initialSongsPerPlayer = 1,
+  onResetRoom,
   players = DEMO_PLAYERS,
+  pointsToWin = 3,
 }: LocalBattleDemoScreenProps) {
   const { audioStatus, playSongPreview, setAudioStatus, stopSongPreview } = usePreviewAudio();
   const initialRoundId = "demo-round-1";
@@ -60,6 +65,7 @@ export function LocalBattleDemoScreen({
   const [activeRoundNumber, setActiveRoundNumber] = useState(1);
   const [matchups, setMatchups] = useState<BracketMatchup[]>(initialBracket);
   const [roundWinnerPlayerId, setRoundWinnerPlayerId] = useState<string | undefined>();
+  const [gameWinnerPlayerId, setGameWinnerPlayerId] = useState<string | undefined>();
 
   const currentRoundId = `demo-round-${roundIndex}`;
   const fallbackTopic = DEMO_TOPICS[(roundIndex - 1) % DEMO_TOPICS.length];
@@ -108,11 +114,13 @@ export function LocalBattleDemoScreen({
       finalMatchup: completedMatchup,
       currentScores: scores,
     });
+    const gameWinner = getGameWinner(roundResult.scores, pointsToWin);
 
     setMatchups(updatedMatchups);
     setScores(roundResult.scores);
     setJudgePlayerId(roundResult.nextJudgePlayerId);
     setRoundWinnerPlayerId(roundResult.winningPlayerId);
+    setGameWinnerPlayerId(gameWinner?.playerId);
   }
 
   function resetDemo() {
@@ -127,6 +135,13 @@ export function LocalBattleDemoScreen({
     setActiveRoundNumber(1);
     setMatchups(initialBracket);
     setRoundWinnerPlayerId(undefined);
+    setGameWinnerPlayerId(undefined);
+    setAudioStatus("No preview playing");
+  }
+
+  function resetRoom() {
+    void stopSongPreview();
+    onResetRoom?.();
   }
 
   function startNextRound() {
@@ -144,6 +159,7 @@ export function LocalBattleDemoScreen({
     setActiveRoundNumber(1);
     setMatchups([]);
     setRoundWinnerPlayerId(undefined);
+    setGameWinnerPlayerId(undefined);
     setAudioStatus("No preview playing");
   }
 
@@ -295,6 +311,17 @@ export function LocalBattleDemoScreen({
 
         {activeTopic && hasFinishedSubmissions ? (
           <>
+        {gameWinnerPlayerId ? (
+          <GameOverPanel
+            players={roomPlayers}
+            pointsToWin={pointsToWin}
+            scores={scores}
+            winnerName={getPlayerName(gameWinnerPlayerId, roomPlayers)}
+            onPlayAgain={resetDemo}
+            onResetRoom={resetRoom}
+          />
+        ) : (
+          <>
         <View style={styles.header}>
           <Text style={styles.eyebrow}>Local Battle Demo</Text>
           <Text style={styles.title}>Song Wars</Text>
@@ -340,6 +367,8 @@ export function LocalBattleDemoScreen({
         <Pressable style={styles.resetButton} onPress={resetDemo}>
           <Text style={styles.resetButtonText}>Reset Demo</Text>
         </Pressable>
+          </>
+        )}
           </>
         ) : null}
       </ScrollView>

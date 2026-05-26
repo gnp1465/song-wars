@@ -85,11 +85,20 @@ export function RoomFlowDemoScreen() {
     setRoom(startRoom(room));
   }
 
+  function resetRoom() {
+    setRoom(undefined);
+    setHostName("Gus");
+    setGuestName("");
+    setJoinCodeInput("");
+    setJoinError(undefined);
+  }
+
   if (room?.status === "in_round") {
     return (
       <LocalBattleDemoScreen
         initialRoomMode={room.settings.mode}
         initialSongsPerPlayer={room.settings.songsPerPlayer}
+        onResetRoom={resetRoom}
         players={room.players}
       />
     );
