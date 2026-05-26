@@ -1,5 +1,5 @@
 import { Audio } from "expo-av";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -33,6 +33,19 @@ export function PreviewPlaybackScreen() {
   const [hasSearched, setHasSearched] = useState(false);
   const [trackLabel, setTrackLabel] = useState<string | undefined>();
   const [resolutionLabel, setResolutionLabel] = useState<string | undefined>();
+
+  useEffect(() => {
+    return () => {
+      const sound = soundRef.current;
+      soundRef.current = null;
+
+      if (sound) {
+        void sound.stopAsync().finally(() => {
+          void sound.unloadAsync();
+        });
+      }
+    };
+  }, []);
 
   async function searchTracks() {
     setHasSearched(true);

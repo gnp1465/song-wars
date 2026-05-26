@@ -18,7 +18,7 @@
 - Round winner becomes the next judge.
 - First player to the configured point target wins the game.
 - Final winner screen supports play again and reset room.
-- Audio Lab can test direct previews and mock Spotify-to-preview resolution.
+- Preview playback works inside the core game flow.
 
 ## Frontend Still Worth Polishing
 
@@ -26,6 +26,7 @@
 - Small spacing and copy tweaks found during device testing.
 - Better visual treatment for final bracket history.
 - More realistic role-specific screens once real multiplayer starts.
+- Dev-only audio lab can stay available in code, but it should remain out of the main player flow.
 
 ## Waiting For Backend
 

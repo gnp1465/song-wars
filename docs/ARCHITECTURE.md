@@ -4,7 +4,7 @@ This app is organized in layers. Each layer has a different job.
 
 ## App Entry
 
-`App.tsx` starts the app, configures preview audio, and switches between the Battle and Preview screens.
+`App.tsx` starts the app, configures preview audio, and shows the core game flow.
 
 Memorize: the entry file should stay small. It chooses top-level screens; it should not contain game rules.
 
@@ -14,7 +14,7 @@ Screens are full app views. They coordinate user flow and state.
 
 - `src/screens/LocalBattleDemoScreen.tsx` runs the local playable game demo.
 - `src/screens/RoomFlowDemoScreen.tsx` runs the fake room/lobby flow using the shared room model.
-- `src/screens/PreviewPlaybackScreen.tsx` is a lab screen for testing search and preview playback.
+- `src/screens/PreviewPlaybackScreen.tsx` is a dev-only lab screen for testing search and preview playback. It is not part of the main app surface.
 
 Memorize: screens are allowed to coordinate several pieces, but if a screen gets too large, repeated UI should move into components and repeated behavior should move into hooks.
 
