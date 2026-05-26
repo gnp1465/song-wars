@@ -23,9 +23,11 @@ Memorize: screens are allowed to coordinate several pieces, but if a screen gets
 Components are reusable visual pieces.
 
 - `AudioStatusBar` shows current audio status and the Stop button.
+- `ActiveMatchupPanel` shows the current song-vs-song judging controls.
 - `GameOverPanel` shows the final winner and restart actions.
 - `JudgeSetupPanel` shows judge topic setup and round settings.
 - `PlayerList` shows lobby players, guest removal, and start readiness.
+- `RoundResultPanel` shows the completed round winner and next-round action.
 - `RoomSettingsPanel` shows room settings controls.
 - `SongActionCard` shows a song with action buttons.
 - `SubmissionSearchPanel` shows the active submitter, search states, and submission actions.

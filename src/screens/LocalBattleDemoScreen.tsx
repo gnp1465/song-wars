@@ -14,12 +14,13 @@ import {
   generateNextRoundMatchups,
   selectMatchupWinner,
 } from "../services/game/bracket";
+import { ActiveMatchupPanel } from "../components/game/ActiveMatchupPanel";
 import { AudioStatusBar } from "../components/game/AudioStatusBar";
 import { BracketProgress } from "../components/game/BracketProgress";
 import { GameOverPanel } from "../components/game/GameOverPanel";
 import { JudgeSetupPanel } from "../components/game/JudgeSetupPanel";
+import { RoundResultPanel } from "../components/game/RoundResultPanel";
 import { Scoreboard } from "../components/game/Scoreboard";
-import { SongActionCard } from "../components/game/SongActionCard";
 import { SubmissionSearchPanel } from "../components/game/SubmissionSearchPanel";
 import { completeRound, getGameWinner, type PlayerScore } from "../services/game/scoring";
 import { AppleITunesProvider } from "../services/media/providers/AppleITunesProvider";
@@ -290,33 +291,17 @@ export function LocalBattleDemoScreen({
         </View>
 
         {activeMatchup ? (
-          <View style={styles.matchup}>
-            <Text style={styles.roundLabel}>Round {activeMatchup.roundNumber}</Text>
-            <SongChoice
-              entry={activeMatchup.left}
-              onPick={(submissionId) => void pickWinner(submissionId)}
-              onPlayPreview={playSongPreview}
-            />
-            <Text style={styles.vs}>vs</Text>
-            <SongChoice
-              entry={activeMatchup.right}
-              onPick={(submissionId) => void pickWinner(submissionId)}
-              onPlayPreview={playSongPreview}
-            />
-          </View>
+          <ActiveMatchupPanel
+            matchup={activeMatchup}
+            onPickWinner={(submissionId) => void pickWinner(submissionId)}
+            onPlayPreview={playSongPreview}
+          />
         ) : (
-          <View style={styles.matchup}>
-            <Text style={styles.roundLabel}>Round complete</Text>
-            <Text style={styles.winner}>
-              Winner: {roundWinnerPlayerId ? getPlayerName(roundWinnerPlayerId, roomPlayers) : "Pending"}
-            </Text>
-            <Text style={styles.body}>
-              Winning song: {getWinningSongLabel(roundWinnerPlayerId, selectedSubmissions)}
-            </Text>
-            <Pressable style={styles.primaryButton} onPress={startNextRound}>
-              <Text style={styles.primaryButtonText}>Start Next Round</Text>
-            </Pressable>
-          </View>
+          <RoundResultPanel
+            winnerName={roundWinnerPlayerId ? getPlayerName(roundWinnerPlayerId, roomPlayers) : "Pending"}
+            winningSongLabel={getWinningSongLabel(roundWinnerPlayerId, selectedSubmissions)}
+            onStartNextRound={startNextRound}
+          />
         )}
 
         <Scoreboard players={roomPlayers} scores={scores} />
@@ -333,24 +318,6 @@ export function LocalBattleDemoScreen({
       </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
-  );
-}
-
-interface SongChoiceProps {
-  entry: BracketMatchup["left"];
-  onPick: (submissionId: string) => void;
-  onPlayPreview: (song: MediaTrack) => void;
-}
-
-function SongChoice({ entry, onPick, onPlayPreview }: SongChoiceProps) {
-  return (
-    <SongActionCard
-      song={entry?.song}
-      primaryLabel="Pick Winner"
-      secondaryLabel={entry ? "Play Preview" : undefined}
-      onPrimaryPress={entry ? () => onPick(entry.submissionId) : undefined}
-      onSecondaryPress={entry ? () => onPlayPreview(entry.song) : undefined}
-    />
   );
 }
 
@@ -460,32 +427,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     minHeight: 52,
     paddingHorizontal: 14,
-  },
-  matchup: {
-    gap: 12,
-  },
-  roundLabel: {
-    color: "#F9FAFB",
-    fontSize: 20,
-    fontWeight: "900",
-  },
-  pickHint: {
-    color: "#38BDF8",
-    fontSize: 14,
-    fontWeight: "800",
-    marginTop: 6,
-  },
-  vs: {
-    color: "#64748B",
-    fontSize: 14,
-    fontWeight: "900",
-    textAlign: "center",
-    textTransform: "uppercase",
-  },
-  winner: {
-    color: "#F9FAFB",
-    fontSize: 22,
-    fontWeight: "900",
   },
   primaryButton: {
     alignItems: "center",
