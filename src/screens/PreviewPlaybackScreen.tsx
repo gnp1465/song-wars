@@ -30,10 +30,12 @@ export function PreviewPlaybackScreen() {
   const [status, setStatus] = useState<PlaybackStatus>("idle");
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
   const songSearch = useSongSearch({ initialQuery: "Espresso Sabrina Carpenter" });
+  const [hasSearched, setHasSearched] = useState(false);
   const [trackLabel, setTrackLabel] = useState<string | undefined>();
   const [resolutionLabel, setResolutionLabel] = useState<string | undefined>();
 
   async function searchTracks() {
+    setHasSearched(true);
     setErrorMessage(undefined);
     const result = await songSearch.search();
 
@@ -130,16 +132,28 @@ export function PreviewPlaybackScreen() {
     setStatus("stopped");
   }
 
+  const canStop = status === "loading" || status === "playing";
+  const searchStateMessage = getSearchStateMessage({
+    errorMessage,
+    hasSearched,
+    isSearching: songSearch.isSearching,
+    resultCount: songSearch.results.length,
+  });
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.stickyPlayer}>
         <View style={styles.nowPlayingText}>
-          <Text numberOfLines={1} style={styles.status}>Status: {status}</Text>
+          <Text numberOfLines={1} style={styles.status}>Preview: {formatPlaybackStatus(status)}</Text>
           <Text numberOfLines={1} style={styles.track}>
             {trackLabel ?? "No preview playing"}
           </Text>
         </View>
-        <Pressable style={styles.stopButton} onPress={stopPreview}>
+        <Pressable
+          disabled={!canStop}
+          style={[styles.stopButton, !canStop ? styles.disabledStopButton : undefined]}
+          onPress={stopPreview}
+        >
           <Text style={styles.secondaryButtonText}>Stop</Text>
         </Pressable>
       </View>
@@ -149,10 +163,10 @@ export function PreviewPlaybackScreen() {
         keyboardShouldPersistTaps="handled"
       >
       <View style={styles.content}>
-        <Text style={styles.eyebrow}>Audio Test</Text>
-        <Text style={styles.title}>Song Wars Preview Playback</Text>
+        <Text style={styles.eyebrow}>Audio Lab</Text>
+        <Text style={styles.title}>Preview playback</Text>
         <Text style={styles.body}>
-          Search for a song, choose a result, and play the preview inside the app.
+          Search for a song and confirm previews play inside the app.
         </Text>
 
         <View style={styles.searchRow}>
@@ -174,7 +188,7 @@ export function PreviewPlaybackScreen() {
 
         <View style={styles.statusRow}>
           {status === "loading" ? <ActivityIndicator color="#F9FAFB" /> : null}
-          <Text style={styles.status}>Search status: {songSearch.isSearching ? "searching" : "ready"}</Text>
+          <Text style={styles.status}>{searchStateMessage}</Text>
         </View>
 
         {errorMessage ? <Text style={styles.error}>{errorMessage}</Text> : null}
@@ -203,6 +217,11 @@ export function PreviewPlaybackScreen() {
 
         <FlatList
           data={songSearch.results}
+          ListEmptyComponent={
+            hasSearched && !songSearch.isSearching && !errorMessage ? (
+              <Text style={styles.emptyText}>No song results yet. Try another search.</Text>
+            ) : null
+          }
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <Pressable style={styles.resultRow} onPress={() => playPreview(item)}>
@@ -223,6 +242,58 @@ export function PreviewPlaybackScreen() {
       </ScrollView>
     </SafeAreaView>
   );
+}
+
+interface SearchStateMessageOptions {
+  errorMessage?: string;
+  hasSearched: boolean;
+  isSearching: boolean;
+  resultCount: number;
+}
+
+function getSearchStateMessage({
+  errorMessage,
+  hasSearched,
+  isSearching,
+  resultCount,
+}: SearchStateMessageOptions): string {
+  if (errorMessage) {
+    return "Search needs attention";
+  }
+
+  if (isSearching) {
+    return "Searching songs...";
+  }
+
+  if (resultCount > 0) {
+    return `${resultCount} results ready`;
+  }
+
+  if (hasSearched) {
+    return "No results found";
+  }
+
+  return "Search ready";
+}
+
+function formatPlaybackStatus(status: PlaybackStatus): string {
+  if (status === "idle") {
+    return "idle";
+  }
+
+  if (status === "loading") {
+    return "loading";
+  }
+
+  if (status === "playing") {
+    return "playing";
+  }
+
+  if (status === "failed") {
+    return "check preview";
+  }
+
+  return "stopped";
 }
 
 function formatTrackLabel(track: MediaTrack): string {
@@ -367,6 +438,9 @@ const styles = StyleSheet.create({
     minHeight: 44,
     paddingHorizontal: 18,
   },
+  disabledStopButton: {
+    opacity: 0.45,
+  },
   resultRow: {
     alignItems: "center",
     borderBottomColor: "#243244",
@@ -395,6 +469,11 @@ const styles = StyleSheet.create({
   },
   error: {
     color: "#FCA5A5",
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  emptyText: {
+    color: "#CBD5E1",
     fontSize: 14,
     lineHeight: 20,
   },

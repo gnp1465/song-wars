@@ -1,9 +1,8 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Pressable, SafeAreaView, StyleSheet, Text, View } from "react-native";
 import { configurePreviewAudioMode } from "./src/services/audio/audioMode";
 import { PreviewPlaybackScreen } from "./src/screens/PreviewPlaybackScreen";
 import { RoomFlowDemoScreen } from "./src/screens/RoomFlowDemoScreen";
-import { useState } from "react";
 
 type DemoMode = "battle" | "preview";
 
@@ -17,8 +16,8 @@ export default function App() {
   return (
     <SafeAreaView style={styles.root}>
       <View style={styles.nav}>
-        <ModeButton isActive={mode === "battle"} label="Battle" onPress={() => setMode("battle")} />
-        <ModeButton isActive={mode === "preview"} label="Preview" onPress={() => setMode("preview")} />
+        <ModeButton isActive={mode === "battle"} label="Game" onPress={() => setMode("battle")} />
+        <ModeButton isActive={mode === "preview"} label="Audio Lab" onPress={() => setMode("preview")} />
       </View>
       {mode === "battle" ? <RoomFlowDemoScreen /> : <PreviewPlaybackScreen />}
     </SafeAreaView>
