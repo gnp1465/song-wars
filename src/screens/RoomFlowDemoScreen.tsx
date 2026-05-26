@@ -11,6 +11,7 @@ import {
   updateRoomMode,
   updateSongsPerPlayer,
 } from "../services/game/room";
+import { RoomSettingsPanel } from "../components/game/RoomSettingsPanel";
 import { LocalBattleDemoScreen } from "./LocalBattleDemoScreen";
 import type { Room } from "../types/game";
 
@@ -138,64 +139,14 @@ export function RoomFlowDemoScreen() {
             </View>
             <Text style={styles.body}>Guests join with a display name.</Text>
 
-            <View style={styles.settingsPanel}>
-              <Text style={styles.sectionTitle}>Room settings</Text>
-              <View style={styles.settingBlock}>
-                <Text style={styles.settingLabel}>Audio mode</Text>
-                <View style={styles.modeRow}>
-                  <Pressable
-                    style={[
-                      styles.modeButton,
-                      roomSettings.mode === "single_speaker" ? styles.selectedModeButton : undefined,
-                    ]}
-                    onPress={() => setRoom(updateRoomMode(room, "single_speaker"))}
-                  >
-                    <Text
-                      style={[
-                        styles.modeButtonText,
-                        roomSettings.mode === "single_speaker" ? styles.selectedModeButtonText : undefined,
-                      ]}
-                    >
-                      Single Speaker
-                    </Text>
-                  </Pressable>
-                  <Pressable
-                    style={[
-                      styles.modeButton,
-                      roomSettings.mode === "remote" ? styles.selectedModeButton : undefined,
-                    ]}
-                    onPress={() => setRoom(updateRoomMode(room, "remote"))}
-                  >
-                    <Text
-                      style={[
-                        styles.modeButtonText,
-                        roomSettings.mode === "remote" ? styles.selectedModeButtonText : undefined,
-                      ]}
-                    >
-                      Remote Sync
-                    </Text>
-                  </Pressable>
-                </View>
-              </View>
-              <View style={styles.settingRow}>
-                <Text style={styles.settingLabel}>Songs per player</Text>
-                <View style={styles.stepper}>
-                  <Pressable
-                    style={styles.stepperButton}
-                    onPress={() => setRoom(updateSongsPerPlayer(room, roomSettings.songsPerPlayer - 1))}
-                  >
-                    <Text style={styles.stepperText}>-</Text>
-                  </Pressable>
-                  <Text style={styles.stepperValue}>{roomSettings.songsPerPlayer}</Text>
-                  <Pressable
-                    style={styles.stepperButton}
-                    onPress={() => setRoom(updateSongsPerPlayer(room, roomSettings.songsPerPlayer + 1))}
-                  >
-                    <Text style={styles.stepperText}>+</Text>
-                  </Pressable>
-                </View>
-              </View>
-            </View>
+            <RoomSettingsPanel
+              mode={roomSettings.mode}
+              songsPerPlayer={roomSettings.songsPerPlayer}
+              onModeChange={(mode) => setRoom(updateRoomMode(room, mode))}
+              onSongsPerPlayerChange={(songsPerPlayer) =>
+                setRoom(updateSongsPerPlayer(room, songsPerPlayer))
+              }
+            />
 
             <TextInput
               autoCapitalize="none"
@@ -355,82 +306,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flexDirection: "row",
     gap: 10,
-  },
-  settingsPanel: {
-    backgroundColor: "#1F2937",
-    borderColor: "#334155",
-    borderRadius: 8,
-    borderWidth: 1,
-    gap: 10,
-    padding: 14,
-  },
-  settingRow: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: 12,
-    justifyContent: "space-between",
-  },
-  settingBlock: {
-    gap: 10,
-  },
-  settingLabel: {
-    color: "#F9FAFB",
-    flex: 1,
-    fontSize: 15,
-    fontWeight: "700",
-  },
-  modeRow: {
-    flexDirection: "row",
-    gap: 10,
-  },
-  modeButton: {
-    alignItems: "center",
-    borderColor: "#475569",
-    borderRadius: 8,
-    borderWidth: 1,
-    flex: 1,
-    justifyContent: "center",
-    minHeight: 42,
-    paddingHorizontal: 10,
-  },
-  selectedModeButton: {
-    backgroundColor: "#38BDF8",
-    borderColor: "#38BDF8",
-  },
-  modeButtonText: {
-    color: "#F9FAFB",
-    fontSize: 14,
-    fontWeight: "800",
-    textAlign: "center",
-  },
-  selectedModeButtonText: {
-    color: "#082F49",
-  },
-  stepper: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: 10,
-  },
-  stepperButton: {
-    alignItems: "center",
-    borderColor: "#475569",
-    borderRadius: 8,
-    borderWidth: 1,
-    height: 36,
-    justifyContent: "center",
-    width: 36,
-  },
-  stepperText: {
-    color: "#F9FAFB",
-    fontSize: 20,
-    fontWeight: "900",
-  },
-  stepperValue: {
-    color: "#38BDF8",
-    fontSize: 18,
-    fontWeight: "900",
-    minWidth: 20,
-    textAlign: "center",
   },
   addButton: {
     alignItems: "center",
