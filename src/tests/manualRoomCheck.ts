@@ -6,6 +6,7 @@ import {
   hasDuplicateDisplayName,
   removeGuestFromRoom,
   startRoom,
+  updatePointsToWin,
   updateRoomMode,
   updateSongsPerPlayer,
 } from "../services/game/room.ts";
@@ -26,6 +27,7 @@ const room = createLocalRoom({
 assert(room.players.length === 1, "A new room should start with only the host.");
 assert(room.hostPlayerId === "player-host", "The host player id should be stored on the room.");
 assert(room.settings.duplicateBlockingEnabled, "Duplicate song blocking should be on by default.");
+assert(room.settings.pointsToWin === 3, "A new room should default to first player to 3 points.");
 assert(!canStartRoom(room), "A room with one player should not be startable.");
 
 const roomWithGuests = addGuestToRoom(
@@ -55,9 +57,13 @@ assert(roomWithGuests.settings.mode === "single_speaker", "Updating room mode sh
 
 const clampedHighRoom = updateSongsPerPlayer(roomWithGuests, 99);
 const clampedLowRoom = updateSongsPerPlayer(roomWithGuests, -10);
+const clampedHighPointsRoom = updatePointsToWin(roomWithGuests, 99);
+const clampedLowPointsRoom = updatePointsToWin(roomWithGuests, -10);
 
 assert(clampedHighRoom.settings.songsPerPlayer === 3, "Songs per player should clamp to the max.");
 assert(clampedLowRoom.settings.songsPerPlayer === 1, "Songs per player should clamp to the min.");
+assert(clampedHighPointsRoom.settings.pointsToWin === 7, "Points to win should clamp to the max.");
+assert(clampedLowPointsRoom.settings.pointsToWin === 1, "Points to win should clamp to the min.");
 
 const unstartableRoom = startRoom(room);
 const startedRoom = startRoom(roomWithGuests);

@@ -14,6 +14,7 @@ export interface AddGuestOptions {
 export const DEFAULT_ROOM_SETTINGS: RoomSettings = {
   mode: "single_speaker",
   songsPerPlayer: 1,
+  pointsToWin: 3,
   duplicateBlockingEnabled: true,
   anonymousJudgingEnabled: false,
 };
@@ -81,6 +82,16 @@ export function updateSongsPerPlayer(room: Room, songsPerPlayer: number): Room {
   };
 }
 
+export function updatePointsToWin(room: Room, pointsToWin: number): Room {
+  return {
+    ...room,
+    settings: {
+      ...room.settings,
+      pointsToWin: clampPointsToWin(pointsToWin),
+    },
+  };
+}
+
 export function startRoom(room: Room): Room {
   if (!canStartRoom(room)) {
     return room;
@@ -127,6 +138,10 @@ function createHostPlayer(hostName: string): Player {
 
 function clampSongsPerPlayer(songsPerPlayer: number): number {
   return Math.min(3, Math.max(1, songsPerPlayer));
+}
+
+function clampPointsToWin(pointsToWin: number): number {
+  return Math.min(7, Math.max(1, pointsToWin));
 }
 
 function normalizeDisplayName(displayName: string): string {

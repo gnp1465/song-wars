@@ -11,7 +11,7 @@ Use this checklist when testing the local/offline frontend prototype.
 - Add two guests with room code `7392`.
 - Try a duplicate guest name and confirm it is blocked.
 - Remove a guest and confirm the start button disables again.
-- Change audio mode and songs per player.
+- Change audio mode, songs per player, and points to win.
 - Start the game.
 
 ## Submissions
@@ -37,7 +37,7 @@ Use this checklist when testing the local/offline frontend prototype.
 
 ## Game Completion
 
-- Continue rounds until a player reaches 3 points.
+- Continue rounds until a player reaches the configured point target.
 - Confirm the final winner screen appears.
 - Tap `Play Again` and confirm the same room starts a fresh local game.
 - Tap `Reset Room` and confirm the app returns to room creation.

@@ -6,6 +6,7 @@
 - Guests are added with a temporary display name.
 - Room blocks duplicate display names.
 - Host sets room mode and songs per player.
+- Host sets the points needed to win.
 - Game starts only with enough players.
 - Judge chooses a topic.
 - Judge does not submit songs.
@@ -15,7 +16,7 @@
 - Judge previews songs and picks winners.
 - Scores update after each round.
 - Round winner becomes the next judge.
-- First player to 3 points wins the game.
+- First player to the configured point target wins the game.
 - Final winner screen supports play again and reset room.
 - Audio Lab can test direct previews and mock Spotify-to-preview resolution.
 

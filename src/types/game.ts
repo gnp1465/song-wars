@@ -23,6 +23,7 @@ export interface Player {
 export interface RoomSettings {
   mode: RoomMode;
   songsPerPlayer: number;
+  pointsToWin: number;
   duplicateBlockingEnabled: boolean;
   anonymousJudgingEnabled: boolean;
 }

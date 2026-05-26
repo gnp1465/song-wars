@@ -17,6 +17,7 @@ The local demo currently supports:
 - next judge assignment
 - next round flow
 - model-backed fake room/lobby flow
+- configurable points-to-win setting
 - final winner screen with local play-again/reset actions
 
 ## Run The App

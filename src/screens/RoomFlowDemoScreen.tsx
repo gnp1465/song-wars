@@ -8,6 +8,7 @@ import {
   hasDuplicateDisplayName,
   removeGuestFromRoom,
   startRoom,
+  updatePointsToWin,
   updateRoomMode,
   updateSongsPerPlayer,
 } from "../services/game/room";
@@ -100,6 +101,7 @@ export function RoomFlowDemoScreen() {
         initialSongsPerPlayer={room.settings.songsPerPlayer}
         onResetRoom={resetRoom}
         players={room.players}
+        pointsToWin={room.settings.pointsToWin}
       />
     );
   }
@@ -149,8 +151,12 @@ export function RoomFlowDemoScreen() {
 
             <RoomSettingsPanel
               mode={roomSettings.mode}
+              pointsToWin={roomSettings.pointsToWin}
               songsPerPlayer={roomSettings.songsPerPlayer}
               onModeChange={(mode) => setRoom(updateRoomMode(room, mode))}
+              onPointsToWinChange={(pointsToWin) =>
+                setRoom(updatePointsToWin(room, pointsToWin))
+              }
               onSongsPerPlayerChange={(songsPerPlayer) =>
                 setRoom(updateSongsPerPlayer(room, songsPerPlayer))
               }

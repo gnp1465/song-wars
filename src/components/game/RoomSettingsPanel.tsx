@@ -3,15 +3,19 @@ import type { RoomMode } from "../../types/game";
 
 export interface RoomSettingsPanelProps {
   mode: RoomMode;
+  pointsToWin: number;
   songsPerPlayer: number;
   onModeChange: (mode: RoomMode) => void;
+  onPointsToWinChange: (pointsToWin: number) => void;
   onSongsPerPlayerChange: (songsPerPlayer: number) => void;
 }
 
 export function RoomSettingsPanel({
   mode,
+  pointsToWin,
   songsPerPlayer,
   onModeChange,
+  onPointsToWinChange,
   onSongsPerPlayerChange,
 }: RoomSettingsPanelProps) {
   return (
@@ -34,21 +38,17 @@ export function RoomSettingsPanel({
       </View>
       <View style={styles.settingRow}>
         <Text style={styles.settingLabel}>Songs per player</Text>
-        <View style={styles.stepper}>
-          <Pressable
-            style={styles.stepperButton}
-            onPress={() => onSongsPerPlayerChange(songsPerPlayer - 1)}
-          >
-            <Text style={styles.stepperText}>-</Text>
-          </Pressable>
-          <Text style={styles.stepperValue}>{songsPerPlayer}</Text>
-          <Pressable
-            style={styles.stepperButton}
-            onPress={() => onSongsPerPlayerChange(songsPerPlayer + 1)}
-          >
-            <Text style={styles.stepperText}>+</Text>
-          </Pressable>
-        </View>
+        <SettingStepper
+          value={songsPerPlayer}
+          onChange={onSongsPerPlayerChange}
+        />
+      </View>
+      <View style={styles.settingRow}>
+        <Text style={styles.settingLabel}>Points to win</Text>
+        <SettingStepper
+          value={pointsToWin}
+          onChange={onPointsToWinChange}
+        />
       </View>
     </View>
   );
@@ -72,6 +72,25 @@ function ModeButton({ isSelected, label, onPress }: ModeButtonProps) {
         {label}
       </Text>
     </Pressable>
+  );
+}
+
+interface SettingStepperProps {
+  value: number;
+  onChange: (value: number) => void;
+}
+
+function SettingStepper({ value, onChange }: SettingStepperProps) {
+  return (
+    <View style={styles.stepper}>
+      <Pressable style={styles.stepperButton} onPress={() => onChange(value - 1)}>
+        <Text style={styles.stepperText}>-</Text>
+      </Pressable>
+      <Text style={styles.stepperValue}>{value}</Text>
+      <Pressable style={styles.stepperButton} onPress={() => onChange(value + 1)}>
+        <Text style={styles.stepperText}>+</Text>
+      </Pressable>
+    </View>
   );
 }
 
