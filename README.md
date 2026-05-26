@@ -57,6 +57,7 @@ Learning docs:
 
 - [docs/GLOSSARY.md](docs/GLOSSARY.md)
 - [docs/LEARNING_LOG.md](docs/LEARNING_LOG.md)
+- [docs/FRONTEND_TEST_PLAN.md](docs/FRONTEND_TEST_PLAN.md)
 
 Main folders:
 
