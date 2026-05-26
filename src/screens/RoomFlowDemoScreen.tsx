@@ -11,11 +11,13 @@ import {
   updateRoomMode,
   updateSongsPerPlayer,
 } from "../services/game/room";
+import { PlayerList } from "../components/game/PlayerList";
 import { RoomSettingsPanel } from "../components/game/RoomSettingsPanel";
 import { LocalBattleDemoScreen } from "./LocalBattleDemoScreen";
 import type { Room } from "../types/game";
 
 const DEMO_ROOM_CODE = "7392";
+const MINIMUM_PLAYERS_TO_START = 3;
 
 export function RoomFlowDemoScreen() {
   const [hostName, setHostName] = useState("Gus");
@@ -28,9 +30,6 @@ export function RoomFlowDemoScreen() {
   const roomSettings = room?.settings;
   const hasCreatedRoom = Boolean(room);
   const canStartGame = room ? canStartRoom(room) : false;
-  const startGameHint = canStartGame
-    ? "Ready to start."
-    : "Need at least 3 players: 1 judge and 2 contestants.";
 
   function createRoom() {
     setRoom(
@@ -176,22 +175,11 @@ export function RoomFlowDemoScreen() {
             </View>
             {joinError ? <Text style={styles.errorText}>{joinError}</Text> : null}
 
-            <View style={styles.playerList}>
-              {roomPlayers.map((player) => (
-                <View key={player.id} style={styles.playerRow}>
-                  <Text style={styles.playerName}>{player.displayName}</Text>
-                  {player.isHost ? (
-                    <Text style={styles.playerRole}>Host</Text>
-                  ) : (
-                    <Pressable style={styles.removeButton} onPress={() => removeGuest(player.id)}>
-                      <Text style={styles.removeButtonText}>Remove</Text>
-                    </Pressable>
-                  )}
-                </View>
-              ))}
-            </View>
-
-            <Text style={canStartGame ? styles.readyText : styles.errorText}>{startGameHint}</Text>
+            <PlayerList
+              minimumPlayersToStart={MINIMUM_PLAYERS_TO_START}
+              players={roomPlayers}
+              onRemoveGuest={removeGuest}
+            />
 
             <Pressable
               disabled={!canStartGame}
@@ -324,50 +312,5 @@ const styles = StyleSheet.create({
     color: "#FCA5A5",
     fontSize: 14,
     fontWeight: "700",
-  },
-  readyText: {
-    color: "#7DD3FC",
-    fontSize: 14,
-    fontWeight: "700",
-  },
-  playerList: {
-    backgroundColor: "#1F2937",
-    borderColor: "#334155",
-    borderRadius: 8,
-    borderWidth: 1,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-  },
-  playerRow: {
-    alignItems: "center",
-    borderBottomColor: "#243244",
-    borderBottomWidth: 1,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    minHeight: 38,
-  },
-  playerName: {
-    color: "#F9FAFB",
-    fontSize: 15,
-    fontWeight: "800",
-  },
-  playerRole: {
-    color: "#38BDF8",
-    fontSize: 13,
-    fontWeight: "800",
-  },
-  removeButton: {
-    alignItems: "center",
-    borderColor: "#475569",
-    borderRadius: 8,
-    borderWidth: 1,
-    justifyContent: "center",
-    minHeight: 30,
-    paddingHorizontal: 10,
-  },
-  removeButtonText: {
-    color: "#F9FAFB",
-    fontSize: 12,
-    fontWeight: "800",
   },
 });

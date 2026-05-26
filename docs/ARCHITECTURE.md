@@ -23,6 +23,8 @@ Memorize: screens are allowed to coordinate several pieces, but if a screen gets
 Components are reusable visual pieces.
 
 - `AudioStatusBar` shows current audio status and the Stop button.
+- `PlayerList` shows lobby players, guest removal, and start readiness.
+- `RoomSettingsPanel` shows room settings controls.
 - `SongActionCard` shows a song with action buttons.
 - `Scoreboard` shows player scores.
 - `BracketProgress` shows the tournament state.
