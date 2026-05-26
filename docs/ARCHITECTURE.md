@@ -24,6 +24,7 @@ Components are reusable visual pieces.
 
 - `AudioStatusBar` shows current audio status and the Stop button.
 - `GameOverPanel` shows the final winner and restart actions.
+- `JudgeSetupPanel` shows judge topic setup and round settings.
 - `PlayerList` shows lobby players, guest removal, and start readiness.
 - `RoomSettingsPanel` shows room settings controls.
 - `SongActionCard` shows a song with action buttons.

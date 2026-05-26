@@ -18,6 +18,7 @@ import {
 import { AudioStatusBar } from "../components/game/AudioStatusBar";
 import { BracketProgress } from "../components/game/BracketProgress";
 import { GameOverPanel } from "../components/game/GameOverPanel";
+import { JudgeSetupPanel } from "../components/game/JudgeSetupPanel";
 import { Scoreboard } from "../components/game/Scoreboard";
 import { SongActionCard } from "../components/game/SongActionCard";
 import { SubmissionProgress } from "../components/game/SubmissionProgress";
@@ -233,37 +234,15 @@ export function LocalBattleDemoScreen({
         keyboardShouldPersistTaps="handled"
       >
         {!activeTopic ? (
-          <View style={styles.setupPanel}>
-            <Text style={styles.eyebrow}>Judge Setup</Text>
-            <Text style={styles.title}>Choose the topic</Text>
-            <Text style={styles.body}>Judge: {currentJudge}</Text>
-            <View style={styles.settingsPanel}>
-              <Text style={styles.sectionTitle}>Room settings</Text>
-              <View style={styles.settingRow}>
-                <Text style={styles.settingLabel}>Songs per player</Text>
-                <Text style={styles.settingValue}>{songsPerPlayer}</Text>
-              </View>
-              <View style={styles.settingRow}>
-                <Text style={styles.settingLabel}>Audio mode</Text>
-                <Text style={styles.settingValue}>{getRoomModeLabel(roomMode)}</Text>
-              </View>
-            </View>
-            <TextInput
-              autoCapitalize="words"
-              autoCorrect={false}
-              onChangeText={setTopicInput}
-              placeholder="Round topic"
-              placeholderTextColor="#64748B"
-              style={styles.input}
-              value={topicInput}
-            />
-            <Pressable
-              style={styles.primaryButton}
-              onPress={() => setActiveTopic(topicInput.trim() || fallbackTopic)}
-            >
-              <Text style={styles.primaryButtonText}>Start Battle</Text>
-            </Pressable>
-          </View>
+          <JudgeSetupPanel
+            judgeName={currentJudge}
+            pointsToWin={pointsToWin}
+            roomMode={roomMode}
+            songsPerPlayer={songsPerPlayer}
+            topicInput={topicInput}
+            onStartBattle={() => setActiveTopic(topicInput.trim() || fallbackTopic)}
+            onTopicChange={setTopicInput}
+          />
         ) : null}
 
         {activeTopic && !hasFinishedSubmissions ? (
@@ -522,33 +501,6 @@ const styles = StyleSheet.create({
     color: "#082F49",
     fontSize: 15,
     fontWeight: "800",
-  },
-  settingsPanel: {
-    backgroundColor: "#1F2937",
-    borderColor: "#334155",
-    borderRadius: 8,
-    borderWidth: 1,
-    gap: 10,
-    padding: 14,
-  },
-  settingRow: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: 12,
-    justifyContent: "space-between",
-  },
-  settingLabel: {
-    color: "#F9FAFB",
-    flex: 1,
-    fontSize: 15,
-    fontWeight: "700",
-  },
-  settingValue: {
-    color: "#38BDF8",
-    fontSize: 18,
-    fontWeight: "900",
-    minWidth: 20,
-    textAlign: "center",
   },
   matchup: {
     gap: 12,
