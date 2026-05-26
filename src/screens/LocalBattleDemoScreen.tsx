@@ -306,7 +306,7 @@ export function LocalBattleDemoScreen({
 
         <Scoreboard players={roomPlayers} scores={scores} />
 
-        <BracketProgress matchups={matchups} />
+        <BracketProgress activeMatchupId={activeMatchup?.id} matchups={matchups} />
 
         <Pressable style={styles.resetButton} onPress={resetDemo}>
           <Text style={styles.resetButtonText}>Reset Demo</Text>
