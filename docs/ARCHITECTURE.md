@@ -24,6 +24,7 @@ Components are reusable visual pieces.
 
 - `AudioStatusBar` shows current audio status and the Stop button.
 - `ActiveMatchupPanel` shows the current song-vs-song judging controls.
+- `BattleStatusHeader` shows topic, judge, mode, and win condition during judging.
 - `GameOverPanel` shows the final winner and restart actions.
 - `JudgeSetupPanel` shows judge topic setup and round settings.
 - `PlayerList` shows lobby players, guest removal, and start readiness.

@@ -7,7 +7,6 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  View,
 } from "react-native";
 import {
   generateBracket,
@@ -16,6 +15,7 @@ import {
 } from "../services/game/bracket";
 import { ActiveMatchupPanel } from "../components/game/ActiveMatchupPanel";
 import { AudioStatusBar } from "../components/game/AudioStatusBar";
+import { BattleStatusHeader } from "../components/game/BattleStatusHeader";
 import { BracketProgress } from "../components/game/BracketProgress";
 import { GameOverPanel } from "../components/game/GameOverPanel";
 import { JudgeSetupPanel } from "../components/game/JudgeSetupPanel";
@@ -282,13 +282,12 @@ export function LocalBattleDemoScreen({
           />
         ) : (
           <>
-        <View style={styles.header}>
-          <Text style={styles.eyebrow}>Local Battle Demo</Text>
-          <Text style={styles.title}>Song Wars</Text>
-          <Text style={styles.body}>Topic: {topic}</Text>
-          <Text style={styles.body}>Audio mode: {getRoomModeLabel(roomMode)}</Text>
-          <Text style={styles.body}>Judge: {currentJudge}</Text>
-        </View>
+        <BattleStatusHeader
+          judgeName={currentJudge}
+          pointsToWin={pointsToWin}
+          roomMode={roomMode}
+          topic={topic}
+        />
 
         {activeMatchup ? (
           <ActiveMatchupPanel
@@ -380,10 +379,6 @@ function normalizeSongKey(song: MediaTrack): string {
   return `${song.title}:${song.artists.join(",")}`.toLowerCase().trim();
 }
 
-function getRoomModeLabel(roomMode: RoomMode): string {
-  return roomMode === "single_speaker" ? "Single Speaker" : "Remote Sync";
-}
-
 const styles = StyleSheet.create({
   root: {
     backgroundColor: "#111827",
@@ -396,27 +391,6 @@ const styles = StyleSheet.create({
     gap: 18,
     padding: 24,
     paddingBottom: 48,
-  },
-  header: {
-    gap: 8,
-  },
-  eyebrow: {
-    color: "#38BDF8",
-    fontSize: 13,
-    fontWeight: "800",
-    letterSpacing: 0,
-    textTransform: "uppercase",
-  },
-  title: {
-    color: "#F9FAFB",
-    fontSize: 34,
-    fontWeight: "900",
-    letterSpacing: 0,
-  },
-  body: {
-    color: "#CBD5E1",
-    fontSize: 16,
-    lineHeight: 23,
   },
   input: {
     backgroundColor: "#1F2937",
