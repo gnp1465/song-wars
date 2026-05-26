@@ -28,6 +28,7 @@ Components are reusable visual pieces.
 - `PlayerList` shows lobby players, guest removal, and start readiness.
 - `RoomSettingsPanel` shows room settings controls.
 - `SongActionCard` shows a song with action buttons.
+- `SubmissionSearchPanel` shows the active submitter, search states, and submission actions.
 - `Scoreboard` shows player scores.
 - `BracketProgress` shows the tournament state.
 - `SubmissionProgress` shows who has submitted.

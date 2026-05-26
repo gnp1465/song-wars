@@ -7,7 +7,6 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from "react-native";
 import {
@@ -21,7 +20,7 @@ import { GameOverPanel } from "../components/game/GameOverPanel";
 import { JudgeSetupPanel } from "../components/game/JudgeSetupPanel";
 import { Scoreboard } from "../components/game/Scoreboard";
 import { SongActionCard } from "../components/game/SongActionCard";
-import { SubmissionProgress } from "../components/game/SubmissionProgress";
+import { SubmissionSearchPanel } from "../components/game/SubmissionSearchPanel";
 import { completeRound, getGameWinner, type PlayerScore } from "../services/game/scoring";
 import { AppleITunesProvider } from "../services/media/providers/AppleITunesProvider";
 import { DEMO_PLAYERS, DEMO_SONG_POOL, DEMO_TOPICS, createDemoTrack } from "../data/demoGame";
@@ -60,6 +59,7 @@ export function LocalBattleDemoScreen({
   const [songsPerPlayer] = useState(initialSongsPerPlayer);
   const [submissionStepIndex, setSubmissionStepIndex] = useState(0);
   const [selectedSubmissions, setSelectedSubmissions] = useState<SongSubmission[]>([]);
+  const [hasSearchedSubmissions, setHasSearchedSubmissions] = useState(false);
   const submissionSearch = useSongSearch({ initialQuery: "Espresso Sabrina Carpenter" });
   const [judgePlayerId, setJudgePlayerId] = useState(initialJudgePlayerId);
   const [scores, setScores] = useState<PlayerScore[]>([]);
@@ -131,6 +131,7 @@ export function LocalBattleDemoScreen({
     setActiveTopic(undefined);
     setSubmissionStepIndex(0);
     setSelectedSubmissions([]);
+    setHasSearchedSubmissions(false);
     setJudgePlayerId(initialJudgePlayerId);
     setScores([]);
     setActiveRoundNumber(1);
@@ -157,6 +158,7 @@ export function LocalBattleDemoScreen({
     setActiveTopic(undefined);
     setSubmissionStepIndex(0);
     setSelectedSubmissions([]);
+    setHasSearchedSubmissions(false);
     setActiveRoundNumber(1);
     setMatchups([]);
     setRoundWinnerPlayerId(undefined);
@@ -194,6 +196,7 @@ export function LocalBattleDemoScreen({
     setSelectedSubmissions(nextSubmissions);
     submissionSearch.clearResults();
     submissionSearch.setQuery("");
+    setHasSearchedSubmissions(false);
 
     const currentPlayerSubmissionCount = nextSubmissions.filter(
       (submissionItem) => submissionItem.playerId === submittingPlayer.id,
@@ -210,6 +213,7 @@ export function LocalBattleDemoScreen({
   }
 
   async function searchSubmissionSongs() {
+    setHasSearchedSubmissions(true);
     setAudioStatus("Searching songs...");
     const result = await submissionSearch.search();
 
@@ -246,46 +250,22 @@ export function LocalBattleDemoScreen({
         ) : null}
 
         {activeTopic && !hasFinishedSubmissions ? (
-          <View style={styles.setupPanel}>
-            <Text style={styles.eyebrow}>Submissions</Text>
-            <Text style={styles.title}>Pick a song</Text>
-            <Text style={styles.body}>Topic: {topic}</Text>
-            <Text style={styles.body}>Songs per player: {songsPerPlayer}</Text>
-            <Text style={styles.body}>
-              Player: {currentSubmittingPlayer?.displayName ?? "All players submitted"}
-            </Text>
-            <SubmissionProgress players={submittingPlayers} submissions={selectedSubmissions} />
-            <View style={styles.searchRow}>
-              <TextInput
-                autoCapitalize="words"
-                autoCorrect={false}
-                onChangeText={submissionSearch.setQuery}
-                placeholder="Search songs"
-                placeholderTextColor="#64748B"
-                returnKeyType="search"
-                onSubmitEditing={() => void searchSubmissionSongs()}
-                style={styles.input}
-                value={submissionSearch.query}
-              />
-              <Pressable style={styles.searchButton} onPress={() => void searchSubmissionSongs()}>
-                <Text style={styles.searchButtonText}>
-                  {submissionSearch.isSearching ? "..." : "Search"}
-                </Text>
-              </Pressable>
-            </View>
-            <View style={styles.submissionChoices}>
-              {submissionSearch.results.map((song) => (
-                <SongActionCard
-                  key={song.id}
-                  song={song}
-                  primaryLabel="Submit"
-                  secondaryLabel="Play Preview"
-                  onPrimaryPress={() => void selectSubmissionSong(song)}
-                  onSecondaryPress={() => void playSongPreview(song)}
-                />
-              ))}
-            </View>
-          </View>
+          <SubmissionSearchPanel
+            errorMessage={submissionSearch.errorMessage}
+            hasSearched={hasSearchedSubmissions}
+            isSearching={submissionSearch.isSearching}
+            playerName={currentSubmittingPlayer?.displayName ?? "All players submitted"}
+            players={submittingPlayers}
+            query={submissionSearch.query}
+            results={submissionSearch.results}
+            songsPerPlayer={songsPerPlayer}
+            submissions={selectedSubmissions}
+            topic={topic}
+            onPlayPreview={playSongPreview}
+            onQueryChange={submissionSearch.setQuery}
+            onSearch={() => void searchSubmissionSongs()}
+            onSubmitSong={(song) => void selectSubmissionSong(song)}
+          />
         ) : null}
 
         {activeTopic && hasFinishedSubmissions ? (
@@ -453,9 +433,6 @@ const styles = StyleSheet.create({
   header: {
     gap: 8,
   },
-  setupPanel: {
-    gap: 14,
-  },
   eyebrow: {
     color: "#38BDF8",
     fontSize: 13,
@@ -484,24 +461,6 @@ const styles = StyleSheet.create({
     minHeight: 52,
     paddingHorizontal: 14,
   },
-  searchRow: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: 10,
-  },
-  searchButton: {
-    alignItems: "center",
-    backgroundColor: "#38BDF8",
-    borderRadius: 8,
-    justifyContent: "center",
-    minHeight: 52,
-    minWidth: 86,
-  },
-  searchButtonText: {
-    color: "#082F49",
-    fontSize: 15,
-    fontWeight: "800",
-  },
   matchup: {
     gap: 12,
   },
@@ -515,9 +474,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "800",
     marginTop: 6,
-  },
-  submissionChoices: {
-    gap: 12,
   },
   vs: {
     color: "#64748B",
