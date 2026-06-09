@@ -7,6 +7,7 @@ import type { MediaTrack } from "../types/media";
 export function usePreviewAudio() {
   const soundRef = useRef<Audio.Sound | null>(null);
   const isLoadingPreviewRef = useRef(false);
+  const previewRequestIdRef = useRef(0);
   const [audioStatus, setAudioStatus] = useState("No preview playing");
 
   async function playSongPreview(song: MediaTrack) {
@@ -15,10 +16,12 @@ export function usePreviewAudio() {
     }
 
     isLoadingPreviewRef.current = true;
-    setAudioStatus(`Loading ${song.title}...`);
+    const requestId = previewRequestIdRef.current + 1;
+    previewRequestIdRef.current = requestId;
 
     try {
-      await stopSongPreview();
+      await unloadCurrentSound();
+      setAudioStatus(`Loading ${song.title}...`);
 
       const service = new MediaResolutionService({
         providers: [new AppleITunesProvider()],
@@ -33,21 +36,42 @@ export function usePreviewAudio() {
         throw new Error(result.reason ?? "No preview found.");
       }
 
+      if (previewRequestIdRef.current !== requestId) {
+        return;
+      }
+
       const { sound } = await Audio.Sound.createAsync(
         { uri: result.track.preview.streamUrl },
         { shouldPlay: true },
       );
 
+      if (previewRequestIdRef.current !== requestId) {
+        await sound.stopAsync();
+        await sound.unloadAsync();
+        return;
+      }
+
       soundRef.current = sound;
       setAudioStatus(`Playing ${result.track.title}`);
     } catch (error) {
-      setAudioStatus(error instanceof Error ? error.message : "Preview playback failed.");
+      if (previewRequestIdRef.current === requestId) {
+        setAudioStatus(error instanceof Error ? error.message : "Preview playback failed.");
+      }
     } finally {
-      isLoadingPreviewRef.current = false;
+      if (previewRequestIdRef.current === requestId) {
+        isLoadingPreviewRef.current = false;
+      }
     }
   }
 
   async function stopSongPreview() {
+    previewRequestIdRef.current += 1;
+    isLoadingPreviewRef.current = false;
+    await unloadCurrentSound();
+    setAudioStatus("Stopped");
+  }
+
+  async function unloadCurrentSound() {
     if (!soundRef.current) {
       return;
     }
@@ -55,7 +79,6 @@ export function usePreviewAudio() {
     await soundRef.current.stopAsync();
     await soundRef.current.unloadAsync();
     soundRef.current = null;
-    setAudioStatus("Stopped");
   }
 
   return {
