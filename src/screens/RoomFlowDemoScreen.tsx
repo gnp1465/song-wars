@@ -44,6 +44,7 @@ export function RoomFlowDemoScreen() {
   const hasCreatedRoom = Boolean(room);
   const canStartGame = room ? canStartRoom(room) : false;
   const playersNeeded = room ? Math.max(0, MINIMUM_PLAYERS_TO_START - room.players.length) : 0;
+  const canAddGuest = Boolean(guestName.trim() && joinCodeInput.trim());
 
   function createRoom() {
     Keyboard.dismiss();
@@ -66,7 +67,13 @@ export function RoomFlowDemoScreen() {
     const normalizedJoinCode = joinCodeInput.trim();
     const nextGuestName = guestName.trim();
 
+    if (!normalizedJoinCode) {
+      setJoinError("Enter the room code.");
+      return;
+    }
+
     if (!nextGuestName) {
+      setJoinError("Enter a guest name.");
       return;
     }
 
@@ -83,6 +90,16 @@ export function RoomFlowDemoScreen() {
     setRoom(addGuestToRoom(room, { displayName: nextGuestName }));
     setGuestName("");
     setJoinCodeInput("");
+    setJoinError(undefined);
+  }
+
+  function updateJoinCodeInput(nextJoinCode: string) {
+    setJoinCodeInput(nextJoinCode);
+    setJoinError(undefined);
+  }
+
+  function updateGuestName(nextGuestName: string) {
+    setGuestName(nextGuestName);
     setJoinError(undefined);
   }
 
@@ -206,7 +223,7 @@ export function RoomFlowDemoScreen() {
               autoCapitalize="none"
               autoCorrect={false}
               keyboardType="number-pad"
-              onChangeText={setJoinCodeInput}
+              onChangeText={updateJoinCodeInput}
               onSubmitEditing={addGuest}
               placeholder="Room code"
               placeholderTextColor="#64748B"
@@ -218,7 +235,7 @@ export function RoomFlowDemoScreen() {
               <TextInput
                 autoCapitalize="words"
                 autoCorrect={false}
-                onChangeText={setGuestName}
+                onChangeText={updateGuestName}
                 onSubmitEditing={addGuest}
                 placeholder="Guest name"
                 placeholderTextColor="#64748B"
@@ -226,7 +243,11 @@ export function RoomFlowDemoScreen() {
                 style={styles.input}
                 value={guestName}
               />
-              <Pressable style={styles.addButton} onPress={addGuest}>
+              <Pressable
+                disabled={!canAddGuest}
+                style={[styles.addButton, !canAddGuest ? styles.disabledButton : undefined]}
+                onPress={addGuest}
+              >
                 <Text style={styles.addButtonText}>Add</Text>
               </Pressable>
             </View>

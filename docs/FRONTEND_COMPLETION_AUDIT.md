@@ -7,6 +7,7 @@ Date: 2026-06-08
 - Lobby flow exists in `src/screens/RoomFlowDemoScreen.tsx`.
 - Host creates a local room and host name locks after creation.
 - Guest display names join locally with room code validation.
+- Lobby join errors clear when the guest edits the room code or display name.
 - Duplicate display names are blocked by `hasDuplicateDisplayName`.
 - Room settings include audio mode, songs per player, and points to win.
 - Room setting limits are shared between the room service and settings UI.
