@@ -22,6 +22,7 @@ Date: 2026-06-08
 - Scoring detects the first player to the configured point target.
 - Final winner screen supports Play Again and Reset Room.
 - Audio Lab is not part of the main app flow.
+- `src/tests/manualPrototypeFlowCheck.ts` verifies the full local prototype path from room creation through final winner.
 
 ## Verified Commands
 

@@ -7,13 +7,14 @@
   "scripts": {
     "start": "expo start",
     "ios": "expo start --ios",
-    "test": "npm run check:media && npm run check:playback && npm run check:bracket && npm run check:scoring && npm run check:mock-spotify && npm run check:room",
+    "test": "npm run check:media && npm run check:playback && npm run check:bracket && npm run check:scoring && npm run check:mock-spotify && npm run check:room && npm run check:prototype-flow",
     "check:media": "node --experimental-strip-types src/tests/manualMediaMocks.ts",
     "check:playback": "node --experimental-strip-types src/tests/manualPlaybackCheck.ts",
     "check:bracket": "node --experimental-strip-types src/tests/manualBracketCheck.ts",
     "check:scoring": "node --experimental-strip-types src/tests/manualScoringCheck.ts",
     "check:mock-spotify": "node --experimental-strip-types src/tests/manualMockSpotifyCheck.ts",
-    "check:room": "node --experimental-strip-types src/tests/manualRoomCheck.ts"
+    "check:room": "node --experimental-strip-types src/tests/manualRoomCheck.ts",
+    "check:prototype-flow": "node --experimental-strip-types src/tests/manualPrototypeFlowCheck.ts"
   },
   "dependencies": {
     "expo": "^54.0.0",
