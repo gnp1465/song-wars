@@ -344,7 +344,13 @@ export function LocalBattleDemoScreen({
 
         <BracketProgress activeMatchupId={activeMatchup?.id} matchups={matchups} />
 
-        <Pressable style={styles.resetButton} onPress={resetDemo}>
+        <Pressable
+          accessibilityHint="Restarts the current local game from round one."
+          accessibilityLabel="Reset game"
+          accessibilityRole="button"
+          style={styles.resetButton}
+          onPress={resetDemo}
+        >
           <Text style={styles.resetButtonText}>Reset Game</Text>
         </Pressable>
           </>

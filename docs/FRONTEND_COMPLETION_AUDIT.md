@@ -14,6 +14,7 @@ Date: 2026-06-08
 - Game starts only when the room has enough players.
 - Judge topic setup exists in `JudgeSetupPanel`.
 - Current phase and actor are shown through `TurnGuidance`.
+- Core room, search, audio, submission, judging, and reset controls include accessibility labels or state.
 - Judge is excluded from song submission turns.
 - Song search includes loading, empty, and error states.
 - Song search blocks blank queries and repeated search taps while loading.

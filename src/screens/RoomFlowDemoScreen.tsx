@@ -165,6 +165,8 @@ export function RoomFlowDemoScreen() {
             phaseLabel="Host setup"
           />
           <TextInput
+            accessibilityHint="Sets the name shown for the room host."
+            accessibilityLabel="Host name"
             autoCapitalize="words"
             autoCorrect={false}
             editable={!hasCreatedRoom}
@@ -179,7 +181,13 @@ export function RoomFlowDemoScreen() {
           {hasCreatedRoom ? (
             <Text style={styles.body}>Host name is locked after room creation.</Text>
           ) : (
-            <Pressable style={styles.primaryButton} onPress={createRoom}>
+            <Pressable
+              accessibilityHint="Creates a local Song Wars room."
+              accessibilityLabel="Create room"
+              accessibilityRole="button"
+              style={styles.primaryButton}
+              onPress={createRoom}
+            >
               <Text style={styles.primaryButtonText}>Create Room</Text>
             </Pressable>
           )}
@@ -220,6 +228,8 @@ export function RoomFlowDemoScreen() {
             />
 
             <TextInput
+              accessibilityHint="Enter the room code guests use to join."
+              accessibilityLabel="Room code"
               autoCapitalize="none"
               autoCorrect={false}
               keyboardType="number-pad"
@@ -233,6 +243,8 @@ export function RoomFlowDemoScreen() {
             />
             <View style={styles.joinRow}>
               <TextInput
+                accessibilityHint="Sets the temporary display name for a guest."
+                accessibilityLabel="Guest name"
                 autoCapitalize="words"
                 autoCorrect={false}
                 onChangeText={updateGuestName}
@@ -244,6 +256,10 @@ export function RoomFlowDemoScreen() {
                 value={guestName}
               />
               <Pressable
+                accessibilityHint="Adds this guest to the local room."
+                accessibilityLabel="Add guest"
+                accessibilityRole="button"
+                accessibilityState={{ disabled: !canAddGuest }}
                 disabled={!canAddGuest}
                 style={[styles.addButton, !canAddGuest ? styles.disabledButton : undefined]}
                 onPress={addGuest}
@@ -260,6 +276,10 @@ export function RoomFlowDemoScreen() {
             />
 
             <Pressable
+              accessibilityHint="Starts the Song Wars battle when enough players have joined."
+              accessibilityLabel="Start game"
+              accessibilityRole="button"
+              accessibilityState={{ disabled: !canStartGame }}
               disabled={!canStartGame}
               style={[styles.primaryButton, !canStartGame ? styles.disabledButton : undefined]}
               onPress={handleStartGame}

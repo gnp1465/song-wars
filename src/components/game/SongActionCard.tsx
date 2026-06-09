@@ -35,6 +35,10 @@ export function SongActionCard({
       <View style={styles.songActions}>
         {secondaryLabel && onSecondaryPress ? (
           <Pressable
+            accessibilityHint={`Plays a preview of ${song.title}.`}
+            accessibilityLabel={`${secondaryLabel}: ${song.title}`}
+            accessibilityRole="button"
+            accessibilityState={{ disabled: secondaryDisabled }}
             disabled={secondaryDisabled}
             style={[styles.playButton, secondaryDisabled ? styles.disabledButton : undefined]}
             onPress={onSecondaryPress}
@@ -43,6 +47,10 @@ export function SongActionCard({
           </Pressable>
         ) : null}
         <Pressable
+          accessibilityHint={`Chooses ${song.title} for this action.`}
+          accessibilityLabel={`${primaryLabel}: ${song.title}`}
+          accessibilityRole="button"
+          accessibilityState={{ disabled: primaryDisabled || !onPrimaryPress }}
           disabled={primaryDisabled || !onPrimaryPress}
           style={[
             styles.pickButton,

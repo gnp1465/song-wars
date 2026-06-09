@@ -28,10 +28,22 @@ export function GameOverPanel({
 
       <Scoreboard players={players} scores={scores} />
 
-      <Pressable style={styles.primaryButton} onPress={onPlayAgain}>
+      <Pressable
+        accessibilityHint="Starts a fresh game with the same room players and settings."
+        accessibilityLabel="Play again"
+        accessibilityRole="button"
+        style={styles.primaryButton}
+        onPress={onPlayAgain}
+      >
         <Text style={styles.primaryButtonText}>Play Again</Text>
       </Pressable>
-      <Pressable style={styles.secondaryButton} onPress={onResetRoom}>
+      <Pressable
+        accessibilityHint="Returns to room creation."
+        accessibilityLabel="Reset room"
+        accessibilityRole="button"
+        style={styles.secondaryButton}
+        onPress={onResetRoom}
+      >
         <Text style={styles.secondaryButtonText}>Reset Room</Text>
       </Pressable>
     </View>

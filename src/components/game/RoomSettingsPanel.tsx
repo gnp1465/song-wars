@@ -50,6 +50,7 @@ export function RoomSettingsPanel({
           </Text>
         </View>
         <SettingStepper
+          label="songs per player"
           maxValue={MAX_SONGS_PER_PLAYER}
           minValue={MIN_SONGS_PER_PLAYER}
           value={songsPerPlayer}
@@ -64,6 +65,7 @@ export function RoomSettingsPanel({
           </Text>
         </View>
         <SettingStepper
+          label="points to win"
           maxValue={MAX_POINTS_TO_WIN}
           minValue={MIN_POINTS_TO_WIN}
           value={pointsToWin}
@@ -83,6 +85,9 @@ interface ModeButtonProps {
 function ModeButton({ isSelected, label, onPress }: ModeButtonProps) {
   return (
     <Pressable
+      accessibilityLabel={`${label} audio mode`}
+      accessibilityRole="button"
+      accessibilityState={{ selected: isSelected }}
       style={[styles.modeButton, isSelected ? styles.selectedModeButton : undefined]}
       onPress={onPress}
     >
@@ -96,6 +101,7 @@ function ModeButton({ isSelected, label, onPress }: ModeButtonProps) {
 }
 
 interface SettingStepperProps {
+  label: string;
   maxValue: number;
   minValue: number;
   value: number;
@@ -103,6 +109,7 @@ interface SettingStepperProps {
 }
 
 function SettingStepper({
+  label,
   maxValue,
   minValue,
   value,
@@ -114,6 +121,10 @@ function SettingStepper({
   return (
     <View style={styles.stepper}>
       <Pressable
+        accessibilityHint={`Decreases ${label}.`}
+        accessibilityLabel={`Decrease ${label}`}
+        accessibilityRole="button"
+        accessibilityState={{ disabled: !canDecrease }}
         disabled={!canDecrease}
         style={[styles.stepperButton, !canDecrease ? styles.disabledStepperButton : undefined]}
         onPress={() => onChange(value - 1)}
@@ -122,6 +133,10 @@ function SettingStepper({
       </Pressable>
       <Text style={styles.stepperValue}>{value}</Text>
       <Pressable
+        accessibilityHint={`Increases ${label}.`}
+        accessibilityLabel={`Increase ${label}`}
+        accessibilityRole="button"
+        accessibilityState={{ disabled: !canIncrease }}
         disabled={!canIncrease}
         style={[styles.stepperButton, !canIncrease ? styles.disabledStepperButton : undefined]}
         onPress={() => onChange(value + 1)}

@@ -23,7 +23,13 @@ export function RoundResultPanel({
       />
       <Text style={styles.winner}>Winner: {winnerName}</Text>
       <Text style={styles.body}>Winning song: {winningSongLabel}</Text>
-      <Pressable style={styles.primaryButton} onPress={onStartNextRound}>
+      <Pressable
+        accessibilityHint="Starts the next round with the round winner as judge."
+        accessibilityLabel="Start next round"
+        accessibilityRole="button"
+        style={styles.primaryButton}
+        onPress={onStartNextRound}
+      >
         <Text style={styles.primaryButtonText}>Start Next Round</Text>
       </Pressable>
     </View>

@@ -37,7 +37,13 @@ export function PlayerList({
             {player.isHost ? (
               <Text style={styles.playerRole}>Host</Text>
             ) : (
-              <Pressable style={styles.removeButton} onPress={() => onRemoveGuest(player.id)}>
+              <Pressable
+                accessibilityHint={`Removes ${player.displayName} from the room.`}
+                accessibilityLabel={`Remove ${player.displayName}`}
+                accessibilityRole="button"
+                style={styles.removeButton}
+                onPress={() => onRemoveGuest(player.id)}
+              >
                 <Text style={styles.removeButtonText}>Remove</Text>
               </Pressable>
             )}

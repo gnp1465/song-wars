@@ -18,6 +18,10 @@ export function AudioStatusBar({ status, onStop }: AudioStatusBarProps) {
         </Text>
       </View>
       <Pressable
+        accessibilityHint="Stops or cancels the current preview."
+        accessibilityLabel="Stop preview"
+        accessibilityRole="button"
+        accessibilityState={{ disabled: !canStop }}
         disabled={!canStop}
         style={[styles.stopButton, !canStop ? styles.disabledStopButton : undefined]}
         onPress={onStop}

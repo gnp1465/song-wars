@@ -76,6 +76,8 @@ export function SubmissionSearchPanel({
       <SubmissionProgress players={players} submissions={submissions} />
       <View style={styles.searchRow}>
         <TextInput
+          accessibilityHint="Searches for songs or artists to submit."
+          accessibilityLabel="Song search"
           autoCapitalize="words"
           autoCorrect={false}
           onChangeText={onQueryChange}
@@ -87,6 +89,10 @@ export function SubmissionSearchPanel({
           value={query}
         />
         <Pressable
+          accessibilityHint="Searches for songs matching the current text."
+          accessibilityLabel="Search songs"
+          accessibilityRole="button"
+          accessibilityState={{ disabled: !canSearch }}
           disabled={!canSearch}
           style={[styles.searchButton, !canSearch ? styles.disabledSearchButton : undefined]}
           onPress={handleSearch}

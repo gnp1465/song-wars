@@ -47,6 +47,8 @@ export function JudgeSetupPanel({
         </View>
       </View>
       <TextInput
+        accessibilityHint="Sets the song prompt for this round."
+        accessibilityLabel="Round topic"
         autoCapitalize="words"
         autoCorrect={false}
         onChangeText={onTopicChange}
@@ -55,7 +57,13 @@ export function JudgeSetupPanel({
         style={styles.input}
         value={topicInput}
       />
-      <Pressable style={styles.primaryButton} onPress={onStartBattle}>
+      <Pressable
+        accessibilityHint="Locks the topic and starts song submissions."
+        accessibilityLabel="Start battle"
+        accessibilityRole="button"
+        style={styles.primaryButton}
+        onPress={onStartBattle}
+      >
         <Text style={styles.primaryButtonText}>Start Battle</Text>
       </Pressable>
     </View>
