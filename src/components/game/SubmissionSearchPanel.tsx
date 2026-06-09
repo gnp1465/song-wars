@@ -50,8 +50,13 @@ export function SubmissionSearchPanel({
     (submission) => submission.playerId === playerId,
   ).length;
   const songsRemaining = Math.max(songsPerPlayer - currentPlayerSubmissionCount, 0);
+  const canSearch = query.trim().length > 0 && !isSearching;
 
   function handleSearch() {
+    if (!canSearch) {
+      return;
+    }
+
     Keyboard.dismiss();
     onSearch();
   }
@@ -72,14 +77,18 @@ export function SubmissionSearchPanel({
           autoCapitalize="words"
           autoCorrect={false}
           onChangeText={onQueryChange}
+          onSubmitEditing={handleSearch}
           placeholder="Search songs"
           placeholderTextColor="#64748B"
           returnKeyType="search"
-          onSubmitEditing={handleSearch}
           style={styles.input}
           value={query}
         />
-        <Pressable style={styles.searchButton} onPress={handleSearch}>
+        <Pressable
+          disabled={!canSearch}
+          style={[styles.searchButton, !canSearch ? styles.disabledSearchButton : undefined]}
+          onPress={handleSearch}
+        >
           <Text style={styles.searchButtonText}>{isSearching ? "..." : "Search"}</Text>
         </Pressable>
       </View>
@@ -183,6 +192,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     minHeight: 52,
     minWidth: 86,
+  },
+  disabledSearchButton: {
+    opacity: 0.45,
   },
   searchButtonText: {
     color: "#082F49",

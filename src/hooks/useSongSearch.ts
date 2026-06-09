@@ -18,14 +18,29 @@ export function useSongSearch(options: UseSongSearchOptions = {}) {
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
 
   async function search(): Promise<{ ok: boolean; errorMessage?: string }> {
+    const trimmedQuery = query.trim();
+
     Keyboard.dismiss();
+
+    if (isSearching) {
+      return { ok: false, errorMessage: "Search already in progress." };
+    }
+
+    if (!trimmedQuery) {
+      const nextErrorMessage = "Enter a song or artist to search.";
+
+      setResults([]);
+      setErrorMessage(nextErrorMessage);
+      return { ok: false, errorMessage: nextErrorMessage };
+    }
+
     setIsSearching(true);
     setErrorMessage(undefined);
 
     try {
       const provider = options.provider ?? new AppleITunesProvider();
       const searchResults = await provider.searchTracks({
-        query,
+        query: trimmedQuery,
         storefrontCode: options.storefrontCode ?? "US",
         limit: options.limit ?? 8,
       });
@@ -45,6 +60,11 @@ export function useSongSearch(options: UseSongSearchOptions = {}) {
     setResults([]);
   }
 
+  function updateQuery(nextQuery: string) {
+    setQuery(nextQuery);
+    setErrorMessage(undefined);
+  }
+
   return {
     clearResults,
     errorMessage,
@@ -53,6 +73,6 @@ export function useSongSearch(options: UseSongSearchOptions = {}) {
     results,
     search,
     setErrorMessage,
-    setQuery,
+    setQuery: updateQuery,
   };
 }

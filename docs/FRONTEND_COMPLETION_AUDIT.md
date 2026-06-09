@@ -15,6 +15,7 @@ Date: 2026-06-08
 - Current phase and actor are shown through `TurnGuidance`.
 - Judge is excluded from song submission turns.
 - Song search includes loading, empty, and error states.
+- Song search blocks blank queries and repeated search taps while loading.
 - Duplicate song submissions are blocked before adding to the round.
 - Preview audio is stopped on submit, winner pick, next round, game reset, and room reset.
 - Bracket generation handles byes and avoids same-player first-round matchups where possible.
