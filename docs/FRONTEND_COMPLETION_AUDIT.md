@@ -17,6 +17,7 @@ Date: 2026-06-08
 - Judge is excluded from song submission turns.
 - Song search includes loading, empty, and error states.
 - Song search blocks blank queries and repeated search taps while loading.
+- Submit controls are disabled while a song submission is being processed.
 - Submitted songs preserve preview, artwork, provider, and attribution data from the selected search result.
 - Preview resolution reuses already-playable preview URLs before calling provider fallback resolution.
 - Duplicate song submissions are blocked before adding to the round.

@@ -51,6 +51,7 @@ export function LocalBattleDemoScreen({
   pointsToWin = 3,
 }: LocalBattleDemoScreenProps) {
   const { audioStatus, playSongPreview, setAudioStatus, stopSongPreview } = usePreviewAudio();
+  const isSubmittingSongRef = useRef(false);
   const isPickingWinnerRef = useRef(false);
   const initialRoundId = "demo-round-1";
   const roomPlayers = players.length >= 2 ? players : DEMO_PLAYERS;
@@ -67,6 +68,7 @@ export function LocalBattleDemoScreen({
   const [submissionStepIndex, setSubmissionStepIndex] = useState(0);
   const [selectedSubmissions, setSelectedSubmissions] = useState<SongSubmission[]>([]);
   const [hasSearchedSubmissions, setHasSearchedSubmissions] = useState(false);
+  const [isSubmittingSong, setIsSubmittingSong] = useState(false);
   const submissionSearch = useSongSearch({ initialQuery: "Espresso Sabrina Carpenter" });
   const [judgePlayerId, setJudgePlayerId] = useState(initialJudgePlayerId);
   const [scores, setScores] = useState<PlayerScore[]>([]);
@@ -150,6 +152,8 @@ export function LocalBattleDemoScreen({
     setSubmissionStepIndex(0);
     setSelectedSubmissions([]);
     setHasSearchedSubmissions(false);
+    setIsSubmittingSong(false);
+    isSubmittingSongRef.current = false;
     setJudgePlayerId(initialJudgePlayerId);
     setScores([]);
     setActiveRoundNumber(1);
@@ -180,6 +184,8 @@ export function LocalBattleDemoScreen({
     setSubmissionStepIndex(0);
     setSelectedSubmissions([]);
     setHasSearchedSubmissions(false);
+    setIsSubmittingSong(false);
+    isSubmittingSongRef.current = false;
     setActiveRoundNumber(1);
     setMatchups([]);
     setIsPickingWinner(false);
@@ -193,43 +199,51 @@ export function LocalBattleDemoScreen({
   async function selectSubmissionSong(song: MediaTrack) {
     const submittingPlayer = submittingPlayers[submissionStepIndex];
 
-    if (!submittingPlayer) {
+    if (!submittingPlayer || isSubmittingSongRef.current) {
       return;
     }
 
-    const isDuplicate = hasDuplicateSongSubmission(selectedSubmissions, song);
+    isSubmittingSongRef.current = true;
+    setIsSubmittingSong(true);
 
-    if (isDuplicate) {
-      setAudioStatus("That song was already submitted. Pick a different one.");
-      return;
-    }
+    try {
+      const isDuplicate = hasDuplicateSongSubmission(selectedSubmissions, song);
 
-    await stopSongPreview();
+      if (isDuplicate) {
+        setAudioStatus("That song was already submitted. Pick a different one.");
+        return;
+      }
 
-    const submission = createSongSubmission({
-      id: `${currentRoundId}:sub-${selectedSubmissions.length + 1}`,
-      playerId: submittingPlayer.id,
-      roundId: currentRoundId,
-      song,
-    });
-    const nextSubmissions = [...selectedSubmissions, submission];
+      await stopSongPreview();
 
-    setSelectedSubmissions(nextSubmissions);
-    submissionSearch.clearResults();
-    submissionSearch.setQuery("");
-    setHasSearchedSubmissions(false);
+      const submission = createSongSubmission({
+        id: `${currentRoundId}:sub-${selectedSubmissions.length + 1}`,
+        playerId: submittingPlayer.id,
+        roundId: currentRoundId,
+        song,
+      });
+      const nextSubmissions = [...selectedSubmissions, submission];
 
-    const currentPlayerSubmissionCount = nextSubmissions.filter(
-      (submissionItem) => submissionItem.playerId === submittingPlayer.id,
-    ).length;
+      setSelectedSubmissions(nextSubmissions);
+      submissionSearch.clearResults();
+      submissionSearch.setQuery("");
+      setHasSearchedSubmissions(false);
 
-    if (currentPlayerSubmissionCount >= songsPerPlayer) {
-      setSubmissionStepIndex((currentIndex) => currentIndex + 1);
-    }
+      const currentPlayerSubmissionCount = nextSubmissions.filter(
+        (submissionItem) => submissionItem.playerId === submittingPlayer.id,
+      ).length;
 
-    if (nextSubmissions.length === submittingPlayers.length * songsPerPlayer) {
-      setMatchups(generateBracket({ roundId: currentRoundId, submissions: nextSubmissions, seed: 42 + roundIndex }));
-      setActiveRoundNumber(1);
+      if (currentPlayerSubmissionCount >= songsPerPlayer) {
+        setSubmissionStepIndex((currentIndex) => currentIndex + 1);
+      }
+
+      if (nextSubmissions.length === submittingPlayers.length * songsPerPlayer) {
+        setMatchups(generateBracket({ roundId: currentRoundId, submissions: nextSubmissions, seed: 42 + roundIndex }));
+        setActiveRoundNumber(1);
+      }
+    } finally {
+      isSubmittingSongRef.current = false;
+      setIsSubmittingSong(false);
     }
   }
 
@@ -275,6 +289,7 @@ export function LocalBattleDemoScreen({
             errorMessage={submissionSearch.errorMessage}
             hasSearched={hasSearchedSubmissions}
             isSearching={submissionSearch.isSearching}
+            isSubmittingSong={isSubmittingSong}
             playerId={currentSubmittingPlayer?.id}
             playerName={currentSubmittingPlayer?.displayName ?? "All players submitted"}
             players={submittingPlayers}

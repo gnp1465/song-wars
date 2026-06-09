@@ -9,6 +9,7 @@ export interface SubmissionSearchPanelProps {
   errorMessage?: string;
   hasSearched: boolean;
   isSearching: boolean;
+  isSubmittingSong?: boolean;
   playerId?: string;
   playerName: string;
   players: Player[];
@@ -27,6 +28,7 @@ export function SubmissionSearchPanel({
   errorMessage,
   hasSearched,
   isSearching,
+  isSubmittingSong = false,
   playerId,
   playerName,
   players,
@@ -100,7 +102,9 @@ export function SubmissionSearchPanel({
           <SongActionCard
             key={song.id}
             song={song}
-            primaryLabel="Submit"
+            primaryDisabled={isSubmittingSong}
+            primaryLabel={isSubmittingSong ? "Submitting..." : "Submit"}
+            secondaryDisabled={isSubmittingSong}
             secondaryLabel="Play Preview"
             onPrimaryPress={() => onSubmitSong(song)}
             onSecondaryPress={() => onPlayPreview(song)}
