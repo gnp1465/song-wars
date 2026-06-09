@@ -65,6 +65,7 @@ Learning docs:
 - [docs/LEARNING_LOG.md](docs/LEARNING_LOG.md)
 - [docs/FRONTEND_TEST_PLAN.md](docs/FRONTEND_TEST_PLAN.md)
 - [docs/PROTOTYPE_STATUS.md](docs/PROTOTYPE_STATUS.md)
+- [docs/FRONTEND_COMPLETION_AUDIT.md](docs/FRONTEND_COMPLETION_AUDIT.md)
 
 Main folders:
 
