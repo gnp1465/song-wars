@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
-import { MediaResolutionService } from "../services/media/MediaResolutionService.ts";
+import {
+  hasPlayablePreview,
+  MediaResolutionService,
+} from "../services/media/MediaResolutionService.ts";
 import type { MediaProvider, MediaSearchOptions } from "../services/media/MediaProvider.ts";
 import type {
   MediaAttribution,
@@ -73,6 +76,12 @@ class MockUnavailableProvider extends MockApplePreviewProvider {
   }
 }
 
+class ThrowingProvider extends MockApplePreviewProvider {
+  async resolvePreview(_request: MediaResolutionRequest): Promise<MediaResolutionResult> {
+    throw new Error("Provider should not be called for tracks that already have previews.");
+  }
+}
+
 const spotifyTrack: MediaTrack = {
   id: "spotify:track:123",
   title: "Example Song",
@@ -111,6 +120,28 @@ assert.equal(resolved.resolvedProviderId, "apple_itunes");
 assert.equal(resolved.track.preview?.streamUrl, "https://example.com/preview.m4a");
 assert.equal(resolved.track.resolutionStatus, "resolved");
 assert.equal(resolved.track.storefrontCode, "US");
+
+const alreadyPlayableTrack: MediaTrack = {
+  ...spotifyTrack,
+  capabilities: ["metadata_only", "stream_preview"],
+  preview: {
+    providerId: "apple_itunes",
+    streamUrl: "https://example.com/already-playable.m4a",
+    durationMs: 30000,
+  },
+  resolutionStatus: "resolved",
+};
+const alreadyResolved = await new MediaResolutionService({
+  providers: [new ThrowingProvider()],
+}).resolveTrackPreview({
+  sourceTrack: alreadyPlayableTrack,
+  storefrontCode: "US",
+  preferredProviderIds: ["apple_itunes"],
+});
+
+assert.equal(hasPlayablePreview(alreadyPlayableTrack), true);
+assert.equal(alreadyResolved.status, "resolved");
+assert.equal(alreadyResolved.track.preview?.streamUrl, "https://example.com/already-playable.m4a");
 
 const unavailable = await new MediaResolutionService({
   providers: [new MockUnavailableProvider()],

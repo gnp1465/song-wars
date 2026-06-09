@@ -27,6 +27,20 @@ export class MediaResolutionService {
   async resolveTrackPreview(
     options: ResolveTrackPreviewOptions,
   ): Promise<MediaResolutionResult> {
+    if (hasPlayablePreview(options.sourceTrack)) {
+      const playablePreview = options.sourceTrack.preview;
+
+      return {
+        track: {
+          ...options.sourceTrack,
+          storefrontCode: options.sourceTrack.storefrontCode ?? options.storefrontCode,
+          resolutionStatus: "resolved",
+        },
+        resolvedProviderId: playablePreview?.providerId,
+        status: "resolved",
+      };
+    }
+
     const request: MediaResolutionRequest = {
       sourceTrack: options.sourceTrack,
       storefrontCode: options.storefrontCode,
@@ -64,4 +78,12 @@ export class MediaResolutionService {
       .map((providerId) => this.providers.get(providerId))
       .filter((provider): provider is MediaProvider => provider !== undefined);
   }
+}
+
+export function hasPlayablePreview(track: MediaTrack): boolean {
+  return Boolean(
+    track.preview?.streamUrl &&
+      track.capabilities.includes("stream_preview") &&
+      track.resolutionStatus === "resolved",
+  );
 }
