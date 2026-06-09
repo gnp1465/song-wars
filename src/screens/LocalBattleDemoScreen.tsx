@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -51,6 +51,7 @@ export function LocalBattleDemoScreen({
   pointsToWin = 3,
 }: LocalBattleDemoScreenProps) {
   const { audioStatus, playSongPreview, setAudioStatus, stopSongPreview } = usePreviewAudio();
+  const isPickingWinnerRef = useRef(false);
   const initialRoundId = "demo-round-1";
   const roomPlayers = players.length >= 2 ? players : DEMO_PLAYERS;
   const initialJudgePlayerId = roomPlayers[0].id;
@@ -71,6 +72,7 @@ export function LocalBattleDemoScreen({
   const [scores, setScores] = useState<PlayerScore[]>([]);
   const [activeRoundNumber, setActiveRoundNumber] = useState(1);
   const [matchups, setMatchups] = useState<BracketMatchup[]>(initialBracket);
+  const [isPickingWinner, setIsPickingWinner] = useState(false);
   const [roundWinnerPlayerId, setRoundWinnerPlayerId] = useState<string | undefined>();
   const [roundWinnerSubmissionId, setRoundWinnerSubmissionId] = useState<string | undefined>();
   const [gameWinnerPlayerId, setGameWinnerPlayerId] = useState<string | undefined>();
@@ -87,49 +89,57 @@ export function LocalBattleDemoScreen({
   const currentJudge = getPlayerName(judgePlayerId, roomPlayers);
 
   async function pickWinner(winnerSubmissionId: string) {
-    if (!activeMatchup) {
+    if (!activeMatchup || isPickingWinnerRef.current) {
       return;
     }
 
-    await stopSongPreview();
+    isPickingWinnerRef.current = true;
+    setIsPickingWinner(true);
 
-    const completedMatchup = selectMatchupWinner(activeMatchup, winnerSubmissionId);
-    const updatedMatchups = matchups.map((matchup) =>
-      matchup.id === completedMatchup.id ? completedMatchup : matchup,
-    );
-    const unfinishedInCurrentRound = updatedMatchups.some(
-      (matchup) => matchup.roundNumber === activeRoundNumber && matchup.status === "ready",
-    );
+    try {
+      await stopSongPreview();
 
-    if (unfinishedInCurrentRound) {
+      const completedMatchup = selectMatchupWinner(activeMatchup, winnerSubmissionId);
+      const updatedMatchups = matchups.map((matchup) =>
+        matchup.id === completedMatchup.id ? completedMatchup : matchup,
+      );
+      const unfinishedInCurrentRound = updatedMatchups.some(
+        (matchup) => matchup.roundNumber === activeRoundNumber && matchup.status === "ready",
+      );
+
+      if (unfinishedInCurrentRound) {
+        setMatchups(updatedMatchups);
+        return;
+      }
+
+      const currentRoundMatchups = updatedMatchups.filter(
+        (matchup) => matchup.roundNumber === activeRoundNumber,
+      );
+      const nextRoundMatchups = generateNextRoundMatchups(currentRoundId, currentRoundMatchups);
+
+      if (nextRoundMatchups.length > 0) {
+        setMatchups([...updatedMatchups, ...nextRoundMatchups]);
+        setActiveRoundNumber(nextRoundMatchups[0].roundNumber);
+        return;
+      }
+
+      const roundResult = completeRound({
+        players: roomPlayers,
+        finalMatchup: completedMatchup,
+        currentScores: scores,
+      });
+      const gameWinner = getGameWinner(roundResult.scores, pointsToWin);
+
       setMatchups(updatedMatchups);
-      return;
+      setScores(roundResult.scores);
+      setJudgePlayerId(roundResult.nextJudgePlayerId);
+      setRoundWinnerPlayerId(roundResult.winningPlayerId);
+      setRoundWinnerSubmissionId(roundResult.winningSubmissionId);
+      setGameWinnerPlayerId(gameWinner?.playerId);
+    } finally {
+      isPickingWinnerRef.current = false;
+      setIsPickingWinner(false);
     }
-
-    const currentRoundMatchups = updatedMatchups.filter(
-      (matchup) => matchup.roundNumber === activeRoundNumber,
-    );
-    const nextRoundMatchups = generateNextRoundMatchups(currentRoundId, currentRoundMatchups);
-
-    if (nextRoundMatchups.length > 0) {
-      setMatchups([...updatedMatchups, ...nextRoundMatchups]);
-      setActiveRoundNumber(nextRoundMatchups[0].roundNumber);
-      return;
-    }
-
-    const roundResult = completeRound({
-      players: roomPlayers,
-      finalMatchup: completedMatchup,
-      currentScores: scores,
-    });
-    const gameWinner = getGameWinner(roundResult.scores, pointsToWin);
-
-    setMatchups(updatedMatchups);
-    setScores(roundResult.scores);
-    setJudgePlayerId(roundResult.nextJudgePlayerId);
-    setRoundWinnerPlayerId(roundResult.winningPlayerId);
-    setRoundWinnerSubmissionId(roundResult.winningSubmissionId);
-    setGameWinnerPlayerId(gameWinner?.playerId);
   }
 
   function resetDemo() {
@@ -144,6 +154,8 @@ export function LocalBattleDemoScreen({
     setScores([]);
     setActiveRoundNumber(1);
     setMatchups(initialBracket);
+    setIsPickingWinner(false);
+    isPickingWinnerRef.current = false;
     setRoundWinnerPlayerId(undefined);
     setRoundWinnerSubmissionId(undefined);
     setGameWinnerPlayerId(undefined);
@@ -170,6 +182,8 @@ export function LocalBattleDemoScreen({
     setHasSearchedSubmissions(false);
     setActiveRoundNumber(1);
     setMatchups([]);
+    setIsPickingWinner(false);
+    isPickingWinnerRef.current = false;
     setRoundWinnerPlayerId(undefined);
     setRoundWinnerSubmissionId(undefined);
     setGameWinnerPlayerId(undefined);
@@ -298,6 +312,7 @@ export function LocalBattleDemoScreen({
 
         {activeMatchup ? (
           <ActiveMatchupPanel
+            isPickingWinner={isPickingWinner}
             matchup={activeMatchup}
             onPickWinner={(submissionId) => void pickWinner(submissionId)}
             onPlayPreview={playSongPreview}

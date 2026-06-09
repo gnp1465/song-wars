@@ -4,7 +4,9 @@ import type { MediaTrack } from "../../types/media";
 export interface SongActionCardProps {
   song?: MediaTrack;
   primaryLabel: string;
+  primaryDisabled?: boolean;
   secondaryLabel?: string;
+  secondaryDisabled?: boolean;
   onPrimaryPress?: () => void;
   onSecondaryPress?: () => void;
 }
@@ -12,7 +14,9 @@ export interface SongActionCardProps {
 export function SongActionCard({
   song,
   primaryLabel,
+  primaryDisabled = false,
   secondaryLabel,
+  secondaryDisabled = false,
   onPrimaryPress,
   onSecondaryPress,
 }: SongActionCardProps) {
@@ -30,11 +34,22 @@ export function SongActionCard({
       <Text style={styles.songArtist}>{song.artists.join(", ")}</Text>
       <View style={styles.songActions}>
         {secondaryLabel && onSecondaryPress ? (
-          <Pressable style={styles.playButton} onPress={onSecondaryPress}>
+          <Pressable
+            disabled={secondaryDisabled}
+            style={[styles.playButton, secondaryDisabled ? styles.disabledButton : undefined]}
+            onPress={onSecondaryPress}
+          >
             <Text style={styles.playButtonText}>{secondaryLabel}</Text>
           </Pressable>
         ) : null}
-        <Pressable style={styles.pickButton} onPress={onPrimaryPress}>
+        <Pressable
+          disabled={primaryDisabled || !onPrimaryPress}
+          style={[
+            styles.pickButton,
+            primaryDisabled || !onPrimaryPress ? styles.disabledButton : undefined,
+          ]}
+          onPress={onPrimaryPress}
+        >
           <Text style={styles.pickButtonText}>{primaryLabel}</Text>
         </Pressable>
       </View>
@@ -92,5 +107,8 @@ const styles = StyleSheet.create({
     color: "#082F49",
     fontSize: 14,
     fontWeight: "900",
+  },
+  disabledButton: {
+    opacity: 0.45,
   },
 });

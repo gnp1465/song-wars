@@ -4,12 +4,14 @@ import type { MediaTrack } from "../../types/media";
 import { SongActionCard } from "./SongActionCard";
 
 export interface ActiveMatchupPanelProps {
+  isPickingWinner?: boolean;
   matchup: BracketMatchup;
   onPickWinner: (submissionId: string) => void;
   onPlayPreview: (song: MediaTrack) => void;
 }
 
 export function ActiveMatchupPanel({
+  isPickingWinner = false,
   matchup,
   onPickWinner,
   onPlayPreview,
@@ -19,12 +21,14 @@ export function ActiveMatchupPanel({
       <Text style={styles.roundLabel}>Bracket Round {matchup.roundNumber}</Text>
       <SongChoice
         entry={matchup.left}
+        isPickingWinner={isPickingWinner}
         onPick={onPickWinner}
         onPlayPreview={onPlayPreview}
       />
       <Text style={styles.vs}>vs</Text>
       <SongChoice
         entry={matchup.right}
+        isPickingWinner={isPickingWinner}
         onPick={onPickWinner}
         onPlayPreview={onPlayPreview}
       />
@@ -34,15 +38,23 @@ export function ActiveMatchupPanel({
 
 interface SongChoiceProps {
   entry: BracketMatchup["left"];
+  isPickingWinner: boolean;
   onPick: (submissionId: string) => void;
   onPlayPreview: (song: MediaTrack) => void;
 }
 
-function SongChoice({ entry, onPick, onPlayPreview }: SongChoiceProps) {
+function SongChoice({
+  entry,
+  isPickingWinner,
+  onPick,
+  onPlayPreview,
+}: SongChoiceProps) {
   return (
     <SongActionCard
       song={entry?.song}
-      primaryLabel="Pick Winner"
+      primaryDisabled={isPickingWinner}
+      primaryLabel={isPickingWinner ? "Saving..." : "Pick Winner"}
+      secondaryDisabled={isPickingWinner}
       secondaryLabel={entry ? "Play Preview" : undefined}
       onPrimaryPress={entry ? () => onPick(entry.submissionId) : undefined}
       onSecondaryPress={entry ? () => onPlayPreview(entry.song) : undefined}
