@@ -1,4 +1,10 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  MAX_POINTS_TO_WIN,
+  MAX_SONGS_PER_PLAYER,
+  MIN_POINTS_TO_WIN,
+  MIN_SONGS_PER_PLAYER,
+} from "../../services/game/room";
 import type { RoomMode } from "../../types/game";
 
 export interface RoomSettingsPanelProps {
@@ -37,15 +43,29 @@ export function RoomSettingsPanel({
         </View>
       </View>
       <View style={styles.settingRow}>
-        <Text style={styles.settingLabel}>Songs per player</Text>
+        <View style={styles.settingCopy}>
+          <Text style={styles.settingLabel}>Songs per player</Text>
+          <Text style={styles.settingHint}>
+            {MIN_SONGS_PER_PLAYER}-{MAX_SONGS_PER_PLAYER} songs
+          </Text>
+        </View>
         <SettingStepper
+          maxValue={MAX_SONGS_PER_PLAYER}
+          minValue={MIN_SONGS_PER_PLAYER}
           value={songsPerPlayer}
           onChange={onSongsPerPlayerChange}
         />
       </View>
       <View style={styles.settingRow}>
-        <Text style={styles.settingLabel}>Points to win</Text>
+        <View style={styles.settingCopy}>
+          <Text style={styles.settingLabel}>Points to win</Text>
+          <Text style={styles.settingHint}>
+            {MIN_POINTS_TO_WIN}-{MAX_POINTS_TO_WIN} points
+          </Text>
+        </View>
         <SettingStepper
+          maxValue={MAX_POINTS_TO_WIN}
+          minValue={MIN_POINTS_TO_WIN}
           value={pointsToWin}
           onChange={onPointsToWinChange}
         />
@@ -76,18 +96,36 @@ function ModeButton({ isSelected, label, onPress }: ModeButtonProps) {
 }
 
 interface SettingStepperProps {
+  maxValue: number;
+  minValue: number;
   value: number;
   onChange: (value: number) => void;
 }
 
-function SettingStepper({ value, onChange }: SettingStepperProps) {
+function SettingStepper({
+  maxValue,
+  minValue,
+  value,
+  onChange,
+}: SettingStepperProps) {
+  const canDecrease = value > minValue;
+  const canIncrease = value < maxValue;
+
   return (
     <View style={styles.stepper}>
-      <Pressable style={styles.stepperButton} onPress={() => onChange(value - 1)}>
+      <Pressable
+        disabled={!canDecrease}
+        style={[styles.stepperButton, !canDecrease ? styles.disabledStepperButton : undefined]}
+        onPress={() => onChange(value - 1)}
+      >
         <Text style={styles.stepperText}>-</Text>
       </Pressable>
       <Text style={styles.stepperValue}>{value}</Text>
-      <Pressable style={styles.stepperButton} onPress={() => onChange(value + 1)}>
+      <Pressable
+        disabled={!canIncrease}
+        style={[styles.stepperButton, !canIncrease ? styles.disabledStepperButton : undefined]}
+        onPress={() => onChange(value + 1)}
+      >
         <Text style={styles.stepperText}>+</Text>
       </Pressable>
     </View>
@@ -115,13 +153,21 @@ const styles = StyleSheet.create({
     gap: 12,
     justifyContent: "space-between",
   },
+  settingCopy: {
+    flex: 1,
+    gap: 3,
+  },
   settingBlock: {
     gap: 10,
   },
   settingLabel: {
     color: "#F9FAFB",
-    flex: 1,
     fontSize: 15,
+    fontWeight: "700",
+  },
+  settingHint: {
+    color: "#94A3B8",
+    fontSize: 12,
     fontWeight: "700",
   },
   modeRow: {
@@ -164,6 +210,9 @@ const styles = StyleSheet.create({
     height: 36,
     justifyContent: "center",
     width: 36,
+  },
+  disabledStepperButton: {
+    opacity: 0.35,
   },
   stepperText: {
     color: "#F9FAFB",

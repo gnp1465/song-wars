@@ -19,6 +19,11 @@ export const DEFAULT_ROOM_SETTINGS: RoomSettings = {
   anonymousJudgingEnabled: false,
 };
 
+export const MIN_SONGS_PER_PLAYER = 1;
+export const MAX_SONGS_PER_PLAYER = 3;
+export const MIN_POINTS_TO_WIN = 1;
+export const MAX_POINTS_TO_WIN = 7;
+
 export function createLocalRoom(options: CreateLocalRoomOptions): Room {
   const hostPlayer = createHostPlayer(options.hostName);
 
@@ -137,11 +142,11 @@ function createHostPlayer(hostName: string): Player {
 }
 
 function clampSongsPerPlayer(songsPerPlayer: number): number {
-  return Math.min(3, Math.max(1, songsPerPlayer));
+  return Math.min(MAX_SONGS_PER_PLAYER, Math.max(MIN_SONGS_PER_PLAYER, songsPerPlayer));
 }
 
 function clampPointsToWin(pointsToWin: number): number {
-  return Math.min(7, Math.max(1, pointsToWin));
+  return Math.min(MAX_POINTS_TO_WIN, Math.max(MIN_POINTS_TO_WIN, pointsToWin));
 }
 
 function normalizeDisplayName(displayName: string): string {

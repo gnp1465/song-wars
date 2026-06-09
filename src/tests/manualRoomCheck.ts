@@ -4,6 +4,10 @@ import {
   createLocalRoom,
   getRoomStatusLabel,
   hasDuplicateDisplayName,
+  MAX_POINTS_TO_WIN,
+  MAX_SONGS_PER_PLAYER,
+  MIN_POINTS_TO_WIN,
+  MIN_SONGS_PER_PLAYER,
   removeGuestFromRoom,
   startRoom,
   updatePointsToWin,
@@ -64,6 +68,22 @@ assert(clampedHighRoom.settings.songsPerPlayer === 3, "Songs per player should c
 assert(clampedLowRoom.settings.songsPerPlayer === 1, "Songs per player should clamp to the min.");
 assert(clampedHighPointsRoom.settings.pointsToWin === 7, "Points to win should clamp to the max.");
 assert(clampedLowPointsRoom.settings.pointsToWin === 1, "Points to win should clamp to the min.");
+assert(
+  clampedHighRoom.settings.songsPerPlayer === MAX_SONGS_PER_PLAYER,
+  "The exported max songs constant should match the clamp rule.",
+);
+assert(
+  clampedLowRoom.settings.songsPerPlayer === MIN_SONGS_PER_PLAYER,
+  "The exported min songs constant should match the clamp rule.",
+);
+assert(
+  clampedHighPointsRoom.settings.pointsToWin === MAX_POINTS_TO_WIN,
+  "The exported max points constant should match the clamp rule.",
+);
+assert(
+  clampedLowPointsRoom.settings.pointsToWin === MIN_POINTS_TO_WIN,
+  "The exported min points constant should match the clamp rule.",
+);
 
 const unstartableRoom = startRoom(room);
 const startedRoom = startRoom(roomWithGuests);

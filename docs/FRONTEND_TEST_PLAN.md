@@ -12,6 +12,7 @@ Use this checklist when testing the local/offline frontend prototype.
 - Try a duplicate guest name and confirm it is blocked.
 - Remove a guest and confirm the start button disables again.
 - Change audio mode, songs per player, and points to win.
+- Confirm songs-per-player and points-to-win controls show their allowed ranges and stop at the min/max.
 - Start the game.
 
 ## Submissions
