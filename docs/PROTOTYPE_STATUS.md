@@ -3,6 +3,7 @@
 ## Frontend Prototype Complete Enough To Demo
 
 - Host creates a local room.
+- Main flow uses product-facing Song Wars copy instead of internal demo labels.
 - Guests are added with a temporary display name.
 - Room blocks duplicate display names.
 - Host sets room mode and songs per player.
@@ -25,7 +26,7 @@
 ## Frontend Still Worth Polishing
 
 - Manual phone test pass using `docs/FRONTEND_TEST_PLAN.md`.
-- Small spacing and copy tweaks found during device testing.
+- Small spacing tweaks found during device testing.
 - Final device polish after another real iPhone test pass.
 - More realistic role-specific screens once real multiplayer starts.
 - Dev-only audio lab can stay available in code, but it should remain out of the main player flow.

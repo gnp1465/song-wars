@@ -309,7 +309,7 @@ export function LocalBattleDemoScreen({
         <BracketProgress activeMatchupId={activeMatchup?.id} matchups={matchups} />
 
         <Pressable style={styles.resetButton} onPress={resetDemo}>
-          <Text style={styles.resetButtonText}>Reset Demo</Text>
+          <Text style={styles.resetButtonText}>Reset Game</Text>
         </Pressable>
           </>
         )}

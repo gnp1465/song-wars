@@ -1,5 +1,16 @@
 import { useState } from "react";
-import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import {
   addGuestToRoom,
   canStartRoom,
@@ -14,6 +25,7 @@ import {
 } from "../services/game/room";
 import { PlayerList } from "../components/game/PlayerList";
 import { RoomSettingsPanel } from "../components/game/RoomSettingsPanel";
+import { TurnGuidance } from "../components/game/TurnGuidance";
 import { LocalBattleDemoScreen } from "./LocalBattleDemoScreen";
 import type { Room } from "../types/game";
 
@@ -31,8 +43,10 @@ export function RoomFlowDemoScreen() {
   const roomSettings = room?.settings;
   const hasCreatedRoom = Boolean(room);
   const canStartGame = room ? canStartRoom(room) : false;
+  const playersNeeded = room ? Math.max(0, MINIMUM_PLAYERS_TO_START - room.players.length) : 0;
 
   function createRoom() {
+    Keyboard.dismiss();
     setRoom(
       createLocalRoom({
         hostName,
@@ -46,6 +60,8 @@ export function RoomFlowDemoScreen() {
     if (!room) {
       return;
     }
+
+    Keyboard.dismiss();
 
     const normalizedJoinCode = joinCodeInput.trim();
     const nextGuestName = guestName.trim();
@@ -83,6 +99,7 @@ export function RoomFlowDemoScreen() {
       return;
     }
 
+    Keyboard.dismiss();
     setRoom(startRoom(room));
   }
 
@@ -108,24 +125,37 @@ export function RoomFlowDemoScreen() {
 
   return (
     <SafeAreaView style={styles.root}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        keyboardVerticalOffset={64}
+        style={styles.keyboardArea}
+      >
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
-          <Text style={styles.eyebrow}>Room Demo</Text>
+          <Text style={styles.eyebrow}>Song Wars</Text>
           <Text style={styles.title}>Create a room</Text>
           <Text style={styles.body}>
-            This is a local fake room. It lets us test host and guest flow before adding a backend.
+            Start a local battle, add guests, choose the rules, and run the bracket.
           </Text>
         </View>
 
         <View style={styles.panel}>
           <Text style={styles.sectionTitle}>Host</Text>
+          <TurnGuidance
+            actorName={hostName.trim() || "Host"}
+            detail={hasCreatedRoom ? "The host name is locked for this room." : "Hosts create rooms and choose the rules."}
+            instruction={hasCreatedRoom ? "Invite guests with the room code." : "Enter the host name, then create the room."}
+            phaseLabel="Host setup"
+          />
           <TextInput
             autoCapitalize="words"
             autoCorrect={false}
             editable={!hasCreatedRoom}
             onChangeText={setHostName}
+            onSubmitEditing={createRoom}
             placeholder="Host name"
             placeholderTextColor="#64748B"
+            returnKeyType="done"
             style={[styles.input, hasCreatedRoom ? styles.lockedInput : undefined]}
             value={hostName}
           />
@@ -148,6 +178,16 @@ export function RoomFlowDemoScreen() {
               </View>
             </View>
             <Text style={styles.body}>Guests join with a display name.</Text>
+            <TurnGuidance
+              actorName={roomPlayers.length === 1 ? "Waiting for guests" : `${roomPlayers.length} players joined`}
+              detail={
+                playersNeeded > 0
+                  ? `Add ${playersNeeded} more ${playersNeeded === 1 ? "player" : "players"} to start.`
+                  : "The room has enough players to start."
+              }
+              instruction="Add guests, confirm the rules, then start the game."
+              phaseLabel="Lobby"
+            />
 
             <RoomSettingsPanel
               mode={roomSettings.mode}
@@ -167,8 +207,10 @@ export function RoomFlowDemoScreen() {
               autoCorrect={false}
               keyboardType="number-pad"
               onChangeText={setJoinCodeInput}
+              onSubmitEditing={addGuest}
               placeholder="Room code"
               placeholderTextColor="#64748B"
+              returnKeyType="next"
               style={styles.input}
               value={joinCodeInput}
             />
@@ -206,6 +248,7 @@ export function RoomFlowDemoScreen() {
           </View>
         ) : null}
       </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -213,6 +256,9 @@ export function RoomFlowDemoScreen() {
 const styles = StyleSheet.create({
   root: {
     backgroundColor: "#111827",
+    flex: 1,
+  },
+  keyboardArea: {
     flex: 1,
   },
   content: {
