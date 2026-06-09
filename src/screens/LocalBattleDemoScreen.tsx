@@ -25,6 +25,7 @@ import { SubmissionSearchPanel } from "../components/game/SubmissionSearchPanel"
 import { completeRound, getGameWinner, type PlayerScore } from "../services/game/scoring";
 import {
   createSongSubmission,
+  getSubmissionSongLabel,
   hasDuplicateSongSubmission,
 } from "../services/game/submissions";
 import { AppleITunesProvider } from "../services/media/providers/AppleITunesProvider";
@@ -71,6 +72,7 @@ export function LocalBattleDemoScreen({
   const [activeRoundNumber, setActiveRoundNumber] = useState(1);
   const [matchups, setMatchups] = useState<BracketMatchup[]>(initialBracket);
   const [roundWinnerPlayerId, setRoundWinnerPlayerId] = useState<string | undefined>();
+  const [roundWinnerSubmissionId, setRoundWinnerSubmissionId] = useState<string | undefined>();
   const [gameWinnerPlayerId, setGameWinnerPlayerId] = useState<string | undefined>();
 
   const currentRoundId = `demo-round-${roundIndex}`;
@@ -126,6 +128,7 @@ export function LocalBattleDemoScreen({
     setScores(roundResult.scores);
     setJudgePlayerId(roundResult.nextJudgePlayerId);
     setRoundWinnerPlayerId(roundResult.winningPlayerId);
+    setRoundWinnerSubmissionId(roundResult.winningSubmissionId);
     setGameWinnerPlayerId(gameWinner?.playerId);
   }
 
@@ -142,6 +145,7 @@ export function LocalBattleDemoScreen({
     setActiveRoundNumber(1);
     setMatchups(initialBracket);
     setRoundWinnerPlayerId(undefined);
+    setRoundWinnerSubmissionId(undefined);
     setGameWinnerPlayerId(undefined);
     setAudioStatus("No preview playing");
   }
@@ -167,6 +171,7 @@ export function LocalBattleDemoScreen({
     setActiveRoundNumber(1);
     setMatchups([]);
     setRoundWinnerPlayerId(undefined);
+    setRoundWinnerSubmissionId(undefined);
     setGameWinnerPlayerId(undefined);
     setAudioStatus("No preview playing");
   }
@@ -300,7 +305,7 @@ export function LocalBattleDemoScreen({
         ) : (
           <RoundResultPanel
             winnerName={roundWinnerPlayerId ? getPlayerName(roundWinnerPlayerId, roomPlayers) : "Pending"}
-            winningSongLabel={getWinningSongLabel(roundWinnerPlayerId, selectedSubmissions)}
+            winningSongLabel={getSubmissionSongLabel(selectedSubmissions, roundWinnerSubmissionId)}
             onStartNextRound={startNextRound}
           />
         )}
@@ -324,21 +329,6 @@ export function LocalBattleDemoScreen({
 
 function getPlayerName(playerId: string, players: Player[]): string {
   return players.find((player) => player.id === playerId)?.displayName ?? "Unknown";
-}
-
-function getWinningSongLabel(
-  winningPlayerId: string | undefined,
-  submissions: SongSubmission[],
-): string {
-  const winningSubmission = submissions.find(
-    (submission) => submission.playerId === winningPlayerId,
-  );
-
-  if (!winningSubmission) {
-    return "Pending";
-  }
-
-  return `${winningSubmission.song.title} by ${winningSubmission.song.artists.join(", ")}`;
 }
 
 function createSubmission(

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import {
   createSongSubmission,
+  getSubmissionSongLabel,
   getSongKey,
   hasDuplicateSongSubmission,
 } from "../services/game/submissions.ts";
@@ -57,5 +58,25 @@ assert.equal(
   "Duplicate checks should ignore title casing and outside spaces.",
 );
 assert.equal(getSongKey(playableTrack), "golden:harry styles");
+
+const earlierSubmissionFromSamePlayer = createSongSubmission({
+  id: "round-1:sub-0",
+  playerId: "player-2",
+  roundId: "round-1",
+  song: {
+    ...playableTrack,
+    id: "apple:456",
+    title: "As It Was",
+  },
+  submittedAtMs: 900,
+});
+
+assert.equal(
+  getSubmissionSongLabel([earlierSubmissionFromSamePlayer, submission], submission.id),
+  "Golden by Harry Styles",
+  "Winning song labels should use the exact winning submission id.",
+);
+assert.equal(getSubmissionSongLabel([submission], undefined), "Pending");
+assert.equal(getSubmissionSongLabel([submission], "missing-submission"), "Pending");
 
 console.log("Submission checks passed.");

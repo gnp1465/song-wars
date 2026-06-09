@@ -32,6 +32,23 @@ export function hasDuplicateSongSubmission(
   return submissions.some((submission) => getSongKey(submission.song) === getSongKey(song));
 }
 
+export function getSubmissionSongLabel(
+  submissions: SongSubmission[],
+  submissionId: string | undefined,
+): string {
+  if (!submissionId) {
+    return "Pending";
+  }
+
+  const submission = submissions.find((submissionItem) => submissionItem.id === submissionId);
+
+  if (!submission) {
+    return "Pending";
+  }
+
+  return `${submission.song.title} by ${submission.song.artists.join(", ")}`;
+}
+
 export function getSongKey(song: MediaTrack): string {
   const normalizedTitle = song.title.trim().toLowerCase();
   const normalizedArtists = song.artists

@@ -24,6 +24,7 @@ Date: 2026-06-08
 - Bracket generation handles byes and avoids same-player first-round matchups where possible.
 - Bracket progress is grouped by round and labels active, pending, complete, and bye states.
 - Scoring detects the first player to the configured point target.
+- Round results show the exact winning submission, even when one player submitted multiple songs.
 - Final winner screen supports Play Again and Reset Room.
 - Audio Lab is not part of the main app flow.
 - `src/tests/manualPrototypeFlowCheck.ts` verifies the full local prototype path from room creation through final winner.
