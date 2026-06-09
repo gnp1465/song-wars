@@ -255,6 +255,7 @@ export function LocalBattleDemoScreen({
             errorMessage={submissionSearch.errorMessage}
             hasSearched={hasSearchedSubmissions}
             isSearching={submissionSearch.isSearching}
+            playerId={currentSubmittingPlayer?.id}
             playerName={currentSubmittingPlayer?.displayName ?? "All players submitted"}
             players={submittingPlayers}
             query={submissionSearch.query}

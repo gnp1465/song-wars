@@ -35,6 +35,7 @@ Components are reusable visual pieces.
 - `Scoreboard` shows player scores.
 - `BracketProgress` shows the tournament state.
 - `SubmissionProgress` shows who has submitted.
+- `TurnGuidance` shows the current phase, acting player, and next expected action.
 
 Memorize: components receive props and render UI. They should not own deep game rules.
 

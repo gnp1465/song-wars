@@ -33,6 +33,10 @@ type AudioStatusKind = "idle" | "loading" | "playing" | "error" | "info";
 function getAudioStatusKind(status: string): AudioStatusKind {
   const normalizedStatus = status.toLowerCase();
 
+  if (normalizedStatus === "no preview playing" || normalizedStatus === "stopped") {
+    return "idle";
+  }
+
   if (normalizedStatus.startsWith("playing")) {
     return "playing";
   }
@@ -48,10 +52,6 @@ function getAudioStatusKind(status: string): AudioStatusKind {
     normalizedStatus.includes("already submitted")
   ) {
     return "error";
-  }
-
-  if (normalizedStatus === "no preview playing" || normalizedStatus === "stopped") {
-    return "idle";
   }
 
   return "info";

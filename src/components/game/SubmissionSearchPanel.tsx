@@ -1,13 +1,15 @@
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Keyboard, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import type { Player, SongSubmission } from "../../types/game";
 import type { MediaTrack } from "../../types/media";
 import { SongActionCard } from "./SongActionCard";
 import { SubmissionProgress } from "./SubmissionProgress";
+import { TurnGuidance } from "./TurnGuidance";
 
 export interface SubmissionSearchPanelProps {
   errorMessage?: string;
   hasSearched: boolean;
   isSearching: boolean;
+  playerId?: string;
   playerName: string;
   players: Player[];
   query: string;
@@ -25,6 +27,7 @@ export function SubmissionSearchPanel({
   errorMessage,
   hasSearched,
   isSearching,
+  playerId,
   playerName,
   players,
   query,
@@ -43,14 +46,26 @@ export function SubmissionSearchPanel({
     isSearching,
     resultCount: results.length,
   });
+  const currentPlayerSubmissionCount = submissions.filter(
+    (submission) => submission.playerId === playerId,
+  ).length;
+  const songsRemaining = Math.max(songsPerPlayer - currentPlayerSubmissionCount, 0);
+
+  function handleSearch() {
+    Keyboard.dismiss();
+    onSearch();
+  }
 
   return (
     <View style={styles.container}>
       <Text style={styles.eyebrow}>Submissions</Text>
       <Text style={styles.title}>Pick a song</Text>
-      <Text style={styles.body}>Topic: {topic}</Text>
-      <Text style={styles.body}>Songs per player: {songsPerPlayer}</Text>
-      <Text style={styles.body}>Player: {playerName}</Text>
+      <TurnGuidance
+        actorName={playerName}
+        detail={`Topic: ${topic}`}
+        instruction={`Submit ${formatSongCount(songsRemaining)} for this turn.`}
+        phaseLabel="Player turn"
+      />
       <SubmissionProgress players={players} submissions={submissions} />
       <View style={styles.searchRow}>
         <TextInput
@@ -60,11 +75,11 @@ export function SubmissionSearchPanel({
           placeholder="Search songs"
           placeholderTextColor="#64748B"
           returnKeyType="search"
-          onSubmitEditing={onSearch}
+          onSubmitEditing={handleSearch}
           style={styles.input}
           value={query}
         />
-        <Pressable style={styles.searchButton} onPress={onSearch}>
+        <Pressable style={styles.searchButton} onPress={handleSearch}>
           <Text style={styles.searchButtonText}>{isSearching ? "..." : "Search"}</Text>
         </Pressable>
       </View>
@@ -85,6 +100,10 @@ export function SubmissionSearchPanel({
       </View>
     </View>
   );
+}
+
+function formatSongCount(songCount: number): string {
+  return songCount === 1 ? "1 song" : `${songCount} songs`;
 }
 
 interface EmptyStateOptions {

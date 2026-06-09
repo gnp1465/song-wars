@@ -9,6 +9,7 @@
 - Host sets the points needed to win.
 - Game starts only with enough players.
 - Judge chooses a topic.
+- Each game phase clearly shows whose turn it is and what action comes next.
 - Judge does not submit songs.
 - Contestants search, preview, and submit songs.
 - Duplicate song submissions are blocked.

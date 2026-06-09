@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View } from "react-native";
 import type { RoomMode } from "../../types/game";
+import { TurnGuidance } from "./TurnGuidance";
 
 export interface BattleStatusHeaderProps {
   judgeName: string;
@@ -18,8 +19,12 @@ export function BattleStatusHeader({
     <View style={styles.header}>
       <Text style={styles.eyebrow}>Judging</Text>
       <Text style={styles.title}>Song Wars</Text>
-      <Text style={styles.body}>Topic: {topic}</Text>
-      <Text style={styles.body}>Judge: {judgeName}</Text>
+      <TurnGuidance
+        actorName={judgeName}
+        detail={`Topic: ${topic}`}
+        instruction="Play the previews, compare the songs, then pick the winner."
+        phaseLabel="Judge turn"
+      />
       <View style={styles.metaRow}>
         <Text style={styles.metaPill}>{getRoomModeLabel(roomMode)}</Text>
         <Text style={styles.metaPill}>First to {pointsToWin}</Text>

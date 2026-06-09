@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import type { RoomMode } from "../../types/game";
+import { TurnGuidance } from "./TurnGuidance";
 
 export interface JudgeSetupPanelProps {
   judgeName: string;
@@ -24,7 +25,12 @@ export function JudgeSetupPanel({
     <View style={styles.container}>
       <Text style={styles.eyebrow}>Judge Setup</Text>
       <Text style={styles.title}>Choose the topic</Text>
-      <Text style={styles.body}>Judge: {judgeName}</Text>
+      <TurnGuidance
+        actorName={judgeName}
+        detail="Everyone else will submit songs after the topic is locked."
+        instruction="Set the prompt for this round."
+        phaseLabel="Judge turn"
+      />
       <View style={styles.settingsPanel}>
         <Text style={styles.sectionTitle}>Room settings</Text>
         <View style={styles.settingRow}>

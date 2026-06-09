@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { TurnGuidance } from "./TurnGuidance";
 
 export interface RoundResultPanelProps {
   winnerName: string;
@@ -14,6 +15,12 @@ export function RoundResultPanel({
   return (
     <View style={styles.container}>
       <Text style={styles.roundLabel}>Round complete</Text>
+      <TurnGuidance
+        actorName={winnerName}
+        detail="Round winners become the judge for the next topic."
+        instruction="This player won the round and gets 1 point."
+        phaseLabel="Next judge"
+      />
       <Text style={styles.winner}>Winner: {winnerName}</Text>
       <Text style={styles.body}>Winning song: {winningSongLabel}</Text>
       <Pressable style={styles.primaryButton} onPress={onStartNextRound}>
