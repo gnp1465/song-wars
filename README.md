@@ -44,13 +44,15 @@ Then open the app with Expo Go or an iOS simulator.
 ## Run Checks
 
 ```bash
-npm test
+npm run verify
 ```
 
-Type-check the app:
+This runs the TypeScript check and all local logic tests.
+
+Run only the local logic tests:
 
 ```bash
-npx tsc --noEmit
+npm test
 ```
 
 ## Project Map

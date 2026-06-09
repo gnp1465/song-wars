@@ -62,6 +62,5 @@ Use this checklist when testing the local/offline frontend prototype.
 Run these before pushing frontend changes:
 
 ```bash
-npx tsc --noEmit
-npm test
+npm run verify
 ```

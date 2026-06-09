@@ -7,6 +7,8 @@
   "scripts": {
     "start": "expo start",
     "ios": "expo start --ios",
+    "typecheck": "tsc --noEmit",
+    "verify": "npm run typecheck && npm test",
     "test": "npm run check:media && npm run check:playback && npm run check:bracket && npm run check:scoring && npm run check:submissions && npm run check:mock-spotify && npm run check:room && npm run check:prototype-flow",
     "check:media": "node --experimental-strip-types src/tests/manualMediaMocks.ts",
     "check:playback": "node --experimental-strip-types src/tests/manualPlaybackCheck.ts",

@@ -37,11 +37,10 @@ Date: 2026-06-09
 ## Verified Commands
 
 ```bash
-npx tsc --noEmit
-npm test
+npm run verify
 ```
 
-Both commands passed before this audit was written.
+This runs `tsc --noEmit` and `npm test`.
 
 ## Still Requires Human Device Pass
 
