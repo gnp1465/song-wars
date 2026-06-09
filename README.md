@@ -2,23 +2,28 @@
 
 Native iOS-first React Native/Expo prototype for a live song battle party game.
 
-## Current Prototype
+## Current Frontend Prototype
 
-The local demo currently supports:
+The local/offline prototype currently supports the full core game loop:
 
+- local room creation
+- guest display-name join simulation
+- duplicate display-name blocking
+- room settings for audio mode, songs per player, and points to win
 - judge topic setup
-- songs-per-player setting
 - non-judge song submissions
 - in-app song preview playback
 - duplicate submission blocking
 - bracket generation with byes
+- first-round same-player matchup avoidance where possible
+- grouped bracket progress by round
 - winner advancement
 - scoring
 - next judge assignment
 - next round flow
-- model-backed fake room/lobby flow
-- configurable points-to-win setting
 - final winner screen with local play-again/reset actions
+
+Backend, real accounts, real multiplayer room sync, payments, and persistent history are intentionally out of scope for this frontend prototype.
 
 ## Run The App
 

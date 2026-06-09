@@ -1,6 +1,6 @@
 # Prototype Status
 
-## Frontend Prototype Complete Enough To Demo
+## Frontend Prototype Scope
 
 - Host creates a local room.
 - Main flow uses product-facing Song Wars copy instead of internal demo labels.
@@ -23,11 +23,15 @@
 - Final winner screen supports play again and reset room.
 - Preview playback works inside the core game flow.
 
-## Frontend Still Worth Polishing
+## Final Verification
 
-- Manual phone test pass using `docs/FRONTEND_TEST_PLAN.md`.
-- Small spacing tweaks found during device testing.
-- Final device polish after another real iPhone test pass.
+- Run `npx tsc --noEmit`.
+- Run `npm test`.
+- Complete a manual phone/simulator pass using `docs/FRONTEND_TEST_PLAN.md`.
+- Fix any spacing or copy issues found during the manual pass.
+
+## Later Product Improvements
+
 - More realistic role-specific screens once real multiplayer starts.
 - Dev-only audio lab can stay available in code, but it should remain out of the main player flow.
 

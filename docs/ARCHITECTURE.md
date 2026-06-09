@@ -12,8 +12,8 @@ Memorize: the entry file should stay small. It chooses top-level screens; it sho
 
 Screens are full app views. They coordinate user flow and state.
 
-- `src/screens/LocalBattleDemoScreen.tsx` runs the local playable game demo.
-- `src/screens/RoomFlowDemoScreen.tsx` runs the fake room/lobby flow using the shared room model.
+- `src/screens/LocalBattleDemoScreen.tsx` runs the local playable battle flow.
+- `src/screens/RoomFlowDemoScreen.tsx` runs the local room/lobby flow using the shared room model.
 - `src/screens/PreviewPlaybackScreen.tsx` is a dev-only lab screen for testing search and preview playback. It is not part of the main app surface.
 
 Memorize: screens are allowed to coordinate several pieces, but if a screen gets too large, repeated UI should move into components and repeated behavior should move into hooks.
@@ -71,7 +71,7 @@ Memorize: types are contracts. They make the app easier to reason about because 
 
 ## Data
 
-`src/data/demoGame.ts` holds fake demo data: players, topics, and sample tracks.
+`src/data/demoGame.ts` holds local prototype data: players, topics, and sample tracks.
 
 Memorize: demo data is temporary. Later, real room and backend data will replace it.
 
