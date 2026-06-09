@@ -23,6 +23,7 @@ Date: 2026-06-08
 - Duplicate song submissions are blocked before adding to the round.
 - Preview audio is stopped on submit, winner pick, next round, game reset, and room reset.
 - Preview loading can be cancelled before playback starts.
+- Preview audio is cancelled and unloaded if the playback screen unmounts.
 - Winner-pick controls are disabled while a judging decision is being processed.
 - Bracket generation handles byes and avoids same-player first-round matchups where possible.
 - Bracket progress is grouped by round and labels active, pending, complete, and bye states.

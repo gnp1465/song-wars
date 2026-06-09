@@ -1,5 +1,5 @@
 import { Audio } from "expo-av";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MediaResolutionService } from "../services/media/MediaResolutionService";
 import { AppleITunesProvider } from "../services/media/providers/AppleITunesProvider";
 import type { MediaTrack } from "../types/media";
@@ -9,6 +9,13 @@ export function usePreviewAudio() {
   const isLoadingPreviewRef = useRef(false);
   const previewRequestIdRef = useRef(0);
   const [audioStatus, setAudioStatus] = useState("No preview playing");
+
+  useEffect(() => {
+    return () => {
+      cancelPreviewWork();
+      void unloadCurrentSound();
+    };
+  }, []);
 
   async function playSongPreview(song: MediaTrack) {
     if (isLoadingPreviewRef.current) {
@@ -65,10 +72,14 @@ export function usePreviewAudio() {
   }
 
   async function stopSongPreview() {
-    previewRequestIdRef.current += 1;
-    isLoadingPreviewRef.current = false;
+    cancelPreviewWork();
     await unloadCurrentSound();
     setAudioStatus("Stopped");
+  }
+
+  function cancelPreviewWork() {
+    previewRequestIdRef.current += 1;
+    isLoadingPreviewRef.current = false;
   }
 
   async function unloadCurrentSound() {
