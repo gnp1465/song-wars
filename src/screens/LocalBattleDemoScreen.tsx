@@ -23,6 +23,10 @@ import { RoundResultPanel } from "../components/game/RoundResultPanel";
 import { Scoreboard } from "../components/game/Scoreboard";
 import { SubmissionSearchPanel } from "../components/game/SubmissionSearchPanel";
 import { completeRound, getGameWinner, type PlayerScore } from "../services/game/scoring";
+import {
+  createSongSubmission,
+  hasDuplicateSongSubmission,
+} from "../services/game/submissions";
 import { AppleITunesProvider } from "../services/media/providers/AppleITunesProvider";
 import { DEMO_PLAYERS, DEMO_SONG_POOL, DEMO_TOPICS, createDemoTrack } from "../data/demoGame";
 import { usePreviewAudio } from "../hooks/usePreviewAudio";
@@ -174,9 +178,7 @@ export function LocalBattleDemoScreen({
       return;
     }
 
-    const isDuplicate = selectedSubmissions.some((submission) =>
-      isSameSong(submission.song, song),
-    );
+    const isDuplicate = hasDuplicateSongSubmission(selectedSubmissions, song);
 
     if (isDuplicate) {
       setAudioStatus("That song was already submitted. Pick a different one.");
@@ -185,13 +187,12 @@ export function LocalBattleDemoScreen({
 
     await stopSongPreview();
 
-    const submission = createSubmission(
-      currentRoundId,
-      `${currentRoundId}:sub-${selectedSubmissions.length + 1}`,
-      submittingPlayer.id,
-      song.title,
-      song.artists.join(", ") || "Unknown Artist",
-    );
+    const submission = createSongSubmission({
+      id: `${currentRoundId}:sub-${selectedSubmissions.length + 1}`,
+      playerId: submittingPlayer.id,
+      roundId: currentRoundId,
+      song,
+    });
     const nextSubmissions = [...selectedSubmissions, submission];
 
     setSelectedSubmissions(nextSubmissions);
@@ -347,13 +348,12 @@ function createSubmission(
   title: string,
   artist: string,
 ): SongSubmission {
-  return {
+  return createSongSubmission({
     id,
     playerId,
     roundId,
     song: createDemoTrack(title, artist),
-    submittedAtMs: Date.now(),
-  };
+  });
 }
 
 function createDemoBracket(roundId: string, seed: number, players: Player[]): BracketMatchup[] {
@@ -370,14 +370,6 @@ function createDemoBracket(roundId: string, seed: number, players: Player[]): Br
   });
 
   return generateBracket({ roundId, submissions, seed });
-}
-
-function isSameSong(firstSong: MediaTrack, secondSong: MediaTrack): boolean {
-  return normalizeSongKey(firstSong) === normalizeSongKey(secondSong);
-}
-
-function normalizeSongKey(song: MediaTrack): string {
-  return `${song.title}:${song.artists.join(",")}`.toLowerCase().trim();
 }
 
 const styles = StyleSheet.create({
