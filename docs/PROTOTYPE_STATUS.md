@@ -14,6 +14,7 @@
 - Contestants search, preview, and submit songs.
 - Duplicate song submissions are blocked.
 - Bracket handles byes and advances winners.
+- Bracket display groups matchups by round and labels active, pending, complete, and bye states.
 - Judge previews songs and picks winners.
 - Scores update after each round.
 - Round winner becomes the next judge.
@@ -25,7 +26,7 @@
 
 - Manual phone test pass using `docs/FRONTEND_TEST_PLAN.md`.
 - Small spacing and copy tweaks found during device testing.
-- Better visual treatment for final bracket history.
+- Final device polish after another real iPhone test pass.
 - More realistic role-specific screens once real multiplayer starts.
 - Dev-only audio lab can stay available in code, but it should remain out of the main player flow.
 
