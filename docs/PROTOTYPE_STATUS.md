@@ -28,6 +28,7 @@
 - Run `npx tsc --noEmit`.
 - Run `npm test`.
 - Complete a manual phone/simulator pass using `docs/FRONTEND_TEST_PLAN.md`.
+- Record the device pass results in `docs/DEVICE_PASS_LOG.md`.
 - Fix any spacing or copy issues found during the manual pass.
 
 ## Later Product Improvements

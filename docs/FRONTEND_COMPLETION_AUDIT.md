@@ -45,7 +45,7 @@ This runs `tsc --noEmit` and `npm test`.
 
 ## Still Requires Human Device Pass
 
-Use `docs/FRONTEND_TEST_PLAN.md` on an iPhone simulator or physical phone.
+Use `docs/FRONTEND_TEST_PLAN.md` on an iPhone simulator or physical phone, then record the pass/fail results in `docs/DEVICE_PASS_LOG.md`.
 
 - Confirm no text overlaps on the device screen.
 - Confirm keyboard behavior feels correct in lobby and song search.
