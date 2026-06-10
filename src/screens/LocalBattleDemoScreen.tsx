@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import {
   Keyboard,
   KeyboardAvoidingView,
@@ -30,7 +30,7 @@ import {
   hasDuplicateSongSubmission,
 } from "../services/game/submissions";
 import { AppleITunesProvider } from "../services/media/providers/AppleITunesProvider";
-import { DEMO_PLAYERS, DEMO_SONG_POOL, DEMO_TOPICS, createDemoTrack } from "../data/demoGame";
+import { DEMO_PLAYERS, DEMO_TOPICS } from "../data/demoGame";
 import { usePreviewAudio } from "../hooks/usePreviewAudio";
 import { useSongSearch } from "../hooks/useSongSearch";
 import type { BracketMatchup, Player, RoomMode, SongSubmission } from "../types/game";
@@ -54,13 +54,8 @@ export function LocalBattleDemoScreen({
   const { audioStatus, playSongPreview, setAudioStatus, stopSongPreview } = usePreviewAudio();
   const isSubmittingSongRef = useRef(false);
   const isPickingWinnerRef = useRef(false);
-  const initialRoundId = "demo-round-1";
   const roomPlayers = players.length >= 2 ? players : DEMO_PLAYERS;
   const initialJudgePlayerId = roomPlayers[0].id;
-  const initialBracket = useMemo(
-    () => createDemoBracket(initialRoundId, 42, roomPlayers),
-    [roomPlayers],
-  );
   const [roundIndex, setRoundIndex] = useState(1);
   const [topicInput, setTopicInput] = useState("Beach vibes");
   const [activeTopic, setActiveTopic] = useState<string | undefined>();
@@ -74,7 +69,7 @@ export function LocalBattleDemoScreen({
   const [judgePlayerId, setJudgePlayerId] = useState(initialJudgePlayerId);
   const [scores, setScores] = useState<PlayerScore[]>([]);
   const [activeRoundNumber, setActiveRoundNumber] = useState(1);
-  const [matchups, setMatchups] = useState<BracketMatchup[]>(initialBracket);
+  const [matchups, setMatchups] = useState<BracketMatchup[]>([]);
   const [isPickingWinner, setIsPickingWinner] = useState(false);
   const [roundWinnerPlayerId, setRoundWinnerPlayerId] = useState<string | undefined>();
   const [roundWinnerSubmissionId, setRoundWinnerSubmissionId] = useState<string | undefined>();
@@ -85,7 +80,8 @@ export function LocalBattleDemoScreen({
   const topic = activeTopic ?? fallbackTopic;
   const submittingPlayers = roomPlayers.filter((player) => player.id !== judgePlayerId);
   const currentSubmittingPlayer = submittingPlayers[submissionStepIndex];
-  const hasFinishedSubmissions = selectedSubmissions.length === submittingPlayers.length * songsPerPlayer;
+  const requiredSubmissionCount = submittingPlayers.length * songsPerPlayer;
+  const hasFinishedSubmissions = selectedSubmissions.length >= requiredSubmissionCount;
   const activeMatchup = matchups.find(
     (matchup) => matchup.roundNumber === activeRoundNumber && matchup.status === "ready",
   );
@@ -158,7 +154,7 @@ export function LocalBattleDemoScreen({
     setJudgePlayerId(initialJudgePlayerId);
     setScores([]);
     setActiveRoundNumber(1);
-    setMatchups(initialBracket);
+    setMatchups([]);
     setIsPickingWinner(false);
     isPickingWinnerRef.current = false;
     setRoundWinnerPlayerId(undefined);
@@ -175,7 +171,6 @@ export function LocalBattleDemoScreen({
     void stopSongPreview("No preview playing");
 
     const nextRoundIndex = roundIndex + 1;
-    const nextRoundId = `demo-round-${nextRoundIndex}`;
     const nextTopic = DEMO_TOPICS[(nextRoundIndex - 1) % DEMO_TOPICS.length];
 
     setRoundIndex(nextRoundIndex);
@@ -236,8 +231,14 @@ export function LocalBattleDemoScreen({
         setSubmissionStepIndex((currentIndex) => currentIndex + 1);
       }
 
-      if (nextSubmissions.length === submittingPlayers.length * songsPerPlayer) {
-        setMatchups(generateBracket({ roundId: currentRoundId, submissions: nextSubmissions, seed: 42 + roundIndex }));
+      if (nextSubmissions.length >= requiredSubmissionCount) {
+        setMatchups(
+          generateBracket({
+            roundId: currentRoundId,
+            submissions: nextSubmissions,
+            seed: 42 + roundIndex,
+          }),
+        );
         setActiveRoundNumber(1);
       }
     } finally {
@@ -369,37 +370,6 @@ export function LocalBattleDemoScreen({
 
 function getPlayerName(playerId: string, players: Player[]): string {
   return players.find((player) => player.id === playerId)?.displayName ?? "Unknown";
-}
-
-function createSubmission(
-  roundId: string,
-  id: string,
-  playerId: string,
-  title: string,
-  artist: string,
-): SongSubmission {
-  return createSongSubmission({
-    id,
-    playerId,
-    roundId,
-    song: createDemoTrack(title, artist),
-  });
-}
-
-function createDemoBracket(roundId: string, seed: number, players: Player[]): BracketMatchup[] {
-  const submissions = players.map((player, index) => {
-    const song = DEMO_SONG_POOL[index % DEMO_SONG_POOL.length];
-
-    return createSubmission(
-      roundId,
-      `${roundId}:sub-${index + 1}`,
-      player.id,
-      song.title,
-      song.artists.join(", ") || "Unknown Artist",
-    );
-  });
-
-  return generateBracket({ roundId, submissions, seed });
 }
 
 const styles = StyleSheet.create({
