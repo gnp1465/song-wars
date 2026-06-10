@@ -52,8 +52,10 @@ export function JudgeSetupPanel({
         autoCapitalize="words"
         autoCorrect={false}
         onChangeText={onTopicChange}
+        onSubmitEditing={onStartBattle}
         placeholder="Round topic"
         placeholderTextColor="#64748B"
+        returnKeyType="done"
         style={styles.input}
         value={topicInput}
       />

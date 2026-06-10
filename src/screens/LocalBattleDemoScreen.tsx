@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import {
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -259,6 +260,11 @@ export function LocalBattleDemoScreen({
     }
   }
 
+  function startBattleTopic() {
+    Keyboard.dismiss();
+    setActiveTopic(topicInput.trim() || fallbackTopic);
+  }
+
   return (
     <SafeAreaView style={styles.root}>
       <AudioStatusBar status={audioStatus} onStop={() => void stopSongPreview()} />
@@ -279,7 +285,7 @@ export function LocalBattleDemoScreen({
             roomMode={roomMode}
             songsPerPlayer={songsPerPlayer}
             topicInput={topicInput}
-            onStartBattle={() => setActiveTopic(topicInput.trim() || fallbackTopic)}
+            onStartBattle={startBattleTopic}
             onTopicChange={setTopicInput}
           />
         ) : null}

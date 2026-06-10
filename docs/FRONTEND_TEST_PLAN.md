@@ -20,6 +20,7 @@ Use this checklist when testing the local/offline frontend prototype.
 ## Submissions
 
 - Confirm the judge is not asked to submit a song.
+- On the topic screen, type a topic and confirm the keyboard Done key starts the battle.
 - Confirm the current submitting player is shown.
 - Search for a song.
 - Try searching with a blank query and confirm it is blocked.
