@@ -23,6 +23,7 @@ Date: 2026-06-09
 - Preview resolution reuses already-playable preview URLs before calling provider fallback resolution.
 - Duplicate song submissions are blocked before adding to the round.
 - Preview audio is stopped on submit, winner pick, next round, game reset, and room reset.
+- Game reset, room reset, and next-round transitions leave preview status idle.
 - Preview loading can be cancelled before playback starts.
 - Preview audio is cancelled and unloaded if the playback screen unmounts.
 - Winner-pick controls are disabled while a judging decision is being processed.

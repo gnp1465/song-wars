@@ -71,10 +71,10 @@ export function usePreviewAudio() {
     }
   }
 
-  async function stopSongPreview() {
+  async function stopSongPreview(nextStatus = "Stopped") {
     cancelPreviewWork();
     await unloadCurrentSound();
-    setAudioStatus("Stopped");
+    setAudioStatus(nextStatus);
   }
 
   function cancelPreviewWork() {

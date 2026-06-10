@@ -146,7 +146,7 @@ export function LocalBattleDemoScreen({
   }
 
   function resetDemo() {
-    void stopSongPreview();
+    void stopSongPreview("No preview playing");
     setRoundIndex(1);
     setTopicInput("Beach vibes");
     setActiveTopic(undefined);
@@ -164,16 +164,15 @@ export function LocalBattleDemoScreen({
     setRoundWinnerPlayerId(undefined);
     setRoundWinnerSubmissionId(undefined);
     setGameWinnerPlayerId(undefined);
-    setAudioStatus("No preview playing");
   }
 
   function resetRoom() {
-    void stopSongPreview();
+    void stopSongPreview("No preview playing");
     onResetRoom?.();
   }
 
   function startNextRound() {
-    void stopSongPreview();
+    void stopSongPreview("No preview playing");
 
     const nextRoundIndex = roundIndex + 1;
     const nextRoundId = `demo-round-${nextRoundIndex}`;
@@ -194,7 +193,6 @@ export function LocalBattleDemoScreen({
     setRoundWinnerPlayerId(undefined);
     setRoundWinnerSubmissionId(undefined);
     setGameWinnerPlayerId(undefined);
-    setAudioStatus("No preview playing");
   }
 
   async function selectSubmissionSong(song: MediaTrack) {
