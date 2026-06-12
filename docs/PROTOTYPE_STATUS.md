@@ -27,6 +27,7 @@
 
 - Run `npx tsc --noEmit`.
 - Run `npm test`.
+- Use `docs/IOS_DEVICE_PASS_GUIDE.md` to launch the app on a phone or simulator.
 - Complete a manual phone/simulator pass using `docs/FRONTEND_TEST_PLAN.md`.
 - Record the device pass results in `docs/DEVICE_PASS_LOG.md`.
 - Fix any spacing or copy issues found during the manual pass.
