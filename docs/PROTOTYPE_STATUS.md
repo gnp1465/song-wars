@@ -31,6 +31,7 @@
 - Complete a manual phone/simulator pass using `docs/FRONTEND_TEST_PLAN.md`.
 - Record the device pass results in `docs/DEVICE_PASS_LOG.md`.
 - Run `npm run check:device-pass-log` after filling out the device pass log.
+- Run `npm run check:prototype-complete` as the final frontend prototype gate.
 - Fix any spacing or copy issues found during the manual pass.
 
 ## Later Product Improvements

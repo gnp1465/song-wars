@@ -55,6 +55,12 @@ Run only the local logic tests:
 npm test
 ```
 
+After completing the phone or simulator pass and filling out `docs/DEVICE_PASS_LOG.md`, run the final frontend prototype gate:
+
+```bash
+npm run check:prototype-complete
+```
+
 ## Project Map
 
 Read the architecture guide:

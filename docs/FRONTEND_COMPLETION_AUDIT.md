@@ -43,6 +43,14 @@ npm run verify
 
 This runs `tsc --noEmit` and `npm test`.
 
+After the phone/simulator pass has been recorded, run:
+
+```bash
+npm run check:prototype-complete
+```
+
+This runs the code checks and validates the completed device-pass log.
+
 ## Still Requires Human Device Pass
 
 Use `docs/FRONTEND_TEST_PLAN.md` on an iPhone simulator or physical phone, then record the pass/fail results in `docs/DEVICE_PASS_LOG.md`.
