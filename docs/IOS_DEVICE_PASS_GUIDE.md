@@ -16,6 +16,12 @@ npm run verify
 
 If this fails, fix the code before doing the device pass.
 
+For simulator testing, also check whether this Mac has the required iOS tooling:
+
+```bash
+npm run check:ios-tooling
+```
+
 ## Option A: Physical iPhone
 
 1. Install Expo Go on the iPhone, unless the project later moves to a custom Expo dev client.
@@ -37,7 +43,7 @@ npm start
 3. Confirm simulator tooling works:
 
 ```bash
-xcrun simctl list devices
+npm run check:ios-tooling
 ```
 
 4. Start the app in the simulator:
@@ -69,4 +75,3 @@ Write it in `docs/DEVICE_PASS_LOG.md` with:
 - whether it blocks the demo
 
 After that, fix the issue, run `npm run verify`, and repeat only the failed section plus one end-to-end game pass.
-
