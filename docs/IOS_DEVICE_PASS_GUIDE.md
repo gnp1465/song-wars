@@ -35,6 +35,11 @@ npm start
 4. Scan the QR code from the terminal or Expo page.
 5. Play through `docs/FRONTEND_TEST_PLAN.md`.
 6. Record results in `docs/DEVICE_PASS_LOG.md`.
+7. Confirm the recorded evidence is complete:
+
+```bash
+npm run check:device-pass-log
+```
 
 ## Option B: iOS Simulator
 
@@ -54,6 +59,11 @@ npm run ios
 
 5. Play through `docs/FRONTEND_TEST_PLAN.md`.
 6. Record results in `docs/DEVICE_PASS_LOG.md`.
+7. Confirm the recorded evidence is complete:
+
+```bash
+npm run check:device-pass-log
+```
 
 ## What To Pay Extra Attention To
 

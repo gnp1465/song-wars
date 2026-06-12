@@ -7,6 +7,7 @@
   "scripts": {
     "start": "expo start",
     "ios": "expo start --ios",
+    "check:device-pass-log": "node scripts/check-device-pass-log.mjs",
     "check:ios-tooling": "node scripts/check-ios-tooling.mjs",
     "typecheck": "tsc --noEmit",
     "verify": "npm run typecheck && npm test",
