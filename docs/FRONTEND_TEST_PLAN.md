@@ -42,6 +42,7 @@ Use this checklist when testing the local/offline frontend prototype.
 - Confirm completed matchups and byes are labeled clearly in the bracket.
 - Finish the round and confirm the winner gets a point.
 - With two songs per player, confirm the round result shows the exact winning song, not just another song from that player.
+- Confirm the round result does not show stale judging instructions or the completed bracket.
 - Start the next round and confirm the round winner becomes the next judge.
 
 ## Game Completion

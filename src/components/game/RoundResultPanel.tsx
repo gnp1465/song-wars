@@ -1,5 +1,4 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { TurnGuidance } from "./TurnGuidance";
 
 export interface RoundResultPanelProps {
   winnerName: string;
@@ -14,15 +13,10 @@ export function RoundResultPanel({
 }: RoundResultPanelProps) {
   return (
     <View style={styles.container}>
-      <Text style={styles.roundLabel}>Round complete</Text>
-      <TurnGuidance
-        actorName={winnerName}
-        detail="Round winners become the judge for the next topic."
-        instruction="This player won the round and gets 1 point."
-        phaseLabel="Next judge"
-      />
-      <Text style={styles.winner}>Winner: {winnerName}</Text>
-      <Text style={styles.body}>Winning song: {winningSongLabel}</Text>
+      <Text style={styles.eyebrow}>Round complete</Text>
+      <Text style={styles.title}>{winnerName} wins</Text>
+      <Text style={styles.body}>{winningSongLabel}</Text>
+      <Text style={styles.nextJudge}>Next judge: {winnerName}</Text>
       <Pressable
         accessibilityHint="Starts the next round with the round winner as judge."
         accessibilityLabel="Start next round"
@@ -38,28 +32,38 @@ export function RoundResultPanel({
 
 const styles = StyleSheet.create({
   container: {
-    gap: 12,
+    gap: 10,
   },
-  roundLabel: {
-    color: "#F9FAFB",
-    fontSize: 20,
-    fontWeight: "900",
+  eyebrow: {
+    color: "#38BDF8",
+    fontSize: 13,
+    fontWeight: "800",
+    letterSpacing: 0,
+    textTransform: "uppercase",
   },
-  winner: {
+  title: {
     color: "#F9FAFB",
-    fontSize: 22,
+    fontSize: 34,
     fontWeight: "900",
+    letterSpacing: 0,
   },
   body: {
     color: "#CBD5E1",
     fontSize: 16,
     lineHeight: 23,
   },
+  nextJudge: {
+    color: "#F9FAFB",
+    fontSize: 15,
+    fontWeight: "800",
+    marginTop: 2,
+  },
   primaryButton: {
     alignItems: "center",
     backgroundColor: "#38BDF8",
     borderRadius: 8,
     justifyContent: "center",
+    marginTop: 6,
     minHeight: 50,
   },
   primaryButtonText: {

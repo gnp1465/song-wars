@@ -312,54 +312,66 @@ export function LocalBattleDemoScreen({
 
         {activeTopic && hasFinishedSubmissions ? (
           <>
-        {gameWinnerPlayerId ? (
-          <GameOverPanel
-            players={roomPlayers}
-            pointsToWin={pointsToWin}
-            scores={scores}
-            winnerName={getPlayerName(gameWinnerPlayerId, roomPlayers)}
-            onPlayAgain={resetDemo}
-            onResetRoom={resetRoom}
-          />
-        ) : (
-          <>
-        <BattleStatusHeader
-          judgeName={currentJudge}
-          pointsToWin={pointsToWin}
-          roomMode={roomMode}
-          topic={topic}
-        />
+            {gameWinnerPlayerId ? (
+              <GameOverPanel
+                players={roomPlayers}
+                pointsToWin={pointsToWin}
+                scores={scores}
+                winnerName={getPlayerName(gameWinnerPlayerId, roomPlayers)}
+                onPlayAgain={resetDemo}
+                onResetRoom={resetRoom}
+              />
+            ) : (
+              <>
+                {activeMatchup ? (
+                  <>
+                    <BattleStatusHeader
+                      judgeName={currentJudge}
+                      pointsToWin={pointsToWin}
+                      roomMode={roomMode}
+                      topic={topic}
+                    />
+                    <ActiveMatchupPanel
+                      isPickingWinner={isPickingWinner}
+                      matchup={activeMatchup}
+                      onPickWinner={(submissionId) => void pickWinner(submissionId)}
+                      onPlayPreview={playSongPreview}
+                    />
+                    <Scoreboard players={roomPlayers} scores={scores} />
+                    <BracketProgress
+                      activeMatchupId={activeMatchup.id}
+                      matchups={matchups}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <RoundResultPanel
+                      winnerName={
+                        roundWinnerPlayerId
+                          ? getPlayerName(roundWinnerPlayerId, roomPlayers)
+                          : "Pending"
+                      }
+                      winningSongLabel={getSubmissionSongLabel(
+                        selectedSubmissions,
+                        roundWinnerSubmissionId,
+                      )}
+                      onStartNextRound={startNextRound}
+                    />
+                    <Scoreboard players={roomPlayers} scores={scores} />
+                  </>
+                )}
 
-        {activeMatchup ? (
-          <ActiveMatchupPanel
-            isPickingWinner={isPickingWinner}
-            matchup={activeMatchup}
-            onPickWinner={(submissionId) => void pickWinner(submissionId)}
-            onPlayPreview={playSongPreview}
-          />
-        ) : (
-          <RoundResultPanel
-            winnerName={roundWinnerPlayerId ? getPlayerName(roundWinnerPlayerId, roomPlayers) : "Pending"}
-            winningSongLabel={getSubmissionSongLabel(selectedSubmissions, roundWinnerSubmissionId)}
-            onStartNextRound={startNextRound}
-          />
-        )}
-
-        <Scoreboard players={roomPlayers} scores={scores} />
-
-        <BracketProgress activeMatchupId={activeMatchup?.id} matchups={matchups} />
-
-        <Pressable
-          accessibilityHint="Restarts the current local game from round one."
-          accessibilityLabel="Reset game"
-          accessibilityRole="button"
-          style={styles.resetButton}
-          onPress={resetDemo}
-        >
-          <Text style={styles.resetButtonText}>Reset Game</Text>
-        </Pressable>
-          </>
-        )}
+                <Pressable
+                  accessibilityHint="Restarts the current local game from round one."
+                  accessibilityLabel="Reset game"
+                  accessibilityRole="button"
+                  style={styles.resetButton}
+                  onPress={resetDemo}
+                >
+                  <Text style={styles.resetButtonText}>Reset Game</Text>
+                </Pressable>
+              </>
+            )}
           </>
         ) : null}
       </ScrollView>

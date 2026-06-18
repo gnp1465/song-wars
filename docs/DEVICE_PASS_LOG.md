@@ -34,6 +34,7 @@ Mark each item as `Pass`, `Fail`, or `Needs follow-up`.
 | Bracket shows current, pending, complete, and bye states clearly |  |  |
 | Preview audio stops after picking a winner |  |  |
 | Round result shows the correct winning song |  |  |
+| Round result hides stale judging instructions and the completed bracket |  |  |
 | Next Round uses the previous round winner as judge |  |  |
 | Scores update correctly |  |  |
 | Final winner screen appears at the points-to-win target |  |  |
@@ -55,4 +56,3 @@ Record any device-only issue here before we fix it.
 
 - Prototype device pass status:
 - Remaining fixes before frontend prototype complete:
-
