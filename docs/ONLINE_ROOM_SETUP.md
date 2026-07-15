@@ -1,0 +1,51 @@
+# Online Room Setup
+
+Use this guide to connect the online lobby to a hosted Supabase development project.
+
+## 1. Create The Supabase Project
+
+- Create a hosted Supabase project.
+- Enable anonymous sign-ins in Supabase Auth.
+- Copy the project URL and anon public key.
+
+## 2. Configure The App
+
+Create `.env` from `.env.example`:
+
+```bash
+EXPO_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+```
+
+Never put a service role key in the mobile app.
+
+## 3. Apply The Migration
+
+Apply:
+
+```bash
+supabase/migrations/202607140001_online_room_lobby.sql
+```
+
+This creates the `rooms`, `room_members`, and `rounds` tables plus the RPC functions used by the app.
+
+## 4. Verify The Hosted Backend
+
+Run:
+
+```bash
+npm run check:online-room
+```
+
+This creates separate anonymous host/guest clients and verifies room creation, joining, duplicate-name blocking, host-only settings, and synchronized start.
+
+## 5. Device Test
+
+Run the app on two phones or simulators:
+
+- Create an online room on device A.
+- Join with the six-digit code on device B.
+- Confirm both devices see the same player list.
+- Change settings as host and confirm the guest sees updates.
+- Start with at least three players and confirm all devices transition to Round 1 setup.
+

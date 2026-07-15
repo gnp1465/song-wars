@@ -36,15 +36,22 @@
 
 ## Later Product Improvements
 
-- More realistic role-specific screens once real multiplayer starts.
+- Online topic selection.
+- Online song submission.
+- Online judging and scoring.
 - Dev-only audio lab can stay available in code, but it should remain out of the main player flow.
 
-## Waiting For Backend
+## Backend Foundation
 
-- Real users joining from separate phones.
-- Real room codes and QR codes.
-- Host accounts and guest sessions.
-- Live room synchronization.
+- Supabase anonymous sessions for hosts and guests.
+- Six-digit online rooms.
+- Live lobby synchronization.
+- Host-only settings, removals, and start.
+- Synchronized transition to Round 1 setup.
+
+## Waiting For Later Backend Milestones
+
+- QR codes.
 - Server-clock remote playback.
 - Persistent game history.
 - Monetization tracking.

@@ -3,12 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "main": "expo/AppEntry.js",
+  "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",
     "ios": "expo start --ios",
     "check:device-pass-log": "node scripts/check-device-pass-log.mjs",
     "check:ios-tooling": "node scripts/check-ios-tooling.mjs",
+    "check:online-room": "node scripts/check-online-room.mjs",
     "check:prototype-complete": "npm run verify && npm run check:device-pass-log",
     "typecheck": "tsc --noEmit",
     "verify": "npm run typecheck && npm test",
@@ -23,10 +24,18 @@
     "check:prototype-flow": "node --experimental-strip-types src/tests/manualPrototypeFlowCheck.ts"
   },
   "dependencies": {
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "@supabase/supabase-js": "^2.110.5",
     "expo": "^54.0.0",
     "expo-av": "^16.0.0",
+    "expo-constants": "~18.0.13",
+    "expo-linking": "~8.0.12",
+    "expo-router": "~6.0.24",
     "react": "^19.0.0",
-    "react-native": "^0.81.0"
+    "react-native": "^0.81.0",
+    "react-native-safe-area-context": "~5.6.0",
+    "react-native-screens": "~4.16.0",
+    "react-native-url-polyfill": "^4.0.0"
   },
   "devDependencies": {
     "@types/react": "^19.0.0",

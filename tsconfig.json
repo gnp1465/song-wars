@@ -14,7 +14,8 @@
     "target": "ES2022"
   },
   "include": [
-    "App.tsx",
+    "app/**/*.ts",
+    "app/**/*.tsx",
     "src/**/*.ts",
     "src/**/*.tsx"
   ],

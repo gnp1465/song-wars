@@ -4,9 +4,14 @@
     "slug": "song-wars",
     "version": "0.1.0",
     "orientation": "portrait",
-    "platforms": ["ios"],
+    "platforms": [
+      "ios"
+    ],
     "ios": {
       "supportsTablet": false
-    }
+    },
+    "plugins": [
+      "expo-router"
+    ]
   }
 }

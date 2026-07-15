@@ -2,28 +2,14 @@
 
 Native iOS-first React Native/Expo prototype for a live song battle party game.
 
-## Current Frontend Prototype
+## Current App
 
-The local/offline prototype currently supports the full core game loop:
+The app now has two paths:
 
-- local room creation
-- guest display-name join simulation
-- duplicate display-name blocking
-- room settings for audio mode, songs per player, and points to win
-- judge topic setup
-- non-judge song submissions
-- in-app song preview playback
-- duplicate submission blocking
-- bracket generation with byes
-- first-round same-player matchup avoidance where possible
-- grouped bracket progress by round
-- winner advancement
-- scoring
-- next judge assignment
-- next round flow
-- final winner screen with local play-again/reset actions
+- `Local Game`: the completed offline prototype with room creation, song search, preview playback, bracket judging, scoring, and final winner.
+- `Online Room`: the Supabase-backed multiplayer lobby foundation with anonymous sessions, six-digit room codes, live player/settings sync, removals, and synchronized transition to Round 1 setup.
 
-Backend, real accounts, real multiplayer room sync, payments, and persistent history are intentionally out of scope for this frontend prototype.
+Online topic sync, online song submissions, online judging, payments, persistent history, and account upgrades are later milestones.
 
 ## Run The App
 
@@ -41,6 +27,10 @@ npm start
 
 Then open the app with Expo Go or an iOS simulator.
 
+For online rooms, create `.env` from `.env.example` and follow:
+
+[docs/ONLINE_ROOM_SETUP.md](docs/ONLINE_ROOM_SETUP.md)
+
 ## Run Checks
 
 ```bash
@@ -53,6 +43,12 @@ Run only the local logic tests:
 
 ```bash
 npm test
+```
+
+Run the hosted Supabase online-room smoke check after applying the migration:
+
+```bash
+npm run check:online-room
 ```
 
 After completing the phone or simulator pass and filling out `docs/DEVICE_PASS_LOG.md`, run the final frontend prototype gate:
@@ -73,6 +69,7 @@ Learning docs:
 - [docs/LEARNING_LOG.md](docs/LEARNING_LOG.md)
 - [docs/FRONTEND_TEST_PLAN.md](docs/FRONTEND_TEST_PLAN.md)
 - [docs/IOS_DEVICE_PASS_GUIDE.md](docs/IOS_DEVICE_PASS_GUIDE.md)
+- [docs/ONLINE_ROOM_SETUP.md](docs/ONLINE_ROOM_SETUP.md)
 - [docs/DEVICE_PASS_LOG.md](docs/DEVICE_PASS_LOG.md)
 - [docs/PROTOTYPE_STATUS.md](docs/PROTOTYPE_STATUS.md)
 - [docs/FRONTEND_COMPLETION_AUDIT.md](docs/FRONTEND_COMPLETION_AUDIT.md)
@@ -82,6 +79,7 @@ Main folders:
 - `src/screens`: full app screens
 - `src/components`: reusable UI pieces
 - `src/hooks`: reusable React behavior
-- `src/services`: game logic and media provider logic
+- `src/services`: game logic, media provider logic, Supabase, and online room services
 - `src/types`: shared data shapes
 - `src/tests`: manual logic checks
+- `supabase/migrations`: hosted Supabase schema and RPC migrations
