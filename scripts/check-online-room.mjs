@@ -1,11 +1,14 @@
-import { existsSync, readFileSync } from "node:fs";
+import { dirname } from "node:path";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { createClient } from "@supabase/supabase-js";
 
 loadLocalEnv();
 
+const SESSION_CACHE_PATH = ".cache/online-room-check-sessions.json";
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 const shouldVerifyCapacity = process.env.CHECK_ONLINE_ROOM_CAPACITY === "1";
+const sessionCache = loadSessionCache();
 
 if (!supabaseUrl || !supabaseAnonKey) {
   console.log("Missing EXPO_PUBLIC_SUPABASE_URL or EXPO_PUBLIC_SUPABASE_ANON_KEY.");
@@ -321,6 +324,19 @@ async function createSignedInTestClient(label) {
       persistSession: false,
     },
   });
+  const cachedSession = sessionCache[sessionCacheKey(label)];
+
+  if (cachedSession?.access_token && cachedSession?.refresh_token) {
+    const restoreResult = await client.auth.setSession({
+      access_token: cachedSession.access_token,
+      refresh_token: cachedSession.refresh_token,
+    });
+
+    if (!restoreResult.error && restoreResult.data.session) {
+      saveSession(label, restoreResult.data.session);
+      return client;
+    }
+  }
 
   const result = await client.auth.signInAnonymously();
 
@@ -338,6 +354,10 @@ async function createSignedInTestClient(label) {
     }
 
     throw new Error(`Could not sign in ${label}: ${result.error.message}`);
+  }
+
+  if (result.data.session) {
+    saveSession(label, result.data.session);
   }
 
   return client;
@@ -409,4 +429,32 @@ function loadLocalEnv() {
       process.env[key] = value;
     }
   }
+}
+
+function loadSessionCache() {
+  if (!existsSync(SESSION_CACHE_PATH)) {
+    return {};
+  }
+
+  try {
+    const parsed = JSON.parse(readFileSync(SESSION_CACHE_PATH, "utf8"));
+
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveSession(label, session) {
+  sessionCache[sessionCacheKey(label)] = {
+    access_token: session.access_token,
+    refresh_token: session.refresh_token,
+  };
+
+  mkdirSync(dirname(SESSION_CACHE_PATH), { recursive: true });
+  writeFileSync(SESSION_CACHE_PATH, `${JSON.stringify(sessionCache, null, 2)}\n`);
+}
+
+function sessionCacheKey(label) {
+  return label.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
 }

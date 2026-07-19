@@ -51,6 +51,8 @@ This creates three separate anonymous host/guest clients and verifies:
 - Round 1 creation with the host as first judge
 - join-code clearing after start
 
+The script stores reusable test sessions in `.cache/online-room-check-sessions.json` so repeated checks do not create new anonymous users every time. That file contains temporary auth tokens and is ignored by git.
+
 The twelve-player capacity check creates extra anonymous users, so it is opt-in to avoid Supabase auth rate limits during normal development:
 
 ```bash
