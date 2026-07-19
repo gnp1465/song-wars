@@ -37,7 +37,7 @@ Run:
 npm run check:online-room
 ```
 
-This creates separate anonymous host/guest clients and verifies:
+This creates three separate anonymous host/guest clients and verifies:
 
 - six-digit room-code creation
 - wrong-code rejection

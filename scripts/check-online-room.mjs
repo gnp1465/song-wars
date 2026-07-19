@@ -16,11 +16,10 @@ if (!supabaseUrl || !supabaseAnonKey) {
 const host = await createSignedInTestClient("host");
 const guestOne = await createSignedInTestClient("guest one");
 const guestTwo = await createSignedInTestClient("guest two");
-const outsider = await createSignedInTestClient("outsider");
 
 await verifyRoomCannotStartEarly(host);
 await verifyRemovalAndLeaveRules({
-  closedGuest: outsider,
+  closedGuest: guestOne,
   leaveGuest: guestTwo,
   removalHost: host,
   removedGuest: guestOne,
@@ -28,7 +27,7 @@ await verifyRemovalAndLeaveRules({
 
 if (shouldVerifyCapacity) {
   await verifyCapacityLimit({
-    reusableClients: [host, guestOne, guestTwo, outsider],
+    reusableClients: [host, guestOne, guestTwo],
   });
 } else {
   console.log("Skipping capacity check. Set CHECK_ONLINE_ROOM_CAPACITY=1 to run it.");
@@ -49,7 +48,7 @@ const roomCode = created.room.code;
 const hostMemberId = created.members[0].id;
 
 await expectRpcFailure(
-  outsider,
+  guestTwo,
   "get_room_snapshot",
   {
     room_id_value: roomId,
@@ -58,7 +57,7 @@ await expectRpcFailure(
 );
 
 await expectTableUpdateFailure(
-  outsider,
+  guestTwo,
   "rooms",
   { points_to_win: 7 },
   roomId,
@@ -160,14 +159,17 @@ assert(
   "host should become the first judge",
 );
 
+await rpc(guestTwo, "leave_room", {
+  room_id_value: roomId,
+});
 await expectRpcFailure(
-  outsider,
+  guestTwo,
   "join_room",
   {
     guest_display_name: "Late",
     room_code: roomCode,
   },
-  "started rooms should reject new joins because the code is cleared",
+  "started rooms should reject old room codes because the code is cleared",
 );
 
 console.log("Online room hosted Supabase check passed.");
