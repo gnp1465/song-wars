@@ -48,9 +48,12 @@
 - Live lobby synchronization.
 - Host-only settings, removals, and start.
 - Synchronized transition to Round 1 setup.
+- Online judge topic submission.
 
 ## Waiting For Later Backend Milestones
 
+- Online song submission.
+- Online judging and scoring.
 - QR codes.
 - Server-clock remote playback.
 - Persistent game history.

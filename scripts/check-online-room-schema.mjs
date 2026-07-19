@@ -1,8 +1,17 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 
-const migrationPath = "supabase/migrations/202607140001_online_room_lobby.sql";
-const migration = readFileSync(migrationPath, "utf8").replace(/\s+/g, " ").toLowerCase();
+const migrationDir = "supabase/migrations";
+const migrationPaths = readdirSync(migrationDir)
+  .filter((fileName) => fileName.endsWith(".sql"))
+  .sort()
+  .map((fileName) => join(migrationDir, fileName));
+const migration = migrationPaths
+  .map((migrationPath) => readFileSync(migrationPath, "utf8"))
+  .join("\n")
+  .replace(/\s+/g, " ")
+  .toLowerCase();
 
 const requiredSnippets = [
   "create table if not exists public.rooms",
@@ -39,6 +48,9 @@ const requiredSnippets = [
   "grant execute on function public.start_room",
   "grant execute on function public.close_room",
   "grant execute on function public.get_room_snapshot",
+  "add column if not exists topic text",
+  "create or replace function public.submit_round_topic",
+  "grant execute on function public.submit_round_topic",
   "alter publication supabase_realtime add table public.rooms",
   "alter publication supabase_realtime add table public.room_members",
   "alter publication supabase_realtime add table public.rounds",
@@ -47,7 +59,7 @@ const requiredSnippets = [
 for (const snippet of requiredSnippets) {
   assert(
     migration.includes(snippet),
-    `Expected ${migrationPath} to contain: ${snippet}`,
+    `Expected migrations to contain: ${snippet}`,
   );
 }
 
@@ -66,6 +78,26 @@ assert(
 assert(
   /'waiting_for_topic'/.test(migration),
   "start_room should create Round 1 in the waiting_for_topic state.",
+);
+assert(
+  /status in \('waiting_for_topic', 'submitting', 'judging', 'complete'\)/.test(migration),
+  "round status should support topic setup, submission, judging, and completion.",
+);
+assert(
+  /if length\(normalized_topic\) < 1 then/.test(migration),
+  "submit_round_topic should reject blank topics.",
+);
+assert(
+  /if length\(normalized_topic\) > 80 then/.test(migration),
+  "submit_round_topic should reject overly long topics.",
+);
+assert(
+  /if active_round\.status <> 'waiting_for_topic' then/.test(migration),
+  "submit_round_topic should lock the topic after topic setup.",
+);
+assert(
+  /set topic = normalized_topic, status = 'submitting'/.test(migration),
+  "submit_round_topic should store the topic and advance to submitting.",
 );
 assert(
   /public\.normalize_display_name\(display_name\) = public\.normalize_display_name\(guest_display_name\)/.test(

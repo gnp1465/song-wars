@@ -81,7 +81,8 @@ export interface Database {
           room_id: string;
           round_number: number;
           judge_member_id: string;
-          status: "waiting_for_topic";
+          status: "waiting_for_topic" | "submitting" | "judging" | "complete";
+          topic: string | null;
           created_at: string;
         };
         Insert: {
@@ -89,7 +90,8 @@ export interface Database {
           room_id: string;
           round_number: number;
           judge_member_id: string;
-          status?: "waiting_for_topic";
+          status?: "waiting_for_topic" | "submitting" | "judging" | "complete";
+          topic?: string | null;
           created_at?: string;
         };
         Update: {
@@ -97,7 +99,8 @@ export interface Database {
           room_id?: string;
           round_number?: number;
           judge_member_id?: string;
-          status?: "waiting_for_topic";
+          status?: "waiting_for_topic" | "submitting" | "judging" | "complete";
+          topic?: string | null;
           created_at?: string;
         };
         Relationships: [];
@@ -146,6 +149,13 @@ export interface Database {
       start_room: {
         Args: {
           room_id_value: string;
+        };
+        Returns: Json;
+      };
+      submit_round_topic: {
+        Args: {
+          room_id_value: string;
+          topic_value: string;
         };
         Returns: Json;
       };

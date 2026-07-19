@@ -7,6 +7,7 @@ import {
   leaveOnlineRoom,
   removeOnlineRoomMember,
   startOnlineRoom,
+  submitOnlineRoundTopic,
   subscribeToOnlineRoom,
   updateOnlineRoomSettings,
 } from "../services/online/OnlineRoomService";
@@ -23,6 +24,7 @@ export interface UseOnlineRoomResult {
   leaveRoom: () => Promise<void>;
   removeMember: (memberId: string) => Promise<void>;
   startRoom: () => Promise<void>;
+  submitTopic: (topic: string) => Promise<void>;
   updateSettings: (update: OnlineRoomSettingsUpdate) => Promise<void>;
 }
 
@@ -130,6 +132,8 @@ export function useOnlineRoom(
       runMutation(() => (roomId ? removeOnlineRoomMember(roomId, memberId) : Promise.resolve())),
     snapshot,
     startRoom: () => runMutation(() => (roomId ? startOnlineRoom(roomId) : Promise.resolve())),
+    submitTopic: (topic) =>
+      runMutation(() => (roomId ? submitOnlineRoundTopic(roomId, topic) : Promise.resolve())),
     updateSettings: (update) =>
       runMutation(() => (roomId ? updateOnlineRoomSettings(roomId, update) : Promise.resolve())),
   };

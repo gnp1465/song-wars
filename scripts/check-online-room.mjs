@@ -162,6 +162,37 @@ assert(
   "host should become the first judge",
 );
 
+await expectRpcFailure(
+  guestOne,
+  "submit_round_topic",
+  {
+    room_id_value: roomId,
+    topic_value: "Beach vibes",
+  },
+  "guests should not submit the round topic",
+);
+
+const topicSubmitted = await rpc(host, "submit_round_topic", {
+  room_id_value: roomId,
+  topic_value: " Beach vibes ",
+});
+
+assert(topicSubmitted.current_round?.topic === "Beach vibes", "judge should submit the topic");
+assert(
+  topicSubmitted.current_round?.status === "submitting",
+  "topic submission should move the round to submissions",
+);
+
+await expectRpcFailure(
+  host,
+  "submit_round_topic",
+  {
+    room_id_value: roomId,
+    topic_value: "Late topic",
+  },
+  "topic should lock after submission",
+);
+
 await rpc(guestTwo, "leave_room", {
   room_id_value: roomId,
 });
@@ -367,6 +398,12 @@ async function rpc(client, functionName, args) {
   const result = await client.rpc(functionName, args);
 
   if (result.error) {
+    if (result.error.message.toLowerCase().includes("could not find the function")) {
+      throw new Error(
+        `${functionName} failed: RPC is missing from Supabase. Apply the latest migrations and wait for Supabase schema cache to refresh.`,
+      );
+    }
+
     throw new Error(`${functionName} failed: ${result.error.message}`);
   }
 

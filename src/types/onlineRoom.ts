@@ -3,7 +3,7 @@ import type { RoomMode } from "./game";
 export type OnlineRoomStatus = "lobby" | "in_round" | "closed" | "expired";
 export type OnlineRoomMemberRole = "host" | "guest";
 export type OnlineRoomMemberPresenceStatus = "online" | "offline";
-export type OnlineRoundStatus = "waiting_for_topic";
+export type OnlineRoundStatus = "waiting_for_topic" | "submitting" | "judging" | "complete";
 
 export interface OnlineRoom {
   id: string;
@@ -38,6 +38,7 @@ export interface OnlineRound {
   roundNumber: number;
   judgeMemberId: string;
   status: OnlineRoundStatus;
+  topic?: string;
   createdAt: string;
 }
 

@@ -61,6 +61,7 @@ Services hold business logic and provider/API logic.
 - `services/game/scoring.ts` scores completed rounds.
 - `services/online/*` creates anonymous sessions, stores display names, and calls room RPC functions.
 - `services/online/onlineRoomAccess.ts` centralizes when online users should be returned Home after removal, room closure, or expiration.
+- `services/online/onlineRoundTopic.ts` holds the client-side topic input rules used before calling the server.
 - `services/supabase/*` configures the typed Supabase React Native client.
 - `services/media/MediaResolutionService.ts` resolves selected songs to playable previews.
 - `services/media/providers/*` adapt external music sources to the app's shared media shape.

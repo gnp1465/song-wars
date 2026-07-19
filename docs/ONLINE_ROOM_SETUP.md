@@ -21,10 +21,11 @@ Never put a service role key in the mobile app.
 
 ## 3. Apply The Migration
 
-Apply:
+Apply every SQL file in `supabase/migrations` in filename order. The first migration creates the lobby foundation, and later migrations extend the online game flow.
 
 ```bash
 supabase/migrations/202607140001_online_room_lobby.sql
+supabase/migrations/202607190001_online_round_topic.sql
 ```
 
 This creates the `rooms`, `room_members`, and `rounds` tables plus the RPC functions used by the app.
@@ -49,6 +50,8 @@ This creates three separate anonymous host/guest clients and verifies:
 - guest removal and voluntary leave access cleanup
 - room close behavior
 - Round 1 creation with the host as first judge
+- judge-only topic submission
+- topic locking after submission
 - join-code clearing after start
 
 The script stores reusable test sessions in `.cache/online-room-check-sessions.json` so repeated checks do not create new anonymous users every time. That file contains temporary auth tokens and is ignored by git.

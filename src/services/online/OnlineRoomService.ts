@@ -101,6 +101,18 @@ export async function startOnlineRoom(roomId: string): Promise<OnlineRoomSnapsho
   return unwrapSnapshotResult(result.data, result.error);
 }
 
+export async function submitOnlineRoundTopic(
+  roomId: string,
+  topic: string,
+): Promise<OnlineRoomSnapshot> {
+  const result = await getSupabaseClient().rpc("submit_round_topic", {
+    room_id_value: roomId,
+    topic_value: topic,
+  });
+
+  return unwrapSnapshotResult(result.data, result.error);
+}
+
 export async function closeOnlineRoom(roomId: string): Promise<OnlineRoomSnapshot> {
   const result = await getSupabaseClient().rpc("close_room", {
     room_id_value: roomId,
@@ -219,7 +231,8 @@ function mapRound(data: Record<string, Json | undefined>): OnlineRound {
     judgeMemberId: stringValue(data.judge_member_id),
     roomId: stringValue(data.room_id),
     roundNumber: numberValue(data.round_number),
-    status: "waiting_for_topic",
+    status: onlineRoundStatusValue(data.status),
+    topic: typeof data.topic === "string" ? data.topic : undefined,
   };
 }
 
@@ -256,4 +269,12 @@ function onlineRoomStatusValue(value: Json | undefined): OnlineRoom["status"] {
   }
 
   return "lobby";
+}
+
+function onlineRoundStatusValue(value: Json | undefined): OnlineRound["status"] {
+  if (value === "submitting" || value === "judging" || value === "complete") {
+    return value;
+  }
+
+  return "waiting_for_topic";
 }
