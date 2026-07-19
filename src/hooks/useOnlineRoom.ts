@@ -5,13 +5,16 @@ import {
   closeOnlineRoom,
   fetchOnlineRoomSnapshot,
   leaveOnlineRoom,
+  removeOwnOnlineSubmission,
   removeOnlineRoomMember,
   startOnlineRoom,
+  submitOnlineRoundSong,
   submitOnlineRoundTopic,
   subscribeToOnlineRoom,
   updateOnlineRoomSettings,
 } from "../services/online/OnlineRoomService";
 import type { OnlineRoomSettingsUpdate } from "../types/onlineRoom";
+import type { MediaTrack } from "../types/media";
 
 export interface UseOnlineRoomResult {
   errorMessage?: string;
@@ -23,7 +26,9 @@ export interface UseOnlineRoomResult {
   closeRoom: () => Promise<void>;
   leaveRoom: () => Promise<void>;
   removeMember: (memberId: string) => Promise<void>;
+  removeOwnSubmission: (submissionId: string) => Promise<void>;
   startRoom: () => Promise<void>;
+  submitSong: (song: MediaTrack) => Promise<void>;
   submitTopic: (topic: string) => Promise<void>;
   updateSettings: (update: OnlineRoomSettingsUpdate) => Promise<void>;
 }
@@ -130,8 +135,14 @@ export function useOnlineRoom(
     refresh,
     removeMember: (memberId) =>
       runMutation(() => (roomId ? removeOnlineRoomMember(roomId, memberId) : Promise.resolve())),
+    removeOwnSubmission: (submissionId) =>
+      runMutation(() =>
+        roomId ? removeOwnOnlineSubmission(roomId, submissionId) : Promise.resolve(),
+      ),
     snapshot,
     startRoom: () => runMutation(() => (roomId ? startOnlineRoom(roomId) : Promise.resolve())),
+    submitSong: (song) =>
+      runMutation(() => (roomId ? submitOnlineRoundSong(roomId, song) : Promise.resolve())),
     submitTopic: (topic) =>
       runMutation(() => (roomId ? submitOnlineRoundTopic(roomId, topic) : Promise.resolve())),
     updateSettings: (update) =>

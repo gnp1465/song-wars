@@ -39,6 +39,7 @@ function makeSnapshot(status: OnlineRoomSnapshot["room"]["status"]): OnlineRoomS
       songsPerPlayer: 1,
       status,
     },
+    submissions: [],
   };
 }
 

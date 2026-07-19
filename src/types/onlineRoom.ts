@@ -1,4 +1,5 @@
 import type { RoomMode } from "./game";
+import type { MediaTrack } from "./media";
 
 export type OnlineRoomStatus = "lobby" | "in_round" | "closed" | "expired";
 export type OnlineRoomMemberRole = "host" | "guest";
@@ -42,11 +43,21 @@ export interface OnlineRound {
   createdAt: string;
 }
 
+export interface OnlineRoundSubmission {
+  id: string;
+  roomId: string;
+  roundId: string;
+  memberId: string;
+  song: MediaTrack;
+  submittedAt: string;
+}
+
 export interface OnlineRoomSnapshot {
   room: OnlineRoom;
   members: OnlineRoomMember[];
   presence: OnlineRoomMemberPresence[];
   currentRound?: OnlineRound;
+  submissions: OnlineRoundSubmission[];
 }
 
 export interface OnlineRoomSettingsUpdate {

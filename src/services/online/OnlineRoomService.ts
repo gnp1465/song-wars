@@ -7,8 +7,10 @@ import type {
   OnlineRoomSettingsUpdate,
   OnlineRoomSnapshot,
   OnlineRound,
+  OnlineRoundSubmission,
 } from "../../types/onlineRoom";
 import type { Json } from "../../types/supabase";
+import type { MediaTrack, ProviderTrackRef } from "../../types/media";
 import { getSupabaseClient } from "../supabase/client";
 
 export interface CreateOnlineRoomOptions {
@@ -113,6 +115,36 @@ export async function submitOnlineRoundTopic(
   return unwrapSnapshotResult(result.data, result.error);
 }
 
+export async function submitOnlineRoundSong(
+  roomId: string,
+  song: MediaTrack,
+): Promise<OnlineRoomSnapshot> {
+  const result = await getSupabaseClient().rpc("submit_round_song", {
+    album_name_value: song.albumName ?? null,
+    artists_value: song.artists,
+    artwork_url_value: song.artwork?.url ?? null,
+    preview_url_value: song.preview?.streamUrl ?? null,
+    provider_refs_value: song.providerRefs as unknown as Json,
+    room_id_value: roomId,
+    title_value: song.title,
+    track_id_value: song.id,
+  });
+
+  return unwrapSnapshotResult(result.data, result.error);
+}
+
+export async function removeOwnOnlineSubmission(
+  roomId: string,
+  submissionId: string,
+): Promise<OnlineRoomSnapshot> {
+  const result = await getSupabaseClient().rpc("remove_own_submission", {
+    room_id_value: roomId,
+    submission_id_value: submissionId,
+  });
+
+  return unwrapSnapshotResult(result.data, result.error);
+}
+
 export async function closeOnlineRoom(roomId: string): Promise<OnlineRoomSnapshot> {
   const result = await getSupabaseClient().rpc("close_room", {
     room_id_value: roomId,
@@ -153,6 +185,16 @@ export function subscribeToOnlineRoom(
       { event: "*", schema: "public", table: "rounds", filter: `room_id=eq.${roomId}` },
       onSnapshotNeeded,
     )
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "round_submissions",
+        filter: `room_id=eq.${roomId}`,
+      },
+      onSnapshotNeeded,
+    )
     .on("presence", { event: "sync" }, () => {
       onPresenceChange(readPresence(channel));
     })
@@ -188,6 +230,9 @@ function mapSnapshot(data: Record<string, Json | undefined>): OnlineRoomSnapshot
     members: asArray(data.members).map((member) => mapMember(asRecord(member))),
     presence: asArray(data.presence).map((presence) => mapPresence(asRecord(presence))),
     room: mapRoom(asRecord(data.room)),
+    submissions: asArray(data.submissions).map((submission) =>
+      mapSubmission(asRecord(submission)),
+    ),
   };
 }
 
@@ -236,6 +281,40 @@ function mapRound(data: Record<string, Json | undefined>): OnlineRound {
   };
 }
 
+function mapSubmission(data: Record<string, Json | undefined>): OnlineRoundSubmission {
+  const previewUrl = stringOrUndefined(data.preview_url);
+  const providerRefs = asProviderRefs(asArray(data.provider_refs));
+
+  return {
+    id: stringValue(data.id),
+    memberId: stringValue(data.member_id),
+    roomId: stringValue(data.room_id),
+    roundId: stringValue(data.round_id),
+    song: {
+      albumName: stringOrUndefined(data.album_name),
+      artists: stringArrayValue(data.artists),
+      artwork: stringOrUndefined(data.artwork_url)
+        ? {
+            url: stringValue(data.artwork_url),
+          }
+        : undefined,
+      attribution: [],
+      capabilities: previewUrl ? ["stream_preview"] : ["metadata_only"],
+      id: stringValue(data.track_id),
+      preview: previewUrl
+        ? {
+            providerId: "apple_itunes",
+            streamUrl: previewUrl,
+          }
+        : undefined,
+      providerRefs,
+      resolutionStatus: previewUrl ? "resolved" : "preview_unavailable",
+      title: stringValue(data.title),
+    },
+    submittedAt: stringValue(data.submitted_at),
+  };
+}
+
 function readPresence(channel: RealtimeChannel): OnlineRoomMemberPresence[] {
   return Object.keys(channel.presenceState()).map((memberId) => ({
     memberId,
@@ -259,8 +338,44 @@ function stringValue(value: Json | undefined): string {
   return typeof value === "string" ? value : "";
 }
 
+function stringOrUndefined(value: Json | undefined): string | undefined {
+  return typeof value === "string" && value ? value : undefined;
+}
+
+function stringArrayValue(value: Json | undefined): string[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.filter((item): item is string => typeof item === "string");
+}
+
 function numberValue(value: Json | undefined): number {
   return typeof value === "number" ? value : 0;
+}
+
+function asProviderRefs(value: Json[]): ProviderTrackRef[] {
+  return value
+    .map((item) => asRecord(item))
+    .map((item) => ({
+      providerId: providerTrackRefIdValue(item.providerId),
+      providerTrackId: stringValue(item.providerTrackId),
+      url: stringOrUndefined(item.url),
+    }))
+    .filter((item) => item.providerTrackId);
+}
+
+function providerTrackRefIdValue(value: Json | undefined): ProviderTrackRef["providerId"] {
+  if (
+    value === "spotify" ||
+    value === "youtube" ||
+    value === "soundcloud" ||
+    value === "apple_itunes"
+  ) {
+    return value;
+  }
+
+  return "apple_itunes";
 }
 
 function onlineRoomStatusValue(value: Json | undefined): OnlineRoom["status"] {

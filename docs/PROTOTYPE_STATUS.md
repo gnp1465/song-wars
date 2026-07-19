@@ -36,8 +36,6 @@
 
 ## Later Product Improvements
 
-- Online topic selection.
-- Online song submission.
 - Online judging and scoring.
 - Dev-only audio lab can stay available in code, but it should remain out of the main player flow.
 
@@ -49,10 +47,11 @@
 - Host-only settings, removals, and start.
 - Synchronized transition to Round 1 setup.
 - Online judge topic submission.
+- Online song submission with duplicate blocking.
+- Automatic transition from submitting to judging.
 
 ## Waiting For Later Backend Milestones
 
-- Online song submission.
 - Online judging and scoring.
 - QR codes.
 - Server-clock remote playback.

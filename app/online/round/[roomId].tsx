@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Keyboard,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
   SafeAreaView,
   ScrollView,
@@ -11,14 +13,23 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { SongActionCard } from "../../../src/components/game/SongActionCard";
+import { useOnlineRoom } from "../../../src/hooks/useOnlineRoom";
+import { usePreviewAudio } from "../../../src/hooks/usePreviewAudio";
+import { useSongSearch } from "../../../src/hooks/useSongSearch";
 import { restoreOrCreateAnonymousSession } from "../../../src/services/online/AuthSessionService";
 import { getOnlineRoomExitNotice } from "../../../src/services/online/onlineRoomAccess";
+import {
+  canSubmitOnlineSong,
+  getOnlineSongsRemaining,
+  getOnlineSubmissionCountForMember,
+} from "../../../src/services/online/onlineRoundSubmissions";
 import {
   canSubmitOnlineTopic,
   MAX_ONLINE_TOPIC_LENGTH,
   normalizeOnlineTopic,
 } from "../../../src/services/online/onlineRoundTopic";
-import { useOnlineRoom } from "../../../src/hooks/useOnlineRoom";
+import type { MediaTrack } from "../../../src/types/media";
 
 export default function OnlineRoundSetupScreen() {
   const params = useLocalSearchParams<{ roomId?: string }>();
@@ -26,17 +37,37 @@ export default function OnlineRoundSetupScreen() {
   const [currentUserId, setCurrentUserId] = useState<string | undefined>();
   const [topicInput, setTopicInput] = useState("");
   const onlineRoom = useOnlineRoom(roomId, currentUserId);
+  const songSearch = useSongSearch({ limit: 8 });
+  const previewAudio = usePreviewAudio();
   const snapshot = onlineRoom.snapshot;
   const currentRound = snapshot?.currentRound;
   const currentMember = snapshot?.members.find((member) => member.userId === currentUserId);
   const judgeMember = snapshot?.members.find((member) => member.id === currentRound?.judgeMemberId);
   const isJudge = Boolean(currentMember && judgeMember && currentMember.id === judgeMember.id);
+  const submissions = snapshot?.submissions ?? [];
+  const songsPerPlayer = snapshot?.room.songsPerPlayer ?? 1;
+  const contestantMembers =
+    snapshot?.members.filter((member) => member.id !== currentRound?.judgeMemberId) ?? [];
+  const ownSubmissions = submissions.filter((submission) => submission.memberId === currentMember?.id);
+  const requiredSubmissionCount = contestantMembers.length * songsPerPlayer;
+  const songsRemaining = getOnlineSongsRemaining({
+    currentMember,
+    songsPerPlayer,
+    submissions,
+  });
   const canSubmitTopic = canSubmitOnlineTopic({
     currentMemberId: currentMember?.id,
     isMutating: onlineRoom.isMutating,
     judgeMemberId: judgeMember?.id,
     roundStatus: currentRound?.status,
     topicInput,
+  });
+  const canSubmitSong = canSubmitOnlineSong({
+    currentMember,
+    currentRound,
+    isMutating: onlineRoom.isMutating,
+    songsPerPlayer,
+    submissions,
   });
   const normalizedTopic = normalizeOnlineTopic(topicInput);
 
@@ -57,6 +88,12 @@ export default function OnlineRoundSetupScreen() {
     }
   }, [onlineRoom.errorMessage, snapshot?.room.status]);
 
+  useEffect(() => {
+    if (currentRound?.status !== "submitting") {
+      void previewAudio.stopSongPreview("No preview playing");
+    }
+  }, [currentRound?.status]);
+
   async function submitTopic() {
     if (!canSubmitTopic) {
       return;
@@ -66,109 +103,301 @@ export default function OnlineRoundSetupScreen() {
     await onlineRoom.submitTopic(normalizedTopic);
   }
 
+  async function searchSongs() {
+    await songSearch.search();
+  }
+
+  async function submitSong(song: MediaTrack) {
+    if (!canSubmitSong || isSongAlreadySubmitted(song, submissions)) {
+      return;
+    }
+
+    await onlineRoom.submitSong(song);
+    await previewAudio.stopSongPreview("Submitted");
+    songSearch.clearResults();
+  }
+
+  async function removeSubmission(submissionId: string) {
+    await onlineRoom.removeOwnSubmission(submissionId);
+    await previewAudio.stopSongPreview("Removed submission");
+  }
+
+  function goHome() {
+    void previewAudio.stopSongPreview("No preview playing");
+    router.replace("/");
+  }
+
   return (
     <SafeAreaView style={styles.root}>
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <View style={styles.header}>
-          <Text style={styles.eyebrow}>Round {currentRound?.roundNumber ?? 1}</Text>
-          <Text style={styles.title}>
-            {currentRound?.status === "submitting" ? "Submissions" : "Topic setup"}
-          </Text>
-          <Text style={styles.body}>
-            {currentRound?.status === "submitting"
-              ? "The topic is locked. Song submissions are next."
-              : "The judge sets the prompt for this round."}
-          </Text>
-        </View>
-
-        {onlineRoom.errorMessage ? (
-          <Text style={styles.errorText}>{onlineRoom.errorMessage}</Text>
-        ) : null}
-
-        {snapshot ? (
-          <View style={styles.panel}>
-            <Text style={styles.sectionTitle}>Current judge</Text>
-            <Text style={styles.judgeName}>{judgeMember?.displayName ?? "Waiting..."}</Text>
-            {currentRound?.topic ? (
-              <View style={styles.topicBox}>
-                <Text style={styles.sectionTitle}>Topic</Text>
-                <Text style={styles.topicText}>{currentRound.topic}</Text>
-              </View>
-            ) : null}
-            {currentRound?.status === "waiting_for_topic" ? (
-              isJudge ? (
-                <View style={styles.topicForm}>
-                  <TextInput
-                    accessibilityLabel="Round topic"
-                    autoCapitalize="sentences"
-                    autoCorrect
-                    editable={!onlineRoom.isMutating}
-                    maxLength={MAX_ONLINE_TOPIC_LENGTH}
-                    onChangeText={(nextTopic) => {
-                      setTopicInput(nextTopic);
-                      onlineRoom.clearError();
-                    }}
-                    onSubmitEditing={submitTopic}
-                    placeholder="Beach vibes"
-                    placeholderTextColor="#64748B"
-                    returnKeyType="done"
-                    style={styles.input}
-                    value={topicInput}
-                  />
-                  <Text style={styles.helpText}>
-                    {normalizedTopic.length}/{MAX_ONLINE_TOPIC_LENGTH}
-                  </Text>
-                  <Pressable
-                    accessibilityLabel="Submit round topic"
-                    accessibilityRole="button"
-                    accessibilityState={{ disabled: !canSubmitTopic }}
-                    disabled={!canSubmitTopic}
-                    style={[
-                      styles.primaryButton,
-                      !canSubmitTopic ? styles.disabledButton : undefined,
-                    ]}
-                    onPress={submitTopic}
-                  >
-                    {onlineRoom.isMutating ? (
-                      <ActivityIndicator color="#082F49" />
-                    ) : (
-                      <Text style={styles.primaryButtonText}>Lock Topic</Text>
-                    )}
-                  </Pressable>
-                </View>
-              ) : (
-                <Text style={styles.body}>
-                  Waiting for {judgeMember?.displayName ?? "the judge"} to set the topic.
-                </Text>
-              )
-            ) : (
-              <Text style={styles.body}>
-                {isJudge
-                  ? "Topic locked. Contestants will submit songs next."
-                  : "Get ready to submit songs for this topic."}
-              </Text>
-            )}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={styles.keyboardView}
+      >
+        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+          <View style={styles.header}>
+            <Text style={styles.eyebrow}>Round {currentRound?.roundNumber ?? 1}</Text>
+            <Text style={styles.title}>{getRoundTitle(currentRound?.status)}</Text>
+            <Text style={styles.body}>{getRoundSubtitle(currentRound?.status)}</Text>
           </View>
-        ) : (
-          <Text style={styles.body}>Loading round setup...</Text>
-        )}
 
-        <Pressable
-          accessibilityLabel="Back to home"
-          accessibilityRole="button"
-          style={styles.secondaryButton}
-          onPress={() => router.replace("/")}
-        >
-          <Text style={styles.secondaryButtonText}>Back Home</Text>
-        </Pressable>
-      </ScrollView>
+          {onlineRoom.errorMessage ? (
+            <Text style={styles.errorText}>{onlineRoom.errorMessage}</Text>
+          ) : null}
+
+          {snapshot ? (
+            <>
+              <View style={styles.panel}>
+                <Text style={styles.sectionTitle}>Current judge</Text>
+                <Text style={styles.judgeName}>{judgeMember?.displayName ?? "Waiting..."}</Text>
+                {currentRound?.topic ? (
+                  <View style={styles.topicBox}>
+                    <Text style={styles.sectionTitle}>Topic</Text>
+                    <Text style={styles.topicText}>{currentRound.topic}</Text>
+                  </View>
+                ) : null}
+                {currentRound?.status === "waiting_for_topic" ? (
+                  isJudge ? (
+                    <View style={styles.topicForm}>
+                      <TextInput
+                        accessibilityLabel="Round topic"
+                        autoCapitalize="sentences"
+                        autoCorrect
+                        editable={!onlineRoom.isMutating}
+                        maxLength={MAX_ONLINE_TOPIC_LENGTH}
+                        onChangeText={(nextTopic) => {
+                          setTopicInput(nextTopic);
+                          onlineRoom.clearError();
+                        }}
+                        onSubmitEditing={submitTopic}
+                        placeholder="Beach vibes"
+                        placeholderTextColor="#64748B"
+                        returnKeyType="done"
+                        style={styles.input}
+                        value={topicInput}
+                      />
+                      <Text style={styles.helpText}>
+                        {normalizedTopic.length}/{MAX_ONLINE_TOPIC_LENGTH}
+                      </Text>
+                      <Pressable
+                        accessibilityLabel="Submit round topic"
+                        accessibilityRole="button"
+                        accessibilityState={{ disabled: !canSubmitTopic }}
+                        disabled={!canSubmitTopic}
+                        style={[
+                          styles.primaryButton,
+                          !canSubmitTopic ? styles.disabledButton : undefined,
+                        ]}
+                        onPress={submitTopic}
+                      >
+                        {onlineRoom.isMutating ? (
+                          <ActivityIndicator color="#082F49" />
+                        ) : (
+                          <Text style={styles.primaryButtonText}>Lock Topic</Text>
+                        )}
+                      </Pressable>
+                    </View>
+                  ) : (
+                    <Text style={styles.body}>
+                      Waiting for {judgeMember?.displayName ?? "the judge"} to set the topic.
+                    </Text>
+                  )
+                ) : null}
+              </View>
+
+              {currentRound?.status === "submitting" ? (
+                <View style={styles.panel}>
+                  <View style={styles.progressHeader}>
+                    <View>
+                      <Text style={styles.sectionTitle}>Submission progress</Text>
+                      <Text style={styles.progressText}>
+                        {submissions.length}/{requiredSubmissionCount} songs submitted
+                      </Text>
+                    </View>
+                    {onlineRoom.isMutating ? <ActivityIndicator color="#38BDF8" /> : null}
+                  </View>
+
+                  {contestantMembers.map((member) => (
+                    <View key={member.id} style={styles.progressRow}>
+                      <Text style={styles.memberName}>{member.displayName}</Text>
+                      <Text style={styles.progressCount}>
+                        {getOnlineSubmissionCountForMember(submissions, member.id)}/{songsPerPlayer}
+                      </Text>
+                    </View>
+                  ))}
+
+                  {isJudge ? (
+                    <Text style={styles.body}>
+                      Waiting for contestants to finish submitting songs.
+                    </Text>
+                  ) : (
+                    <View style={styles.submissionArea}>
+                      <Text style={styles.body}>
+                        You have {songsRemaining} song{songsRemaining === 1 ? "" : "s"} left.
+                      </Text>
+
+                      {ownSubmissions.length > 0 ? (
+                        <View style={styles.submittedList}>
+                          <Text style={styles.sectionTitle}>Your songs</Text>
+                          {ownSubmissions.map((submission) => (
+                            <View key={submission.id} style={styles.submittedRow}>
+                              <View style={styles.submittedText}>
+                                <Text style={styles.submittedTitle}>{submission.song.title}</Text>
+                                <Text style={styles.submittedArtist}>
+                                  {submission.song.artists.join(", ")}
+                                </Text>
+                              </View>
+                              <Pressable
+                                accessibilityLabel={`Remove ${submission.song.title}`}
+                                accessibilityRole="button"
+                                disabled={onlineRoom.isMutating}
+                                style={[
+                                  styles.smallButton,
+                                  onlineRoom.isMutating ? styles.disabledButton : undefined,
+                                ]}
+                                onPress={() => void removeSubmission(submission.id)}
+                              >
+                                <Text style={styles.smallButtonText}>Remove</Text>
+                              </Pressable>
+                            </View>
+                          ))}
+                        </View>
+                      ) : null}
+
+                      {songsRemaining > 0 ? (
+                        <>
+                          <TextInput
+                            accessibilityLabel="Search for a song"
+                            autoCapitalize="words"
+                            autoCorrect={false}
+                            editable={!onlineRoom.isMutating && !songSearch.isSearching}
+                            onChangeText={(nextQuery) => {
+                              songSearch.setQuery(nextQuery);
+                              onlineRoom.clearError();
+                            }}
+                            onSubmitEditing={() => void searchSongs()}
+                            placeholder="Search song or artist"
+                            placeholderTextColor="#64748B"
+                            returnKeyType="search"
+                            style={styles.input}
+                            value={songSearch.query}
+                          />
+                          <Pressable
+                            accessibilityLabel="Search songs"
+                            accessibilityRole="button"
+                            disabled={songSearch.isSearching}
+                            style={[
+                              styles.primaryButton,
+                              songSearch.isSearching ? styles.disabledButton : undefined,
+                            ]}
+                            onPress={() => void searchSongs()}
+                          >
+                            {songSearch.isSearching ? (
+                              <ActivityIndicator color="#082F49" />
+                            ) : (
+                              <Text style={styles.primaryButtonText}>Search</Text>
+                            )}
+                          </Pressable>
+                          <Text style={styles.audioStatus}>{previewAudio.audioStatus}</Text>
+                          {songSearch.errorMessage ? (
+                            <Text style={styles.errorText}>{songSearch.errorMessage}</Text>
+                          ) : null}
+                          {songSearch.results.length > 0 ? (
+                            <View style={styles.resultsList}>
+                              {songSearch.results.map((song) => {
+                                const isDuplicate = isSongAlreadySubmitted(song, submissions);
+
+                                return (
+                                  <SongActionCard
+                                    key={`${song.id}:${song.title}`}
+                                    primaryDisabled={!canSubmitSong || isDuplicate}
+                                    primaryLabel={isDuplicate ? "Already Picked" : "Submit"}
+                                    secondaryLabel="Play Preview"
+                                    song={song}
+                                    onPrimaryPress={() => void submitSong(song)}
+                                    onSecondaryPress={() => void previewAudio.playSongPreview(song)}
+                                  />
+                                );
+                              })}
+                            </View>
+                          ) : null}
+                        </>
+                      ) : (
+                        <Text style={styles.body}>Your songs are locked in.</Text>
+                      )}
+                    </View>
+                  )}
+                </View>
+              ) : null}
+
+              {currentRound?.status === "judging" ? (
+                <View style={styles.panel}>
+                  <Text style={styles.sectionTitle}>Ready for judging</Text>
+                  <Text style={styles.body}>
+                    All songs are submitted. The online bracket judging screen is next.
+                  </Text>
+                </View>
+              ) : null}
+            </>
+          ) : (
+            <Text style={styles.body}>Loading round setup...</Text>
+          )}
+
+          <Pressable
+            accessibilityLabel="Back to home"
+            accessibilityRole="button"
+            style={styles.secondaryButton}
+            onPress={goHome}
+          >
+            <Text style={styles.secondaryButtonText}>Back Home</Text>
+          </Pressable>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
+}
+
+function getRoundTitle(status: string | undefined): string {
+  if (status === "submitting") {
+    return "Submissions";
+  }
+
+  if (status === "judging") {
+    return "Judging next";
+  }
+
+  return "Topic setup";
+}
+
+function getRoundSubtitle(status: string | undefined): string {
+  if (status === "submitting") {
+    return "Contestants pick songs for the locked topic.";
+  }
+
+  if (status === "judging") {
+    return "The submission phase is complete.";
+  }
+
+  return "The judge sets the prompt for this round.";
+}
+
+function isSongAlreadySubmitted(song: MediaTrack, submissions: { song: MediaTrack }[]): boolean {
+  const songKey = getSongKey(song);
+
+  return submissions.some((submission) => getSongKey(submission.song) === songKey);
+}
+
+function getSongKey(song: MediaTrack): string {
+  return `${song.title.trim().toLowerCase()}:${song.artists
+    .map((artist) => artist.trim().toLowerCase())
+    .join(",")}`;
 }
 
 const styles = StyleSheet.create({
   root: {
     backgroundColor: "#111827",
+    flex: 1,
+  },
+  keyboardView: {
     flex: 1,
   },
   content: {
@@ -202,7 +431,7 @@ const styles = StyleSheet.create({
     borderColor: "#334155",
     borderRadius: 8,
     borderWidth: 1,
-    gap: 8,
+    gap: 12,
     padding: 14,
   },
   topicForm: {
@@ -254,6 +483,87 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "700",
     lineHeight: 20,
+  },
+  progressHeader: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  progressText: {
+    color: "#F9FAFB",
+    fontSize: 20,
+    fontWeight: "900",
+    marginTop: 2,
+  },
+  progressRow: {
+    alignItems: "center",
+    borderColor: "#334155",
+    borderTopWidth: 1,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingTop: 10,
+  },
+  memberName: {
+    color: "#F9FAFB",
+    fontSize: 16,
+    fontWeight: "800",
+  },
+  progressCount: {
+    color: "#7DD3FC",
+    fontSize: 16,
+    fontWeight: "900",
+  },
+  submissionArea: {
+    gap: 10,
+  },
+  submittedList: {
+    gap: 8,
+  },
+  submittedRow: {
+    alignItems: "center",
+    backgroundColor: "#111827",
+    borderColor: "#334155",
+    borderRadius: 8,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 10,
+    justifyContent: "space-between",
+    padding: 12,
+  },
+  submittedText: {
+    flex: 1,
+    gap: 2,
+  },
+  submittedTitle: {
+    color: "#F9FAFB",
+    fontSize: 16,
+    fontWeight: "900",
+  },
+  submittedArtist: {
+    color: "#94A3B8",
+    fontSize: 14,
+  },
+  smallButton: {
+    alignItems: "center",
+    borderColor: "#FCA5A5",
+    borderRadius: 8,
+    borderWidth: 1,
+    justifyContent: "center",
+    minHeight: 38,
+    paddingHorizontal: 12,
+  },
+  smallButtonText: {
+    color: "#FCA5A5",
+    fontSize: 13,
+    fontWeight: "900",
+  },
+  audioStatus: {
+    color: "#94A3B8",
+    fontSize: 13,
+    fontWeight: "700",
+  },
+  resultsList: {
+    gap: 10,
   },
   primaryButton: {
     alignItems: "center",

@@ -105,6 +105,54 @@ export interface Database {
         };
         Relationships: [];
       };
+      round_submissions: {
+        Row: {
+          id: string;
+          room_id: string;
+          round_id: string;
+          member_id: string;
+          song_key: string;
+          track_id: string;
+          title: string;
+          artists: string[];
+          album_name: string | null;
+          artwork_url: string | null;
+          preview_url: string | null;
+          provider_refs: Json;
+          submitted_at: string;
+        };
+        Insert: {
+          id?: string;
+          room_id: string;
+          round_id: string;
+          member_id: string;
+          song_key: string;
+          track_id: string;
+          title: string;
+          artists?: string[];
+          album_name?: string | null;
+          artwork_url?: string | null;
+          preview_url?: string | null;
+          provider_refs?: Json;
+          submitted_at?: string;
+        };
+        Update: {
+          id?: string;
+          room_id?: string;
+          round_id?: string;
+          member_id?: string;
+          song_key?: string;
+          track_id?: string;
+          title?: string;
+          artists?: string[];
+          album_name?: string | null;
+          artwork_url?: string | null;
+          preview_url?: string | null;
+          provider_refs?: Json;
+          submitted_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -156,6 +204,26 @@ export interface Database {
         Args: {
           room_id_value: string;
           topic_value: string;
+        };
+        Returns: Json;
+      };
+      submit_round_song: {
+        Args: {
+          room_id_value: string;
+          track_id_value: string;
+          title_value: string;
+          artists_value: string[];
+          album_name_value: string | null;
+          artwork_url_value: string | null;
+          preview_url_value: string | null;
+          provider_refs_value: Json;
+        };
+        Returns: Json;
+      };
+      remove_own_submission: {
+        Args: {
+          room_id_value: string;
+          submission_id_value: string;
         };
         Returns: Json;
       };

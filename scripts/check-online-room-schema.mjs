@@ -17,6 +17,7 @@ const requiredSnippets = [
   "create table if not exists public.rooms",
   "create table if not exists public.room_members",
   "create table if not exists public.rounds",
+  "create table if not exists public.round_submissions",
   "code text unique",
   "constraint rooms_code_format check",
   "now() + interval '12 hours'",
@@ -50,10 +51,15 @@ const requiredSnippets = [
   "grant execute on function public.get_room_snapshot",
   "add column if not exists topic text",
   "create or replace function public.submit_round_topic",
+  "create or replace function public.submit_round_song",
+  "create or replace function public.remove_own_submission",
   "grant execute on function public.submit_round_topic",
+  "grant execute on function public.submit_round_song",
+  "grant execute on function public.remove_own_submission",
   "alter publication supabase_realtime add table public.rooms",
   "alter publication supabase_realtime add table public.room_members",
   "alter publication supabase_realtime add table public.rounds",
+  "alter publication supabase_realtime add table public.round_submissions",
 ];
 
 for (const snippet of requiredSnippets) {
@@ -98,6 +104,26 @@ assert(
 assert(
   /set topic = normalized_topic, status = 'submitting'/.test(migration),
   "submit_round_topic should store the topic and advance to submitting.",
+);
+assert(
+  /unique \(round_id, song_key\)/.test(migration),
+  "round_submissions should block duplicate songs per round.",
+);
+assert(
+  /if current_member\.id = active_round\.judge_member_id then/.test(migration),
+  "submit_round_song should block judge submissions.",
+);
+assert(
+  /if member_submission_count >= active_round\.songs_per_player then/.test(migration),
+  "submit_round_song should enforce songs-per-player.",
+);
+assert(
+  /if coalesce\(cardinality\(artists_value\), 0\) < 1 then/.test(migration),
+  "submit_round_song should reject missing artists.",
+);
+assert(
+  /set status = 'judging'/.test(migration),
+  "submit_round_song should advance the round after all required submissions.",
 );
 assert(
   /public\.normalize_display_name\(display_name\) = public\.normalize_display_name\(guest_display_name\)/.test(

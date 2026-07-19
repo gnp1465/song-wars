@@ -193,6 +193,58 @@ await expectRpcFailure(
   "topic should lock after submission",
 );
 
+await expectRpcFailure(
+  host,
+  "submit_round_song",
+  makeSongArgs(roomId, 1),
+  "judges should not submit songs",
+);
+
+const firstSubmission = await rpc(guestOne, "submit_round_song", makeSongArgs(roomId, 1));
+assert(firstSubmission.submissions.length === 1, "first contestant should submit a song");
+
+await rpc(guestOne, "remove_own_submission", {
+  room_id_value: roomId,
+  submission_id_value: firstSubmission.submissions[0].id,
+});
+
+const resubmitted = await rpc(guestOne, "submit_round_song", makeSongArgs(roomId, 1));
+assert(resubmitted.submissions.length === 1, "contestants should remove and resubmit songs");
+
+await expectRpcFailure(
+  guestTwo,
+  "submit_round_song",
+  makeSongArgs(roomId, 1),
+  "duplicate songs should be blocked within the round",
+);
+
+const guestOneComplete = await rpc(guestOne, "submit_round_song", makeSongArgs(roomId, 2));
+assert(
+  guestOneComplete.current_round?.status === "submitting",
+  "round should keep accepting songs until every contestant is done",
+);
+
+await rpc(guestTwo, "submit_round_song", makeSongArgs(roomId, 3));
+const submissionsComplete = await rpc(guestTwo, "submit_round_song", makeSongArgs(roomId, 4));
+assert(
+  submissionsComplete.current_round?.status === "judging",
+  "round should move to judging after every required song is submitted",
+);
+assert(
+  submissionsComplete.submissions.length === 4,
+  "two contestants with two songs each should create four submissions",
+);
+
+await expectRpcFailure(
+  guestOne,
+  "remove_own_submission",
+  {
+    room_id_value: roomId,
+    submission_id_value: submissionsComplete.submissions[0].id,
+  },
+  "submissions should lock after the round moves to judging",
+);
+
 await rpc(guestTwo, "leave_room", {
   room_id_value: roomId,
 });
@@ -437,6 +489,25 @@ function assert(condition, message) {
   if (!condition) {
     throw new Error(message);
   }
+}
+
+function makeSongArgs(roomId, index) {
+  return {
+    album_name_value: `Album ${index}`,
+    artists_value: [`Artist ${index}`],
+    artwork_url_value: `https://example.com/artwork-${index}.jpg`,
+    preview_url_value: `https://example.com/preview-${index}.m4a`,
+    provider_refs_value: [
+      {
+        providerId: "apple_itunes",
+        providerTrackId: `apple-${index}`,
+        url: `https://example.com/song-${index}`,
+      },
+    ],
+    room_id_value: roomId,
+    title_value: `Song ${index}`,
+    track_id_value: `track-${index}`,
+  };
 }
 
 function loadLocalEnv() {
