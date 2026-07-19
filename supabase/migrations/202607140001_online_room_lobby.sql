@@ -73,6 +73,24 @@ as $$
   );
 $$;
 
+create or replace function public.online_room_id_from_realtime_topic()
+returns uuid
+language plpgsql
+stable
+security definer
+set search_path = public
+as $$
+declare
+  topic_value text := realtime.topic();
+begin
+  if topic_value !~ '^online-room:[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$' then
+    return null;
+  end if;
+
+  return split_part(topic_value, ':', 2)::uuid;
+end;
+$$;
+
 drop policy if exists "room members can read rooms" on public.rooms;
 create policy "room members can read rooms"
   on public.rooms
@@ -90,6 +108,28 @@ create policy "room members can read rounds"
   on public.rounds
   for select
   using (public.is_room_member(room_id));
+
+alter table realtime.messages enable row level security;
+
+drop policy if exists "room members can read room presence" on realtime.messages;
+create policy "room members can read room presence"
+  on realtime.messages
+  for select
+  to authenticated
+  using (
+    realtime.messages.extension = 'presence'
+    and public.is_room_member(public.online_room_id_from_realtime_topic())
+  );
+
+drop policy if exists "room members can track room presence" on realtime.messages;
+create policy "room members can track room presence"
+  on realtime.messages
+  for insert
+  to authenticated
+  with check (
+    realtime.messages.extension = 'presence'
+    and public.is_room_member(public.online_room_id_from_realtime_topic())
+  );
 
 create or replace function public.normalize_display_name(display_name_value text)
 returns text
@@ -480,3 +520,39 @@ grant execute on function public.update_room_settings(uuid, text, integer, integ
 grant execute on function public.start_room(uuid) to authenticated;
 grant execute on function public.close_room(uuid) to authenticated;
 grant execute on function public.get_room_snapshot(uuid) to authenticated;
+
+do $$
+begin
+  if exists (select 1 from pg_publication where pubname = 'supabase_realtime') then
+    if not exists (
+      select 1
+      from pg_publication_tables
+      where pubname = 'supabase_realtime'
+        and schemaname = 'public'
+        and tablename = 'rooms'
+    ) then
+      alter publication supabase_realtime add table public.rooms;
+    end if;
+
+    if not exists (
+      select 1
+      from pg_publication_tables
+      where pubname = 'supabase_realtime'
+        and schemaname = 'public'
+        and tablename = 'room_members'
+    ) then
+      alter publication supabase_realtime add table public.room_members;
+    end if;
+
+    if not exists (
+      select 1
+      from pg_publication_tables
+      where pubname = 'supabase_realtime'
+        and schemaname = 'public'
+        and tablename = 'rounds'
+    ) then
+      alter publication supabase_realtime add table public.rounds;
+    end if;
+  end if;
+end;
+$$;

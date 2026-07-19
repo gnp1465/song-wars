@@ -27,7 +27,7 @@ export default function OnlineRoundSetupScreen() {
           <Text style={styles.eyebrow}>Round 1</Text>
           <Text style={styles.title}>Topic setup</Text>
           <Text style={styles.body}>
-            The real lobby is synchronized. Topic sync, submissions, and judging come next.
+            Round 1 is ready. The judge sets the first prompt.
           </Text>
         </View>
 
@@ -41,8 +41,8 @@ export default function OnlineRoundSetupScreen() {
             <Text style={styles.judgeName}>{judgeMember?.displayName ?? "Waiting..."}</Text>
             <Text style={styles.body}>
               {isJudge
-                ? "You will choose the first online topic in the next milestone."
-                : "Wait for the judge to choose the first online topic in the next milestone."}
+                ? "You are the judge for this round."
+                : `Waiting for ${judgeMember?.displayName ?? "the judge"} to set the topic.`}
             </Text>
           </View>
         ) : (
