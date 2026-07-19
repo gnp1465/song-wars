@@ -37,7 +37,20 @@ Run:
 npm run check:online-room
 ```
 
-This creates separate anonymous host/guest clients and verifies room creation, joining, duplicate-name blocking, host-only settings, and synchronized start.
+This creates separate anonymous host/guest clients and verifies:
+
+- six-digit room-code creation
+- wrong-code rejection
+- case-insensitive duplicate display-name blocking
+- direct table-write blocking through RLS
+- nonmember snapshot blocking
+- host-only settings, removals, and start
+- minimum three-player start rule
+- twelve-player room capacity
+- guest removal and voluntary leave access cleanup
+- room close behavior
+- Round 1 creation with the host as first judge
+- join-code clearing after start
 
 ## 5. Device Test
 
@@ -48,4 +61,3 @@ Run the app on two phones or simulators:
 - Confirm both devices see the same player list.
 - Change settings as host and confirm the guest sees updates.
 - Start with at least three players and confirm all devices transition to Round 1 setup.
-

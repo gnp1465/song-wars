@@ -2,6 +2,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
 import { restoreOrCreateAnonymousSession } from "../../../src/services/online/AuthSessionService";
+import { getOnlineRoomExitNotice } from "../../../src/services/online/onlineRoomAccess";
 import { useOnlineRoom } from "../../../src/hooks/useOnlineRoom";
 
 export default function OnlineRoundSetupScreen() {
@@ -19,6 +20,19 @@ export default function OnlineRoundSetupScreen() {
   useEffect(() => {
     void restoreOrCreateAnonymousSession().then((session) => setCurrentUserId(session.userId));
   }, []);
+
+  useEffect(() => {
+    const notice = getOnlineRoomExitNotice(snapshot, onlineRoom.errorMessage);
+
+    if (notice) {
+      router.replace({
+        pathname: "/",
+        params: {
+          notice,
+        },
+      });
+    }
+  }, [onlineRoom.errorMessage, snapshot?.room.status]);
 
   return (
     <SafeAreaView style={styles.root}>

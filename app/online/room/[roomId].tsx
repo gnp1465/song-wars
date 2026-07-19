@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { RoomSettingsPanel } from "../../../src/components/game/RoomSettingsPanel";
 import { restoreOrCreateAnonymousSession } from "../../../src/services/online/AuthSessionService";
+import { getOnlineRoomExitNotice } from "../../../src/services/online/onlineRoomAccess";
 import { useOnlineRoom } from "../../../src/hooks/useOnlineRoom";
 import type { OnlineRoomMember, OnlineRoomSnapshot } from "../../../src/types/onlineRoom";
 
@@ -40,6 +41,19 @@ export default function OnlineLobbyScreen() {
       router.replace(`/online/round/${snapshot.room.id}`);
     }
   }, [snapshot?.currentRound?.id, snapshot?.room.id, snapshot?.room.status]);
+
+  useEffect(() => {
+    const notice = getOnlineRoomExitNotice(snapshot, onlineRoom.errorMessage);
+
+    if (notice) {
+      router.replace({
+        pathname: "/",
+        params: {
+          notice,
+        },
+      });
+    }
+  }, [onlineRoom.errorMessage, snapshot?.room.status]);
 
   async function leaveRoom() {
     if (!snapshot) {

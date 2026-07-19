@@ -9,15 +9,14 @@ if (!supabaseUrl || !supabaseAnonKey) {
   process.exit(1);
 }
 
-const host = createTestClient();
-const guestOne = createTestClient();
-const guestTwo = createTestClient();
-const outsider = createTestClient();
+const host = await createSignedInTestClient("host");
+const guestOne = await createSignedInTestClient("guest one");
+const guestTwo = await createSignedInTestClient("guest two");
+const outsider = await createSignedInTestClient("outsider");
 
-await signInAnonymously(host, "host");
-await signInAnonymously(guestOne, "guest one");
-await signInAnonymously(guestTwo, "guest two");
-await signInAnonymously(outsider, "outsider");
+await verifyRoomCannotStartEarly();
+await verifyRemovalAndLeaveRules();
+await verifyCapacityLimit();
 
 const created = await rpc(host, "create_room", {
   host_display_name: "Host",
@@ -31,15 +30,50 @@ assert(created.members.length === 1, "created room should start with host only")
 
 const roomId = created.room.id;
 const roomCode = created.room.code;
+const hostMemberId = created.members[0].id;
+
+await expectRpcFailure(
+  outsider,
+  "get_room_snapshot",
+  {
+    room_id_value: roomId,
+  },
+  "nonmembers should not fetch room snapshots",
+);
+
+await expectTableUpdateFailure(
+  outsider,
+  "rooms",
+  { points_to_win: 7 },
+  roomId,
+  async () => {
+    const snapshot = await rpc(host, "get_room_snapshot", {
+      room_id_value: roomId,
+    });
+
+    return snapshot.room.points_to_win === 3;
+  },
+  "direct room table updates should not change room settings",
+);
 
 await expectRpcFailure(
   guestOne,
   "join_room",
   {
-    guest_display_name: "host",
+    guest_display_name: "Maya",
+    room_code: "000000",
+  },
+  "wrong room codes should be rejected",
+);
+
+await expectRpcFailure(
+  guestOne,
+  "join_room",
+  {
+    guest_display_name: " host ",
     room_code: roomCode,
   },
-  "duplicate display names should be blocked",
+  "duplicate display names should be blocked case-insensitively",
 );
 
 const joinedOne = await rpc(guestOne, "join_room", {
@@ -57,7 +91,7 @@ const joinedTwo = await rpc(guestTwo, "join_room", {
 assert(joinedTwo.members.length === 3, "second guest should join");
 
 await expectRpcFailure(
-  outsider,
+  guestOne,
   "update_room_settings",
   {
     points_to_win_value: 2,
@@ -65,7 +99,26 @@ await expectRpcFailure(
     room_mode: null,
     songs_per_player_value: null,
   },
-  "nonmembers should not update settings",
+  "guests should not update settings",
+);
+
+await expectRpcFailure(
+  guestOne,
+  "remove_room_member",
+  {
+    member_id_value: hostMemberId,
+    room_id_value: roomId,
+  },
+  "guests should not remove room members",
+);
+
+await expectRpcFailure(
+  guestOne,
+  "start_room",
+  {
+    room_id_value: roomId,
+  },
+  "guests should not start the room",
 );
 
 const updated = await rpc(host, "update_room_settings", {
@@ -86,24 +139,179 @@ const started = await rpc(host, "start_room", {
 assert(started.room.status === "in_round", "host should start the room");
 assert(started.room.code === null, "started room should clear join code");
 assert(started.current_round?.round_number === 1, "starting room should create round one");
+assert(
+  started.current_round?.judge_member_id === hostMemberId,
+  "host should become the first judge",
+);
+
+await expectRpcFailure(
+  outsider,
+  "join_room",
+  {
+    guest_display_name: "Late",
+    room_code: roomCode,
+  },
+  "started rooms should reject new joins because the code is cleared",
+);
 
 console.log("Online room hosted Supabase check passed.");
 
-function createTestClient() {
-  return createClient(supabaseUrl, supabaseAnonKey, {
+async function verifyRoomCannotStartEarly() {
+  const shortRoomHost = await createSignedInTestClient("short room host");
+  const shortRoom = await rpc(shortRoomHost, "create_room", {
+    host_display_name: "Solo",
+    points_to_win_value: 3,
+    room_mode: "single_speaker",
+    songs_per_player_value: 1,
+  });
+
+  await expectRpcFailure(
+    shortRoomHost,
+    "start_room",
+    {
+      room_id_value: shortRoom.room.id,
+    },
+    "rooms should require at least three players before start",
+  );
+}
+
+async function verifyRemovalAndLeaveRules() {
+  const removalHost = await createSignedInTestClient("removal host");
+  const removedGuest = await createSignedInTestClient("removed guest");
+  const leaveGuest = await createSignedInTestClient("leaving guest");
+  const closedGuest = await createSignedInTestClient("closed room guest");
+
+  const removalRoom = await rpc(removalHost, "create_room", {
+    host_display_name: "Host",
+    points_to_win_value: 3,
+    room_mode: "single_speaker",
+    songs_per_player_value: 1,
+  });
+
+  const removedGuestRoom = await rpc(removedGuest, "join_room", {
+    guest_display_name: "Removed",
+    room_code: removalRoom.room.code,
+  });
+  const removedMember = removedGuestRoom.members.find(
+    (member) => member.display_name === "Removed",
+  );
+
+  assert(removedMember, "removed guest member should exist before removal");
+
+  await rpc(removalHost, "remove_room_member", {
+    member_id_value: removedMember.id,
+    room_id_value: removalRoom.room.id,
+  });
+
+  await expectRpcFailure(
+    removedGuest,
+    "get_room_snapshot",
+    {
+      room_id_value: removalRoom.room.id,
+    },
+    "removed guests should lose room access",
+  );
+
+  const leaveRoom = await rpc(removalHost, "create_room", {
+    host_display_name: "Second Host",
+    points_to_win_value: 3,
+    room_mode: "single_speaker",
+    songs_per_player_value: 1,
+  });
+
+  await rpc(leaveGuest, "join_room", {
+    guest_display_name: "Leaver",
+    room_code: leaveRoom.room.code,
+  });
+  await rpc(leaveGuest, "leave_room", {
+    room_id_value: leaveRoom.room.id,
+  });
+  await expectRpcFailure(
+    leaveGuest,
+    "get_room_snapshot",
+    {
+      room_id_value: leaveRoom.room.id,
+    },
+    "guests who leave should lose room access",
+  );
+
+  const closeRoom = await rpc(removalHost, "create_room", {
+    host_display_name: "Closer",
+    points_to_win_value: 3,
+    room_mode: "single_speaker",
+    songs_per_player_value: 1,
+  });
+  const closeCode = closeRoom.room.code;
+  const closed = await rpc(removalHost, "close_room", {
+    room_id_value: closeRoom.room.id,
+  });
+
+  assert(closed.room.status === "closed", "host should close rooms");
+  assert(closed.room.code === null, "closed rooms should clear join code");
+
+  await expectRpcFailure(
+    closedGuest,
+    "join_room",
+    {
+      guest_display_name: "Closed",
+      room_code: closeCode,
+    },
+    "closed rooms should reject new joins",
+  );
+}
+
+async function verifyCapacityLimit() {
+  const capacityHost = await createSignedInTestClient("capacity host");
+  const capacityGuests = [];
+
+  for (let index = 0; index < 12; index += 1) {
+    capacityGuests.push(await createSignedInTestClient(`capacity guest ${index + 1}`));
+  }
+
+  const capacityRoom = await rpc(capacityHost, "create_room", {
+    host_display_name: "Capacity Host",
+    points_to_win_value: 3,
+    room_mode: "single_speaker",
+    songs_per_player_value: 1,
+  });
+
+  let latestSnapshot = capacityRoom;
+
+  for (let index = 0; index < 11; index += 1) {
+    latestSnapshot = await rpc(capacityGuests[index], "join_room", {
+      guest_display_name: `Guest ${index + 1}`,
+      room_code: capacityRoom.room.code,
+    });
+  }
+
+  assert(latestSnapshot.members.length === 12, "room capacity should be twelve players");
+
+  await expectRpcFailure(
+    capacityGuests[11],
+    "join_room",
+    {
+      guest_display_name: "Guest 12",
+      room_code: capacityRoom.room.code,
+    },
+    "rooms should reject the thirteenth player",
+  );
+}
+
+async function createSignedInTestClient(label) {
+  const client = createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
       autoRefreshToken: false,
       persistSession: false,
     },
   });
-}
 
-async function signInAnonymously(client, label) {
   const result = await client.auth.signInAnonymously();
 
   if (result.error) {
     throw new Error(`Could not sign in ${label}: ${result.error.message}`);
   }
+
+  return client;
 }
 
 async function rpc(client, functionName, args) {
@@ -120,6 +328,21 @@ async function expectRpcFailure(client, functionName, args, message) {
   const result = await client.rpc(functionName, args);
 
   if (!result.error) {
+    throw new Error(message);
+  }
+}
+
+async function expectTableUpdateFailure(
+  client,
+  tableName,
+  values,
+  rowId,
+  didRemainUnchanged,
+  message,
+) {
+  const result = await client.from(tableName).update(values).eq("id", rowId);
+
+  if (!result.error && !(await didRemainUnchanged())) {
     throw new Error(message);
   }
 }

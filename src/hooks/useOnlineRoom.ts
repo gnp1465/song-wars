@@ -36,7 +36,7 @@ export function useOnlineRoom(
   const subscriptionRef = useRef<{ unsubscribe: () => Promise<void> } | undefined>(undefined);
 
   const refresh = useCallback(async () => {
-    if (!roomId) {
+    if (!roomId || !currentUserId) {
       return;
     }
 
@@ -50,7 +50,7 @@ export function useOnlineRoom(
     } finally {
       setIsLoading(false);
     }
-  }, [roomId]);
+  }, [currentUserId, roomId]);
 
   useEffect(() => {
     void refresh();

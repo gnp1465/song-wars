@@ -1,7 +1,10 @@
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { Pressable, SafeAreaView, StyleSheet, Text, View } from "react-native";
 
 export default function HomeScreen() {
+  const params = useLocalSearchParams<{ notice?: string }>();
+  const notice = typeof params.notice === "string" ? params.notice : undefined;
+
   return (
     <SafeAreaView style={styles.root}>
       <View style={styles.content}>
@@ -12,6 +15,8 @@ export default function HomeScreen() {
             Play the finished local prototype or start a real online lobby across phones.
           </Text>
         </View>
+
+        {notice ? <Text style={styles.noticeText}>{notice}</Text> : null}
 
         <View style={styles.actions}>
           <HomeButton
@@ -86,6 +91,17 @@ const styles = StyleSheet.create({
     color: "#CBD5E1",
     fontSize: 16,
     lineHeight: 23,
+  },
+  noticeText: {
+    backgroundColor: "#1F2937",
+    borderColor: "#475569",
+    borderRadius: 8,
+    borderWidth: 1,
+    color: "#F9FAFB",
+    fontSize: 14,
+    fontWeight: "800",
+    lineHeight: 20,
+    padding: 12,
   },
   actions: {
     gap: 12,
