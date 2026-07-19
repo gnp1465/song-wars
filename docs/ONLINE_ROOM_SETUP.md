@@ -60,6 +60,8 @@ npm run check:online-room-schema
 
 That check reads the committed migration and confirms the expected online-room tables, RPC functions, RLS policies, Realtime Presence policies, and publication setup are still present.
 
+If the hosted check says `Anonymous sign-ins are disabled`, open Supabase Auth settings and enable Anonymous Sign-ins before rerunning it.
+
 ## 5. Device Test
 
 Run the app on two phones or simulators:

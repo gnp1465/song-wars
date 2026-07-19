@@ -1,4 +1,7 @@
+import { existsSync, readFileSync } from "node:fs";
 import { createClient } from "@supabase/supabase-js";
+
+loadLocalEnv();
 
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
@@ -308,6 +311,12 @@ async function createSignedInTestClient(label) {
   const result = await client.auth.signInAnonymously();
 
   if (result.error) {
+    if (result.error.message.toLowerCase().includes("anonymous sign-ins are disabled")) {
+      throw new Error(
+        `Could not sign in ${label}: Anonymous sign-ins are disabled. Enable them in Supabase Auth before running this check.`,
+      );
+    }
+
     throw new Error(`Could not sign in ${label}: ${result.error.message}`);
   }
 
@@ -350,5 +359,34 @@ async function expectTableUpdateFailure(
 function assert(condition, message) {
   if (!condition) {
     throw new Error(message);
+  }
+}
+
+function loadLocalEnv() {
+  if (!existsSync(".env")) {
+    return;
+  }
+
+  const lines = readFileSync(".env", "utf8").split("\n");
+
+  for (const line of lines) {
+    const trimmedLine = line.trim();
+
+    if (!trimmedLine || trimmedLine.startsWith("#")) {
+      continue;
+    }
+
+    const separatorIndex = trimmedLine.indexOf("=");
+
+    if (separatorIndex === -1) {
+      continue;
+    }
+
+    const key = trimmedLine.slice(0, separatorIndex).trim();
+    const value = trimmedLine.slice(separatorIndex + 1).trim().replace(/^["']|["']$/g, "");
+
+    if (!process.env[key]) {
+      process.env[key] = value;
+    }
   }
 }
