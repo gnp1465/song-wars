@@ -52,6 +52,14 @@ This creates separate anonymous host/guest clients and verifies:
 - Round 1 creation with the host as first judge
 - join-code clearing after start
 
+You can also run the local schema contract check without Supabase credentials:
+
+```bash
+npm run check:online-room-schema
+```
+
+That check reads the committed migration and confirms the expected online-room tables, RPC functions, RLS policies, Realtime Presence policies, and publication setup are still present.
+
 ## 5. Device Test
 
 Run the app on two phones or simulators:

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { AppState } from "react-native";
 import type { OnlineRoomSnapshot } from "../types/onlineRoom";
 import {
   closeOnlineRoom,
@@ -54,6 +55,18 @@ export function useOnlineRoom(
 
   useEffect(() => {
     void refresh();
+  }, [refresh]);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", (nextState) => {
+      if (nextState === "active") {
+        void refresh();
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
   }, [refresh]);
 
   useEffect(() => {

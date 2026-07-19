@@ -60,6 +60,7 @@ Services hold business logic and provider/API logic.
 - `services/game/room.ts` creates and updates room objects.
 - `services/game/scoring.ts` scores completed rounds.
 - `services/online/*` creates anonymous sessions, stores display names, and calls room RPC functions.
+- `services/online/onlineRoomAccess.ts` centralizes when online users should be returned Home after removal, room closure, or expiration.
 - `services/supabase/*` configures the typed Supabase React Native client.
 - `services/media/MediaResolutionService.ts` resolves selected songs to playable previews.
 - `services/media/providers/*` adapt external music sources to the app's shared media shape.
@@ -92,6 +93,8 @@ Memorize: the app uses the public anon key only. Server-authoritative actions ha
 ## Tests
 
 `src/tests/*` are manual test scripts for core logic.
+
+`scripts/check-online-room-schema.mjs` is a local contract check for the committed Supabase migration. It does not replace the hosted Supabase check, but it catches missing tables, RPC functions, RLS policies, Realtime Presence policies, and publication setup before deployment.
 
 Run all checks:
 
