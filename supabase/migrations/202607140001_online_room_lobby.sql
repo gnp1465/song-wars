@@ -109,8 +109,6 @@ create policy "room members can read rounds"
   for select
   using (public.is_room_member(room_id));
 
-alter table realtime.messages enable row level security;
-
 drop policy if exists "room members can read room presence" on realtime.messages;
 create policy "room members can read room presence"
   on realtime.messages

@@ -21,7 +21,6 @@ const requiredSnippets = [
   "create policy \"room members can read rooms\"",
   "create policy \"room members can read members\"",
   "create policy \"room members can read rounds\"",
-  "alter table realtime.messages enable row level security",
   "create policy \"room members can read room presence\"",
   "create policy \"room members can track room presence\"",
   "create or replace function public.create_room",
