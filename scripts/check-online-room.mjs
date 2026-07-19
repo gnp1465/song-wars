@@ -5,6 +5,7 @@ loadLocalEnv();
 
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+const shouldVerifyCapacity = process.env.CHECK_ONLINE_ROOM_CAPACITY === "1";
 
 if (!supabaseUrl || !supabaseAnonKey) {
   console.log("Missing EXPO_PUBLIC_SUPABASE_URL or EXPO_PUBLIC_SUPABASE_ANON_KEY.");
@@ -17,9 +18,21 @@ const guestOne = await createSignedInTestClient("guest one");
 const guestTwo = await createSignedInTestClient("guest two");
 const outsider = await createSignedInTestClient("outsider");
 
-await verifyRoomCannotStartEarly();
-await verifyRemovalAndLeaveRules();
-await verifyCapacityLimit();
+await verifyRoomCannotStartEarly(host);
+await verifyRemovalAndLeaveRules({
+  closedGuest: outsider,
+  leaveGuest: guestTwo,
+  removalHost: host,
+  removedGuest: guestOne,
+});
+
+if (shouldVerifyCapacity) {
+  await verifyCapacityLimit({
+    reusableClients: [host, guestOne, guestTwo, outsider],
+  });
+} else {
+  console.log("Skipping capacity check. Set CHECK_ONLINE_ROOM_CAPACITY=1 to run it.");
+}
 
 const created = await rpc(host, "create_room", {
   host_display_name: "Host",
@@ -159,8 +172,7 @@ await expectRpcFailure(
 
 console.log("Online room hosted Supabase check passed.");
 
-async function verifyRoomCannotStartEarly() {
-  const shortRoomHost = await createSignedInTestClient("short room host");
+async function verifyRoomCannotStartEarly(shortRoomHost) {
   const shortRoom = await rpc(shortRoomHost, "create_room", {
     host_display_name: "Solo",
     points_to_win_value: 3,
@@ -178,12 +190,12 @@ async function verifyRoomCannotStartEarly() {
   );
 }
 
-async function verifyRemovalAndLeaveRules() {
-  const removalHost = await createSignedInTestClient("removal host");
-  const removedGuest = await createSignedInTestClient("removed guest");
-  const leaveGuest = await createSignedInTestClient("leaving guest");
-  const closedGuest = await createSignedInTestClient("closed room guest");
-
+async function verifyRemovalAndLeaveRules({
+  closedGuest,
+  leaveGuest,
+  removalHost,
+  removedGuest,
+}) {
   const removalRoom = await rpc(removalHost, "create_room", {
     host_display_name: "Host",
     points_to_win_value: 3,
@@ -263,11 +275,11 @@ async function verifyRemovalAndLeaveRules() {
   );
 }
 
-async function verifyCapacityLimit() {
-  const capacityHost = await createSignedInTestClient("capacity host");
-  const capacityGuests = [];
+async function verifyCapacityLimit({ reusableClients }) {
+  const [capacityHost, ...reusableGuests] = reusableClients;
+  const capacityGuests = [...reusableGuests];
 
-  for (let index = 0; index < 12; index += 1) {
+  for (let index = capacityGuests.length; index < 12; index += 1) {
     capacityGuests.push(await createSignedInTestClient(`capacity guest ${index + 1}`));
   }
 
@@ -314,6 +326,12 @@ async function createSignedInTestClient(label) {
     if (result.error.message.toLowerCase().includes("anonymous sign-ins are disabled")) {
       throw new Error(
         `Could not sign in ${label}: Anonymous sign-ins are disabled. Enable them in Supabase Auth before running this check.`,
+      );
+    }
+
+    if (result.error.message.toLowerCase().includes("rate limit")) {
+      throw new Error(
+        `Could not sign in ${label}: Supabase anonymous auth rate limit reached. Wait for the rate-limit window to reset, then rerun this check.`,
       );
     }
 

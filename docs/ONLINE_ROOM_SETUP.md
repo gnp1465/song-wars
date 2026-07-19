@@ -46,11 +46,16 @@ This creates separate anonymous host/guest clients and verifies:
 - nonmember snapshot blocking
 - host-only settings, removals, and start
 - minimum three-player start rule
-- twelve-player room capacity
 - guest removal and voluntary leave access cleanup
 - room close behavior
 - Round 1 creation with the host as first judge
 - join-code clearing after start
+
+The twelve-player capacity check creates extra anonymous users, so it is opt-in to avoid Supabase auth rate limits during normal development:
+
+```bash
+CHECK_ONLINE_ROOM_CAPACITY=1 npm run check:online-room
+```
 
 You can also run the local schema contract check without Supabase credentials:
 
@@ -61,6 +66,8 @@ npm run check:online-room-schema
 That check reads the committed migration and confirms the expected online-room tables, RPC functions, RLS policies, Realtime Presence policies, and publication setup are still present.
 
 If the hosted check says `Anonymous sign-ins are disabled`, open Supabase Auth settings and enable Anonymous Sign-ins before rerunning it.
+
+If the hosted check says `Supabase anonymous auth rate limit reached`, wait for the rate-limit window to reset before rerunning it. The normal check creates four anonymous users; the optional capacity check creates more.
 
 ## 5. Device Test
 
