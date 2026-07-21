@@ -14,6 +14,7 @@ import QRCode from "react-native-qrcode-svg";
 import { OnlineConnectionStatus } from "../../../src/components/game/OnlineConnectionStatus";
 import { RoomSettingsPanel } from "../../../src/components/game/RoomSettingsPanel";
 import { restoreOrCreateAnonymousSession } from "../../../src/services/online/AuthSessionService";
+import { getOnlineRoomExpiryLabel } from "../../../src/services/online/onlineRoomExpiry";
 import { getOnlineRoomExitNotice } from "../../../src/services/online/onlineRoomAccess";
 import { clearLastOnlineRoomId } from "../../../src/services/online/onlineRoomResumeStorage";
 import { useOnlineRoom } from "../../../src/hooks/useOnlineRoom";
@@ -109,6 +110,7 @@ export default function OnlineLobbyScreen() {
               <Text style={styles.body}>
                 Share this code. Players stay in the room if they briefly disconnect.
               </Text>
+              <Text style={styles.expiryText}>{getOnlineRoomExpiryLabel(snapshot.room)}</Text>
             </View>
 
             <OnlineConnectionStatus
@@ -302,6 +304,11 @@ const styles = StyleSheet.create({
     color: "#CBD5E1",
     fontSize: 16,
     lineHeight: 23,
+  },
+  expiryText: {
+    color: "#7DD3FC",
+    fontSize: 13,
+    fontWeight: "800",
   },
   errorText: {
     color: "#FCA5A5",

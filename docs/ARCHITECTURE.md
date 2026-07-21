@@ -64,6 +64,7 @@ Services hold business logic and provider/API logic.
 - `services/game/scoring.ts` scores completed rounds.
 - `services/online/*` creates anonymous sessions, stores display names, and calls room RPC functions.
 - `services/online/onlineRoomAccess.ts` centralizes when online users should be returned Home after removal, room closure, or expiration.
+- `services/online/onlineRoomExpiry.ts` formats temporary-room expiration labels for the lobby UI.
 - `services/online/onlineRoomResume.ts` decides whether a verified snapshot can resume to lobby or round.
 - `services/online/onlineRoomResumeStorage.ts` stores only the last room ID for this app installation.
 - `services/online/onlineRoundTopic.ts` holds the client-side topic input rules used before calling the server.

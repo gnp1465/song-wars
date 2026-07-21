@@ -44,6 +44,7 @@ Mark each item as `Pass`, `Fail`, or `Needs follow-up`.
 | Keyboard does not hide the active input |  |  |
 | Core buttons are easy to tap on the device |  |  |
 | Online room can be created with an anonymous host session |  |  |
+| Online lobby shows the room is temporary/expiring |  |  |
 | Second device can join by six-digit code |  |  |
 | Second device can join by QR code/deep link |  |  |
 | Online player list and settings sync across devices |  |  |
