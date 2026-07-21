@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Keyboard,
@@ -23,8 +23,11 @@ import { getLastDisplayName, saveLastDisplayName } from "../../src/services/onli
 import { saveLastOnlineRoomId } from "../../src/services/online/onlineRoomResumeStorage";
 import { getMissingSupabaseConfigMessage, getSupabaseConfig } from "../../src/services/supabase/config";
 
+type InputHandle = InstanceType<typeof TextInput>;
+
 export default function JoinOnlineRoomScreen() {
   const params = useLocalSearchParams<{ code?: string }>();
+  const displayNameInputRef = useRef<InputHandle>(null);
   const [displayName, setDisplayName] = useState("");
   const [roomCode, setRoomCode] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
@@ -44,6 +47,7 @@ export default function JoinOnlineRoomScreen() {
   useEffect(() => {
     if (typeof params.code === "string") {
       setRoomCode(params.code.replace(/\D/g, "").slice(0, 6));
+      setErrorMessage(undefined);
     }
   }, [params.code]);
 
@@ -77,6 +81,7 @@ export default function JoinOnlineRoomScreen() {
     <SafeAreaView style={styles.root}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
+        keyboardVerticalOffset={64}
         style={styles.keyboardView}
       >
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
@@ -92,12 +97,14 @@ export default function JoinOnlineRoomScreen() {
 
           <TextInput
             accessibilityLabel="Room code"
+            editable={!isJoining}
             keyboardType="number-pad"
             maxLength={6}
             onChangeText={(nextCode) => {
               setRoomCode(nextCode.replace(/\D/g, "").slice(0, 6));
               setErrorMessage(undefined);
             }}
+            onSubmitEditing={() => displayNameInputRef.current?.focus()}
             placeholder="Room code"
             placeholderTextColor="#64748B"
             returnKeyType="next"
@@ -105,6 +112,7 @@ export default function JoinOnlineRoomScreen() {
             value={normalizedRoomCode}
           />
           <TextInput
+            ref={displayNameInputRef}
             accessibilityLabel="Display name"
             autoCapitalize="words"
             autoCorrect={false}
