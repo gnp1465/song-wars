@@ -49,22 +49,12 @@ function prepareMigrationSql(sql, migrationPath) {
     return sql;
   }
 
-  return stripRealtimePresencePolicyBlock(
-    stripRealtimePresencePolicyBlock(sql, "room members can read room presence"),
-    "room members can track room presence",
-  );
-}
-
-function stripRealtimePresencePolicyBlock(sql, policyName) {
-  const pattern = new RegExp(
-    `drop policy if exists "${policyName}" on realtime\\.messages;\\ncreate policy "${policyName}"[\\s\\S]*?\\n  \\);`,
-    "g",
-  );
+  const pattern = /-- BEGIN realtime presence policies[\s\S]*?-- END realtime presence policies/g;
 
   return sql.replace(
     pattern,
     [
-      `-- Skipped "${policyName}" on realtime.messages.`,
+      "-- Skipped private Realtime Presence policies on realtime.messages.",
       "-- Some hosted Supabase dashboards reject this with ERROR 42501: must be owner of table messages.",
       "-- Apply the core schema first, then resolve private Realtime Presence authorization before beta.",
     ].join("\n"),

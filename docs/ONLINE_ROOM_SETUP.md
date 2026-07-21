@@ -48,13 +48,13 @@ To print one ordered SQL block for the Supabase SQL editor, run:
 npm run print:supabase-migrations
 ```
 
-If Supabase fails with `ERROR: 42501: must be owner of table messages`, the SQL editor rejected the private Realtime Presence policy statements on `realtime.messages`. To unblock the core game backend first, print the same migrations without those Presence policy statements:
+The main migration catches Supabase `realtime.messages` ownership errors and prints a notice instead of aborting the rest of the backend setup. If Supabase still fails with `ERROR: 42501: must be owner of table messages`, the SQL editor rejected the private Realtime Presence policy statements before the catch block could finish. To unblock the core game backend first, print the same migrations without those Presence policy statements:
 
 ```bash
 npm run print:supabase-migrations:core
 ```
 
-Paste that output into the SQL editor, wait for the schema cache to refresh, then run `npm run check:online-room`. This core path should create the rooms, rounds, submissions, bracket, scoring, reset, and playback-event RPCs. Do not mark the Supabase migration pass log complete until private Realtime Presence authorization is also resolved.
+Paste that output into the SQL editor, wait for the schema cache to refresh, then run `npm run check:online-room`. This core path should create the rooms, rounds, submissions, bracket, scoring, reset, and playback-event RPCs. Do not mark the Supabase migration pass log complete until private Realtime Presence authorization is also resolved or verified.
 
 To print only one migration file, pass its filename after `--`:
 

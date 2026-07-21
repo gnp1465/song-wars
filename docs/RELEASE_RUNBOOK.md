@@ -40,7 +40,7 @@ npm run print:supabase-migrations
 
 Paste the output into the Supabase SQL editor for the intended development or production project. Apply every migration in order. Never paste a service role key into the mobile app or commit one to git.
 
-If the dashboard fails with `ERROR: 42501: must be owner of table messages`, use `npm run print:supabase-migrations:core` to apply the core game schema without the private Presence policy statements, then resolve Realtime Presence authorization before calling the backend complete.
+The migration catches Supabase `realtime.messages` ownership errors and prints a notice instead of aborting the rest of the backend setup. If the dashboard still fails with `ERROR: 42501: must be owner of table messages`, use `npm run print:supabase-migrations:core` to apply the core game schema without the private Presence policy statements, then resolve Realtime Presence authorization before calling the backend complete.
 
 If a hosted check reports one missing RPC after a partial migration attempt, print the relevant individual migration with `npm run print:supabase-migration -- <migration-file.sql>`. Prefer the full ordered migration command for fresh projects.
 

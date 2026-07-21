@@ -109,25 +109,34 @@ create policy "room members can read rounds"
   for select
   using (public.is_room_member(room_id));
 
-drop policy if exists "room members can read room presence" on realtime.messages;
-create policy "room members can read room presence"
-  on realtime.messages
-  for select
-  to authenticated
-  using (
-    realtime.messages.extension = 'presence'
-    and public.is_room_member(public.online_room_id_from_realtime_topic())
-  );
+-- BEGIN realtime presence policies
+do $$
+begin
+  drop policy if exists "room members can read room presence" on realtime.messages;
+  create policy "room members can read room presence"
+    on realtime.messages
+    for select
+    to authenticated
+    using (
+      realtime.messages.extension = 'presence'
+      and public.is_room_member(public.online_room_id_from_realtime_topic())
+    );
 
-drop policy if exists "room members can track room presence" on realtime.messages;
-create policy "room members can track room presence"
-  on realtime.messages
-  for insert
-  to authenticated
-  with check (
-    realtime.messages.extension = 'presence'
-    and public.is_room_member(public.online_room_id_from_realtime_topic())
-  );
+  drop policy if exists "room members can track room presence" on realtime.messages;
+  create policy "room members can track room presence"
+    on realtime.messages
+    for insert
+    to authenticated
+    with check (
+      realtime.messages.extension = 'presence'
+      and public.is_room_member(public.online_room_id_from_realtime_topic())
+    );
+exception
+  when insufficient_privilege or undefined_table then
+    raise notice 'Skipped private Realtime Presence policies on realtime.messages. Apply or verify Presence authorization before beta.';
+end;
+$$;
+-- END realtime presence policies
 
 create or replace function public.normalize_display_name(display_name_value text)
 returns text

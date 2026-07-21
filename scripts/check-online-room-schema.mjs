@@ -204,5 +204,9 @@ assert(
   /realtime\.messages\.extension = 'presence'/.test(migration),
   "private realtime room channels should authorize Presence messages.",
 );
+assert(
+  /when insufficient_privilege or undefined_table then/.test(migration),
+  "Realtime Presence policy setup should not abort the rest of the hosted migration when the dashboard cannot own realtime.messages.",
+);
 
 console.log("Online room schema checks passed.");
