@@ -89,4 +89,5 @@ Run this after the latest Supabase migrations have been applied to the hosted de
 - Finish the round and confirm the winner gets one point and becomes the next judge.
 - Finish a first-to-one online game and confirm the final winner screen appears.
 - Tap Play Again as host and confirm the same players stay in the room with fresh game state.
+- During an active online game, confirm guests can Leave Room and hosts can Close Room.
 - In Remote Sync mode, schedule a synced preview and confirm all devices show locked playback progress.

@@ -251,6 +251,23 @@ export default function OnlineRoundSetupScreen() {
     await previewAudio.stopSongPreview("No preview playing");
   }
 
+  async function exitOnlineRoom() {
+    if (!snapshot || onlineRoom.isMutating) {
+      return;
+    }
+
+    await previewAudio.stopSongPreview("No preview playing");
+
+    if (isHost) {
+      await onlineRoom.closeRoom();
+    } else {
+      await onlineRoom.leaveRoom();
+    }
+
+    await clearLastOnlineRoomId();
+    router.replace("/");
+  }
+
   function goHome() {
     void previewAudio.stopSongPreview("No preview playing");
     router.replace("/");
@@ -577,6 +594,22 @@ export default function OnlineRoundSetupScreen() {
           ) : (
             <Text style={styles.body}>Loading round setup...</Text>
           )}
+
+          {snapshot ? (
+            <Pressable
+              accessibilityLabel={isHost ? "Close online room" : "Leave online room"}
+              accessibilityRole="button"
+              accessibilityState={{ disabled: onlineRoom.isMutating }}
+              disabled={onlineRoom.isMutating}
+              style={[
+                styles.dangerButton,
+                onlineRoom.isMutating ? styles.disabledButton : undefined,
+              ]}
+              onPress={() => void exitOnlineRoom()}
+            >
+              <Text style={styles.dangerButtonText}>{isHost ? "Close Room" : "Leave Room"}</Text>
+            </Pressable>
+          ) : null}
 
           <Pressable
             accessibilityLabel="Back to home"
@@ -956,6 +989,19 @@ const styles = StyleSheet.create({
     color: "#F9FAFB",
     fontSize: 16,
     fontWeight: "800",
+  },
+  dangerButton: {
+    alignItems: "center",
+    borderColor: "#FCA5A5",
+    borderRadius: 8,
+    borderWidth: 1,
+    justifyContent: "center",
+    minHeight: 50,
+  },
+  dangerButtonText: {
+    color: "#FCA5A5",
+    fontSize: 16,
+    fontWeight: "900",
   },
   disabledButton: {
     opacity: 0.45,

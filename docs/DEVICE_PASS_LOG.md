@@ -52,6 +52,8 @@ Mark each item as `Pass`, `Fail`, or `Needs follow-up`.
 | Home Resume Online Room returns to the correct active online room |  |  |
 | Removed guest returns Home with a clear message |  |  |
 | Host can close an online room and guests return Home |  |  |
+| Host can close an online room during active gameplay |  |  |
+| Guest can leave an online room during active gameplay |  |  |
 | Online game starts only with at least 3 players |  |  |
 | Online judge submits topic and all devices enter submissions |  |  |
 | Online judge cannot submit songs |  |  |
