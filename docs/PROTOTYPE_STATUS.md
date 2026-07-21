@@ -77,6 +77,7 @@
 - GitHub Actions CI runs `npm run verify` on pushes and pull requests, and the CI workflow is checked by `npm run verify`.
 - Beta build record template and final completion check are in place.
 - Documentation link checks are included in `npm run verify`.
+- Accessibility surface checks are included in `npm run verify` for routed/core buttons and inputs.
 
 ## Waiting For Later Backend Milestones
 

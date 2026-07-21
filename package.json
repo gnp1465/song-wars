@@ -7,6 +7,7 @@
   "scripts": {
     "start": "expo start",
     "ios": "expo start --ios",
+    "check:accessibility-surface": "node scripts/check-accessibility-surface.mjs",
     "check:app-assets": "node scripts/check-app-assets.mjs",
     "check:app-surface": "node scripts/check-app-surface.mjs",
     "check:beta-build-record": "node scripts/check-beta-build-record.mjs",
@@ -22,7 +23,7 @@
     "print:supabase-migrations": "node scripts/print-supabase-migrations.mjs",
     "check:prototype-complete": "npm run verify && npm run check:device-pass-log && npm run check:beta-build-record",
     "typecheck": "tsc --noEmit",
-    "verify": "npm run check:supabase-env && npm run check:secret-safety && npm run check:app-assets && npm run check:app-surface && npm run check:ci-config && npm run check:doc-links && npm run check:eas-build-config && npm run check:launch-readiness && npm run typecheck && npm test",
+    "verify": "npm run check:supabase-env && npm run check:secret-safety && npm run check:accessibility-surface && npm run check:app-assets && npm run check:app-surface && npm run check:ci-config && npm run check:doc-links && npm run check:eas-build-config && npm run check:launch-readiness && npm run typecheck && npm test",
     "test": "npm run check:media && npm run check:storefront && npm run check:playback && npm run check:diagnostics && npm run check:bracket && npm run check:scoring && npm run check:submissions && npm run check:mock-spotify && npm run check:room && npm run check:prototype-flow && npm run check:online-display-name && npm run check:online-room-access && npm run check:online-room-expiry && npm run check:online-room-presence && npm run check:online-room-resume && npm run check:online-topic && npm run check:online-submissions && npm run check:online-judging && npm run check:online-playback-events && npm run check:online-room-schema",
     "check:media": "node --experimental-strip-types src/tests/manualMediaMocks.ts",
     "check:storefront": "node --experimental-strip-types src/tests/manualStorefrontCheck.ts",

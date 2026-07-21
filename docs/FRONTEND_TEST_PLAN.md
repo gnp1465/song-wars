@@ -54,6 +54,7 @@ Use this checklist when testing the local/offline frontend prototype.
 
 ## Accessibility And Device Polish
 
+- Run `npm run check:accessibility-surface` to confirm routed/core buttons and inputs have accessibility labels.
 - Turn on VoiceOver or inspect accessibility labels and confirm core controls have clear names.
 - Confirm disabled buttons are announced or shown as disabled.
 - Confirm no text overlaps on the target iPhone/simulator size.
