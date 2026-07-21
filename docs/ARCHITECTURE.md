@@ -76,7 +76,7 @@ Services hold business logic and provider/API logic.
 - `services/media/storefront.ts` derives an Apple/iTunes storefront code from the device locale, with `US` as a fallback.
 - `services/online/onlinePlaybackEvents.ts` picks the newest server-scheduled synced preview event for the current room.
 - `services/supabase/*` configures the typed Supabase React Native client.
-- `services/diagnostics/logger.ts` centralizes local error reporting until a production crash service is added.
+- `services/diagnostics/logger.ts` centralizes local error reporting and redacts common token-like values until a production crash service is added. See `docs/DIAGNOSTICS.md`.
 - `services/media/MediaResolutionService.ts` resolves selected songs to playable previews.
 - `services/media/providers/*` adapt external music sources to the app's shared media shape.
 

@@ -7,6 +7,7 @@ for (const path of [
   ".env.production.example",
   "docs/APP_STORE_METADATA.md",
   "docs/BETA_DEVICE_MATRIX.md",
+  "docs/DIAGNOSTICS.md",
   "docs/PRIVACY_POLICY.md",
   "docs/ONLINE_ROOM_SETUP.md",
   "docs/IOS_DEVICE_PASS_GUIDE.md",
@@ -53,6 +54,9 @@ const betaDeviceMatrix = existsSync("docs/BETA_DEVICE_MATRIX.md")
   : "";
 const releaseRunbook = existsSync("docs/RELEASE_RUNBOOK.md")
   ? readFileSync("docs/RELEASE_RUNBOOK.md", "utf8")
+  : "";
+const diagnostics = existsSync("docs/DIAGNOSTICS.md")
+  ? readFileSync("docs/DIAGNOSTICS.md", "utf8")
   : "";
 const gitignore = existsSync(".gitignore") ? readFileSync(".gitignore", "utf8") : "";
 
@@ -102,6 +106,16 @@ for (const requiredText of [
 ]) {
   if (!releaseRunbook.includes(requiredText)) {
     issues.push(`Release runbook is missing required section: ${requiredText}`);
+  }
+}
+
+for (const requiredText of [
+  "Current Behavior",
+  "Redaction",
+  "Later Crash Reporting",
+]) {
+  if (!diagnostics.includes(requiredText)) {
+    issues.push(`Diagnostics doc is missing required section: ${requiredText}`);
   }
 }
 

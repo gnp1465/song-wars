@@ -18,6 +18,10 @@ Song Wars currently uses:
 
 Song Wars does not currently require visible account creation, email addresses, phone numbers, passwords, contacts, precise GPS location, or payment information.
 
+## Diagnostics
+
+Song Wars currently uses local console diagnostics for app errors. It does not intentionally send crash reports or analytics events to a third-party service yet. Local diagnostic messages are redacted for common token-like values before printing. See `docs/DIAGNOSTICS.md` for the current diagnostic behavior.
+
 ## Why We Use This Data
 
 We use this data to:
