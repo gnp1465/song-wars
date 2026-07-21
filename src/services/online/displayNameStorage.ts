@@ -1,4 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { normalizeOnlineDisplayName } from "./displayName";
 
 const LAST_DISPLAY_NAME_KEY = "song-wars:last-display-name";
 
@@ -7,7 +8,7 @@ export async function getLastDisplayName(): Promise<string> {
 }
 
 export async function saveLastDisplayName(displayName: string): Promise<void> {
-  const trimmedDisplayName = displayName.trim();
+  const trimmedDisplayName = normalizeOnlineDisplayName(displayName);
 
   if (!trimmedDisplayName) {
     return;

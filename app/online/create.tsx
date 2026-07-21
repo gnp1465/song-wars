@@ -14,6 +14,10 @@ import {
 import { RoomSettingsPanel } from "../../src/components/game/RoomSettingsPanel";
 import { restoreOrCreateAnonymousSession } from "../../src/services/online/AuthSessionService";
 import { createOnlineRoom } from "../../src/services/online/OnlineRoomService";
+import {
+  hasOnlineDisplayName,
+  normalizeOnlineDisplayName,
+} from "../../src/services/online/displayName";
 import { getLastDisplayName, saveLastDisplayName } from "../../src/services/online/displayNameStorage";
 import { saveLastOnlineRoomId } from "../../src/services/online/onlineRoomResumeStorage";
 import { getMissingSupabaseConfigMessage, getSupabaseConfig } from "../../src/services/supabase/config";
@@ -27,7 +31,7 @@ export default function CreateOnlineRoomScreen() {
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
   const [isCreating, setIsCreating] = useState(false);
   const hasSupabaseConfig = Boolean(getSupabaseConfig());
-  const canCreate = Boolean(displayName.trim()) && !isCreating && hasSupabaseConfig;
+  const canCreate = hasOnlineDisplayName(displayName) && !isCreating && hasSupabaseConfig;
 
   useEffect(() => {
     void getLastDisplayName().then(setDisplayName);
@@ -40,17 +44,18 @@ export default function CreateOnlineRoomScreen() {
 
     Keyboard.dismiss();
     setIsCreating(true);
+    const normalizedDisplayName = normalizeOnlineDisplayName(displayName);
 
     try {
       await restoreOrCreateAnonymousSession();
       const snapshot = await createOnlineRoom({
-        displayName,
+        displayName: normalizedDisplayName,
         mode,
         pointsToWin,
         songsPerPlayer,
       });
 
-      await saveLastDisplayName(displayName);
+      await saveLastDisplayName(normalizedDisplayName);
       await saveLastOnlineRoomId(snapshot.room.id);
       router.replace(`/online/room/${snapshot.room.id}`);
     } catch (error) {

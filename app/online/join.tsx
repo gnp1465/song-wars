@@ -13,6 +13,10 @@ import {
 } from "react-native";
 import { restoreOrCreateAnonymousSession } from "../../src/services/online/AuthSessionService";
 import { joinOnlineRoom } from "../../src/services/online/OnlineRoomService";
+import {
+  hasOnlineDisplayName,
+  normalizeOnlineDisplayName,
+} from "../../src/services/online/displayName";
 import { getLastDisplayName, saveLastDisplayName } from "../../src/services/online/displayNameStorage";
 import { saveLastOnlineRoomId } from "../../src/services/online/onlineRoomResumeStorage";
 import { getMissingSupabaseConfigMessage, getSupabaseConfig } from "../../src/services/supabase/config";
@@ -26,7 +30,10 @@ export default function JoinOnlineRoomScreen() {
   const hasSupabaseConfig = Boolean(getSupabaseConfig());
   const normalizedRoomCode = roomCode.replace(/\D/g, "").slice(0, 6);
   const canJoin =
-    Boolean(displayName.trim()) && normalizedRoomCode.length === 6 && !isJoining && hasSupabaseConfig;
+    hasOnlineDisplayName(displayName) &&
+    normalizedRoomCode.length === 6 &&
+    !isJoining &&
+    hasSupabaseConfig;
 
   useEffect(() => {
     void getLastDisplayName().then(setDisplayName);
@@ -45,15 +52,16 @@ export default function JoinOnlineRoomScreen() {
 
     Keyboard.dismiss();
     setIsJoining(true);
+    const normalizedDisplayName = normalizeOnlineDisplayName(displayName);
 
     try {
       await restoreOrCreateAnonymousSession();
       const snapshot = await joinOnlineRoom({
         code: normalizedRoomCode,
-        displayName,
+        displayName: normalizedDisplayName,
       });
 
-      await saveLastDisplayName(displayName);
+      await saveLastDisplayName(normalizedDisplayName);
       await saveLastOnlineRoomId(snapshot.room.id);
       router.replace(`/online/room/${snapshot.room.id}`);
     } catch (error) {
