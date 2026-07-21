@@ -33,6 +33,7 @@ Use this checklist before calling a build ready for multiplayer beta testing. Th
 - Guest joins using the six-digit code.
 - Guest joins using the QR/deep-link invite.
 - Online create and join screens have a visible Back Home action.
+- Online create and join inputs avoid being covered by the iOS keyboard.
 - Host changes songs per player and points to win.
 - Guests see settings update live.
 - Host removes a guest.

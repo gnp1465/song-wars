@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Keyboard,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
   SafeAreaView,
   ScrollView,
@@ -67,73 +69,78 @@ export default function CreateOnlineRoomScreen() {
 
   return (
     <SafeAreaView style={styles.root}>
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <View style={styles.header}>
-          <Text style={styles.eyebrow}>Online Room</Text>
-          <Text style={styles.title}>Create a room</Text>
-          <Text style={styles.body}>
-            Create a six-digit room code and invite friends from separate phones.
-          </Text>
-        </View>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={styles.keyboardView}
+      >
+        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+          <View style={styles.header}>
+            <Text style={styles.eyebrow}>Online Room</Text>
+            <Text style={styles.title}>Create a room</Text>
+            <Text style={styles.body}>
+              Create a six-digit room code and invite friends from separate phones.
+            </Text>
+          </View>
 
-        {!hasSupabaseConfig ? (
-          <Text style={styles.errorText}>{getMissingSupabaseConfigMessage()}</Text>
-        ) : null}
+          {!hasSupabaseConfig ? (
+            <Text style={styles.errorText}>{getMissingSupabaseConfigMessage()}</Text>
+          ) : null}
 
-        <TextInput
-          accessibilityLabel="Host display name"
-          autoCapitalize="words"
-          autoCorrect={false}
-          editable={!isCreating}
-          onChangeText={(nextDisplayName) => {
-            setDisplayName(nextDisplayName);
-            setErrorMessage(undefined);
-          }}
-          onSubmitEditing={createRoom}
-          placeholder="Your display name"
-          placeholderTextColor="#64748B"
-          returnKeyType="done"
-          style={styles.input}
-          value={displayName}
-        />
+          <TextInput
+            accessibilityLabel="Host display name"
+            autoCapitalize="words"
+            autoCorrect={false}
+            editable={!isCreating}
+            onChangeText={(nextDisplayName) => {
+              setDisplayName(nextDisplayName);
+              setErrorMessage(undefined);
+            }}
+            onSubmitEditing={createRoom}
+            placeholder="Your display name"
+            placeholderTextColor="#64748B"
+            returnKeyType="done"
+            style={styles.input}
+            value={displayName}
+          />
 
-        <RoomSettingsPanel
-          disabled={isCreating}
-          mode={mode}
-          pointsToWin={pointsToWin}
-          songsPerPlayer={songsPerPlayer}
-          onModeChange={setMode}
-          onPointsToWinChange={setPointsToWin}
-          onSongsPerPlayerChange={setSongsPerPlayer}
-        />
+          <RoomSettingsPanel
+            disabled={isCreating}
+            mode={mode}
+            pointsToWin={pointsToWin}
+            songsPerPlayer={songsPerPlayer}
+            onModeChange={setMode}
+            onPointsToWinChange={setPointsToWin}
+            onSongsPerPlayerChange={setSongsPerPlayer}
+          />
 
-        {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
+          {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
 
-        <Pressable
-          accessibilityLabel="Create online room"
-          accessibilityRole="button"
-          accessibilityState={{ disabled: !canCreate }}
-          disabled={!canCreate}
-          style={[styles.primaryButton, !canCreate ? styles.disabledButton : undefined]}
-          onPress={createRoom}
-        >
-          {isCreating ? (
-            <ActivityIndicator color="#082F49" />
-          ) : (
-            <Text style={styles.primaryButtonText}>Create Room</Text>
-          )}
-        </Pressable>
-        <Pressable
-          accessibilityLabel="Back to home"
-          accessibilityRole="button"
-          accessibilityState={{ disabled: isCreating }}
-          disabled={isCreating}
-          style={[styles.secondaryButton, isCreating ? styles.disabledButton : undefined]}
-          onPress={() => router.replace("/")}
-        >
-          <Text style={styles.secondaryButtonText}>Back Home</Text>
-        </Pressable>
-      </ScrollView>
+          <Pressable
+            accessibilityLabel="Create online room"
+            accessibilityRole="button"
+            accessibilityState={{ disabled: !canCreate }}
+            disabled={!canCreate}
+            style={[styles.primaryButton, !canCreate ? styles.disabledButton : undefined]}
+            onPress={createRoom}
+          >
+            {isCreating ? (
+              <ActivityIndicator color="#082F49" />
+            ) : (
+              <Text style={styles.primaryButtonText}>Create Room</Text>
+            )}
+          </Pressable>
+          <Pressable
+            accessibilityLabel="Back to home"
+            accessibilityRole="button"
+            accessibilityState={{ disabled: isCreating }}
+            disabled={isCreating}
+            style={[styles.secondaryButton, isCreating ? styles.disabledButton : undefined]}
+            onPress={() => router.replace("/")}
+          >
+            <Text style={styles.secondaryButtonText}>Back Home</Text>
+          </Pressable>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -141,6 +148,9 @@ export default function CreateOnlineRoomScreen() {
 const styles = StyleSheet.create({
   root: {
     backgroundColor: "#111827",
+    flex: 1,
+  },
+  keyboardView: {
     flex: 1,
   },
   content: {

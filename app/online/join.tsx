@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Keyboard,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
   SafeAreaView,
   ScrollView,
@@ -73,75 +75,80 @@ export default function JoinOnlineRoomScreen() {
 
   return (
     <SafeAreaView style={styles.root}>
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <View style={styles.header}>
-          <Text style={styles.eyebrow}>Online Room</Text>
-          <Text style={styles.title}>Join a room</Text>
-          <Text style={styles.body}>Enter the six-digit room code and a temporary display name.</Text>
-        </View>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={styles.keyboardView}
+      >
+        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+          <View style={styles.header}>
+            <Text style={styles.eyebrow}>Online Room</Text>
+            <Text style={styles.title}>Join a room</Text>
+            <Text style={styles.body}>Enter the six-digit room code and a temporary display name.</Text>
+          </View>
 
-        {!hasSupabaseConfig ? (
-          <Text style={styles.errorText}>{getMissingSupabaseConfigMessage()}</Text>
-        ) : null}
+          {!hasSupabaseConfig ? (
+            <Text style={styles.errorText}>{getMissingSupabaseConfigMessage()}</Text>
+          ) : null}
 
-        <TextInput
-          accessibilityLabel="Room code"
-          keyboardType="number-pad"
-          maxLength={6}
-          onChangeText={(nextCode) => {
-            setRoomCode(nextCode.replace(/\D/g, "").slice(0, 6));
-            setErrorMessage(undefined);
-          }}
-          placeholder="Room code"
-          placeholderTextColor="#64748B"
-          returnKeyType="next"
-          style={styles.input}
-          value={normalizedRoomCode}
-        />
-        <TextInput
-          accessibilityLabel="Display name"
-          autoCapitalize="words"
-          autoCorrect={false}
-          editable={!isJoining}
-          onChangeText={(nextDisplayName) => {
-            setDisplayName(nextDisplayName);
-            setErrorMessage(undefined);
-          }}
-          onSubmitEditing={joinRoom}
-          placeholder="Your display name"
-          placeholderTextColor="#64748B"
-          returnKeyType="done"
-          style={styles.input}
-          value={displayName}
-        />
+          <TextInput
+            accessibilityLabel="Room code"
+            keyboardType="number-pad"
+            maxLength={6}
+            onChangeText={(nextCode) => {
+              setRoomCode(nextCode.replace(/\D/g, "").slice(0, 6));
+              setErrorMessage(undefined);
+            }}
+            placeholder="Room code"
+            placeholderTextColor="#64748B"
+            returnKeyType="next"
+            style={styles.input}
+            value={normalizedRoomCode}
+          />
+          <TextInput
+            accessibilityLabel="Display name"
+            autoCapitalize="words"
+            autoCorrect={false}
+            editable={!isJoining}
+            onChangeText={(nextDisplayName) => {
+              setDisplayName(nextDisplayName);
+              setErrorMessage(undefined);
+            }}
+            onSubmitEditing={joinRoom}
+            placeholder="Your display name"
+            placeholderTextColor="#64748B"
+            returnKeyType="done"
+            style={styles.input}
+            value={displayName}
+          />
 
-        {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
+          {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
 
-        <Pressable
-          accessibilityLabel="Join online room"
-          accessibilityRole="button"
-          accessibilityState={{ disabled: !canJoin }}
-          disabled={!canJoin}
-          style={[styles.primaryButton, !canJoin ? styles.disabledButton : undefined]}
-          onPress={joinRoom}
-        >
-          {isJoining ? (
-            <ActivityIndicator color="#082F49" />
-          ) : (
-            <Text style={styles.primaryButtonText}>Join Room</Text>
-          )}
-        </Pressable>
-        <Pressable
-          accessibilityLabel="Back to home"
-          accessibilityRole="button"
-          accessibilityState={{ disabled: isJoining }}
-          disabled={isJoining}
-          style={[styles.secondaryButton, isJoining ? styles.disabledButton : undefined]}
-          onPress={() => router.replace("/")}
-        >
-          <Text style={styles.secondaryButtonText}>Back Home</Text>
-        </Pressable>
-      </ScrollView>
+          <Pressable
+            accessibilityLabel="Join online room"
+            accessibilityRole="button"
+            accessibilityState={{ disabled: !canJoin }}
+            disabled={!canJoin}
+            style={[styles.primaryButton, !canJoin ? styles.disabledButton : undefined]}
+            onPress={joinRoom}
+          >
+            {isJoining ? (
+              <ActivityIndicator color="#082F49" />
+            ) : (
+              <Text style={styles.primaryButtonText}>Join Room</Text>
+            )}
+          </Pressable>
+          <Pressable
+            accessibilityLabel="Back to home"
+            accessibilityRole="button"
+            accessibilityState={{ disabled: isJoining }}
+            disabled={isJoining}
+            style={[styles.secondaryButton, isJoining ? styles.disabledButton : undefined]}
+            onPress={() => router.replace("/")}
+          >
+            <Text style={styles.secondaryButtonText}>Back Home</Text>
+          </Pressable>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -149,6 +156,9 @@ export default function JoinOnlineRoomScreen() {
 const styles = StyleSheet.create({
   root: {
     backgroundColor: "#111827",
+    flex: 1,
+  },
+  keyboardView: {
     flex: 1,
   },
   content: {

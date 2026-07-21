@@ -74,6 +74,7 @@ Run this after the latest Supabase migrations have been applied to the hosted de
 - Start the app on two physical iPhones or one iPhone plus one simulator.
 - On device A, create an online room with a display name.
 - From Create Online Room and Join Online Room, tap Back Home and confirm the app returns Home.
+- On Create Online Room and Join Online Room, focus each input and confirm the keyboard does not hide the active field or submit buttons.
 - Create or join with spaces around the display name and confirm the room shows the trimmed name.
 - Confirm there is no visible login screen and the room shows a six-digit code.
 - On device B, join the room with the six-digit code.
