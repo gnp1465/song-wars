@@ -76,6 +76,7 @@
 - Secret-safety checks are included in `npm run verify` to prevent committed env files or Supabase JWT-like keys.
 - GitHub Actions CI runs `npm run verify` on pushes and pull requests, and the CI workflow is checked by `npm run verify`.
 - Beta build record template and final completion check are in place.
+- Documentation link checks are included in `npm run verify`.
 
 ## Waiting For Later Backend Milestones
 
