@@ -22,6 +22,7 @@
 - First player to the configured point target wins the game.
 - Final winner screen supports play again and reset room.
 - Preview playback works inside the core game flow.
+- Search and preview resolution use the device locale storefront when possible.
 
 ## Final Verification
 

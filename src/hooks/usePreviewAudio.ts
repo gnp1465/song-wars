@@ -1,6 +1,7 @@
 import { Audio } from "expo-av";
 import { useEffect, useRef, useState } from "react";
 import { resolvePlayablePreviewTrack } from "../services/media/previewResolution";
+import { getDeviceStorefrontCode } from "../services/media/storefront";
 import type { MediaTrack } from "../types/media";
 
 export function usePreviewAudio() {
@@ -29,7 +30,10 @@ export function usePreviewAudio() {
       await unloadCurrentSound();
       setAudioStatus(`Loading ${song.title}...`);
 
-      const resolvedTrack = await resolvePlayablePreviewTrack(song, "US");
+      const resolvedTrack = await resolvePlayablePreviewTrack(
+        song,
+        song.storefrontCode ?? getDeviceStorefrontCode(),
+      );
       const previewUrl = resolvedTrack.preview?.streamUrl;
 
       if (!previewUrl) {

@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { MediaResolutionService } from "../services/media/MediaResolutionService";
 import { AppleITunesProvider } from "../services/media/providers/AppleITunesProvider";
+import { getDeviceStorefrontCode } from "../services/media/storefront";
 import { useSongSearch } from "../hooks/useSongSearch";
 import type { MediaTrack } from "../types/media";
 
@@ -108,7 +109,7 @@ export function PreviewPlaybackScreen() {
       });
       const result = await service.resolveTrackPreview({
         sourceTrack: track,
-        storefrontCode: "US",
+        storefrontCode: track.storefrontCode ?? getDeviceStorefrontCode(),
         preferredProviderIds: ["apple_itunes"],
       });
 

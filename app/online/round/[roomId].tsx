@@ -25,6 +25,7 @@ import { usePreviewAudio } from "../../../src/hooks/usePreviewAudio";
 import { useRemotePreviewPlayback } from "../../../src/hooks/useRemotePreviewPlayback";
 import { useSongSearch } from "../../../src/hooks/useSongSearch";
 import { resolvePlayablePreviewTrack } from "../../../src/services/media/previewResolution";
+import { getDeviceStorefrontCode } from "../../../src/services/media/storefront";
 import { restoreOrCreateAnonymousSession } from "../../../src/services/online/AuthSessionService";
 import { getOnlineRoomExitNotice } from "../../../src/services/online/onlineRoomAccess";
 import { clearLastOnlineRoomId } from "../../../src/services/online/onlineRoomResumeStorage";
@@ -181,7 +182,10 @@ export default function OnlineRoundSetupScreen() {
 
     try {
       previewAudio.setAudioStatus(`Checking preview for ${song.title}...`);
-      const resolvedSong = await resolvePlayablePreviewTrack(song, song.storefrontCode ?? "US");
+      const resolvedSong = await resolvePlayablePreviewTrack(
+        song,
+        song.storefrontCode ?? getDeviceStorefrontCode(),
+      );
 
       await onlineRoom.submitSong(resolvedSong);
       await previewAudio.stopSongPreview("Submitted");
