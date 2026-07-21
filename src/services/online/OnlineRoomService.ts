@@ -512,7 +512,17 @@ function stringArrayValue(value: Json | undefined): string[] {
 }
 
 function numberValue(value: Json | undefined): number {
-  return typeof value === "number" ? value : 0;
+  if (typeof value === "number") {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    const parsedValue = Number(value);
+
+    return Number.isFinite(parsedValue) ? parsedValue : 0;
+  }
+
+  return 0;
 }
 
 function asProviderRefs(value: Json[]): ProviderTrackRef[] {
