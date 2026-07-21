@@ -357,6 +357,7 @@ export default function OnlineRoundSetupScreen() {
               <OnlineConnectionStatus
                 errorMessage={onlineRoom.errorMessage}
                 lastSyncedAt={onlineRoom.lastSyncedAt}
+                onRetry={() => void onlineRoom.refresh()}
                 status={onlineRoom.connectionStatus}
               />
 

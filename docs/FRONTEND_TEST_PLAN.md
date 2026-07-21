@@ -79,6 +79,7 @@ Run this after the latest Supabase migrations have been applied to the hosted de
 - Tap Share Invite and confirm the iOS share sheet includes the room code and link.
 - Change songs per player, points to win, and room mode as host; confirm the guest sees each update.
 - Background device B for a few seconds, reopen it, and confirm the latest player/settings state is shown.
+- Temporarily interrupt network, confirm the online connection banner offers Retry, then restore network and tap Retry.
 - During an online round, confirm the active-game header shows an online count and changes when a device disconnects.
 - Fully return to Home and confirm Resume Online Room returns to the correct lobby or round.
 - Remove device B as host and confirm device B returns Home with a clear message.

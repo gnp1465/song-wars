@@ -1,15 +1,17 @@
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import type { OnlineRoomConnectionStatus } from "../../hooks/useOnlineRoom";
 
 interface OnlineConnectionStatusProps {
   errorMessage?: string;
   lastSyncedAt?: number;
+  onRetry?: () => void;
   status: OnlineRoomConnectionStatus;
 }
 
 export function OnlineConnectionStatus({
   errorMessage,
   lastSyncedAt,
+  onRetry,
   status,
 }: OnlineConnectionStatusProps) {
   if (status === "connected" || status === "idle") {
@@ -22,6 +24,16 @@ export function OnlineConnectionStatus({
       <Text style={styles.detail}>
         {errorMessage ?? getConnectionStatusDetail(status, lastSyncedAt)}
       </Text>
+      {status === "error" && onRetry ? (
+        <Pressable
+          accessibilityLabel="Retry online room connection"
+          accessibilityRole="button"
+          style={({ pressed }) => [styles.retryButton, pressed ? styles.retryButtonPressed : null]}
+          onPress={onRetry}
+        >
+          <Text style={styles.retryButtonText}>Retry</Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }
@@ -72,5 +84,24 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     letterSpacing: 0,
     textTransform: "uppercase",
+  },
+  retryButton: {
+    alignItems: "center",
+    alignSelf: "flex-start",
+    borderColor: "#38BDF8",
+    borderRadius: 8,
+    borderWidth: 1,
+    marginTop: 4,
+    minHeight: 38,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+  },
+  retryButtonPressed: {
+    opacity: 0.75,
+  },
+  retryButtonText: {
+    color: "#E0F2FE",
+    fontSize: 14,
+    fontWeight: "900",
   },
 });
