@@ -25,6 +25,7 @@ import { useOnlineRoom } from "../../../src/hooks/useOnlineRoom";
 import { usePreviewAudio } from "../../../src/hooks/usePreviewAudio";
 import { useRemotePreviewPlayback } from "../../../src/hooks/useRemotePreviewPlayback";
 import { useSongSearch } from "../../../src/hooks/useSongSearch";
+import { clearPreviewCache } from "../../../src/services/audio/previewCache";
 import { resolvePlayablePreviewTrack } from "../../../src/services/media/previewResolution";
 import { getDeviceStorefrontCode } from "../../../src/services/media/storefront";
 import { restoreOrCreateAnonymousSession } from "../../../src/services/online/AuthSessionService";
@@ -232,6 +233,7 @@ export default function OnlineRoundSetupScreen() {
 
     await onlineRoom.prepareNextRound();
     await previewAudio.stopSongPreview("No preview playing");
+    await clearPreviewCache();
     songSearch.clearResults();
   }
 
@@ -242,6 +244,7 @@ export default function OnlineRoundSetupScreen() {
 
     await onlineRoom.playAgain();
     await previewAudio.stopSongPreview("No preview playing");
+    await clearPreviewCache();
     songSearch.clearResults();
   }
 
@@ -252,6 +255,7 @@ export default function OnlineRoundSetupScreen() {
 
     await onlineRoom.closeRoom();
     await previewAudio.stopSongPreview("No preview playing");
+    await clearPreviewCache();
   }
 
   async function exitOnlineRoom() {
@@ -260,6 +264,7 @@ export default function OnlineRoundSetupScreen() {
     }
 
     await previewAudio.stopSongPreview("No preview playing");
+    await clearPreviewCache();
 
     if (isHost) {
       await onlineRoom.closeRoom();

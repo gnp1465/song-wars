@@ -15,6 +15,7 @@ import {
 import QRCode from "react-native-qrcode-svg";
 import { OnlineConnectionStatus } from "../../../src/components/game/OnlineConnectionStatus";
 import { RoomSettingsPanel } from "../../../src/components/game/RoomSettingsPanel";
+import { clearPreviewCache } from "../../../src/services/audio/previewCache";
 import { restoreOrCreateAnonymousSession } from "../../../src/services/online/AuthSessionService";
 import { getOnlineRoomExpiryLabel } from "../../../src/services/online/onlineRoomExpiry";
 import { getOnlineRoomExitNotice } from "../../../src/services/online/onlineRoomAccess";
@@ -84,6 +85,7 @@ export default function OnlineLobbyScreen() {
     }
 
     await clearLastOnlineRoomId();
+    await clearPreviewCache();
     router.replace("/");
   }
 

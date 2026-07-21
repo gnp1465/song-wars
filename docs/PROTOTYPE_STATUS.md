@@ -61,6 +61,7 @@
 - Remote playback clock-offset and pre-cache foundation utilities.
 - Server-scheduled remote preview events.
 - Remote synchronized playback lock/progress UI.
+- Remote preview cache cleanup on next round, play again, room close, and room leave.
 - iOS bundle identifier and `songwars://` deep-link scheme.
 - Native app icon and splash assets are configured and checked by `npm run verify`.
 - Root error boundary with a recovery screen for unexpected React errors.
