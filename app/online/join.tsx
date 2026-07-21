@@ -19,6 +19,7 @@ import {
   hasOnlineDisplayName,
   normalizeOnlineDisplayName,
 } from "../../src/services/online/displayName";
+import { reportAppError, reportAppEvent } from "../../src/services/diagnostics/logger";
 import { getLastDisplayName, saveLastDisplayName } from "../../src/services/online/displayNameStorage";
 import { saveLastOnlineRoomId } from "../../src/services/online/onlineRoomResumeStorage";
 import { getMissingSupabaseConfigMessage, getSupabaseConfig } from "../../src/services/supabase/config";
@@ -69,9 +70,22 @@ export default function JoinOnlineRoomScreen() {
 
       await saveLastDisplayName(normalizedDisplayName);
       await saveLastOnlineRoomId(snapshot.room.id);
+      reportAppEvent("online_room_action_succeeded", {
+        area: "online-room-join",
+        metadata: {
+          usedDeepLinkCode: typeof params.code === "string",
+        },
+      });
       router.replace(`/online/room/${snapshot.room.id}`);
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Could not join online room.");
+      reportAppError(error, {
+        area: "online-room-join",
+        detail: "Failed to join an online room.",
+        metadata: {
+          usedDeepLinkCode: typeof params.code === "string",
+        },
+      });
     } finally {
       setIsJoining(false);
     }

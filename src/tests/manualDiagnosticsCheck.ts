@@ -48,6 +48,12 @@ reportAppEvent("online_room_resume_available", {
     route: "round",
   },
 });
+reportAppEvent("online_room_action_succeeded", {
+  area: "online-room",
+  metadata: {
+    action: "submit_topic",
+  },
+});
 reportAppError(new Error(`Failed with jwt=${fakeJwt}`), {
   area: "online-room",
   metadata: {
@@ -56,13 +62,15 @@ reportAppError(new Error(`Failed with jwt=${fakeJwt}`), {
 });
 restoreSink();
 
-assert.equal(records.length, 2);
+assert.equal(records.length, 3);
 assert.equal(records[0].kind, "event");
 assert.equal(records[0].detail?.includes("songwars-dev.supabase.co"), false);
 assert.equal(records[0].metadata?.access_token, "[redacted]");
 assert.equal(records[0].metadata?.playerCount, 3);
-assert.equal(records[1].kind, "error");
-assert.equal(records[1].message.includes(fakeJwt), false);
-assert.equal(records[1].metadata?.service_role, "[redacted]");
+assert.equal(records[1].kind, "event");
+assert.equal(records[1].metadata?.action, "submit_topic");
+assert.equal(records[2].kind, "error");
+assert.equal(records[2].message.includes(fakeJwt), false);
+assert.equal(records[2].metadata?.service_role, "[redacted]");
 
 console.log("Diagnostics redaction checks passed.");

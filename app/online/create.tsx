@@ -14,6 +14,7 @@ import {
   View,
 } from "react-native";
 import { RoomSettingsPanel } from "../../src/components/game/RoomSettingsPanel";
+import { reportAppError, reportAppEvent } from "../../src/services/diagnostics/logger";
 import { restoreOrCreateAnonymousSession } from "../../src/services/online/AuthSessionService";
 import { createOnlineRoom } from "../../src/services/online/OnlineRoomService";
 import {
@@ -59,9 +60,26 @@ export default function CreateOnlineRoomScreen() {
 
       await saveLastDisplayName(normalizedDisplayName);
       await saveLastOnlineRoomId(snapshot.room.id);
+      reportAppEvent("online_room_action_succeeded", {
+        area: "online-room-create",
+        metadata: {
+          mode,
+          pointsToWin,
+          songsPerPlayer,
+        },
+      });
       router.replace(`/online/room/${snapshot.room.id}`);
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Could not create online room.");
+      reportAppError(error, {
+        area: "online-room-create",
+        detail: "Failed to create an online room.",
+        metadata: {
+          mode,
+          pointsToWin,
+          songsPerPlayer,
+        },
+      });
     } finally {
       setIsCreating(false);
     }

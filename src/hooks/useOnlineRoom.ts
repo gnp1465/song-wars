@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AppState } from "react-native";
 import type { OnlineRoomSnapshot } from "../types/onlineRoom";
+import { reportAppError, reportAppEvent } from "../services/diagnostics/logger";
 import {
   closeOnlineRoom,
   fetchOnlineRoomSnapshot,
@@ -86,9 +87,24 @@ export function useOnlineRoom(
       setErrorMessage(undefined);
       setConnectionStatus("connected");
       setLastSyncedAt(Date.now());
+      reportAppEvent("online_room_snapshot_loaded", {
+        area: "online-room",
+        metadata: {
+          hadSnapshot: hasSnapshot,
+          silent: Boolean(options?.silent),
+        },
+      });
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Could not load online room.");
       setConnectionStatus("error");
+      reportAppError(error, {
+        area: "online-room",
+        detail: "Failed to refresh online room snapshot.",
+        metadata: {
+          hadSnapshot: hasSnapshot,
+          silent: Boolean(options?.silent),
+        },
+      });
     } finally {
       if (shouldShowInitialLoading) {
         setIsLoading(false);
@@ -157,7 +173,10 @@ export function useOnlineRoom(
     };
   }, [currentUserId, refresh, roomId, snapshot?.room.id]);
 
-  async function runMutation(action: () => Promise<OnlineRoomSnapshot | void>) {
+  async function runMutation(
+    actionName: string,
+    action: () => Promise<OnlineRoomSnapshot | void>,
+  ) {
     setIsMutating(true);
 
     try {
@@ -168,9 +187,22 @@ export function useOnlineRoom(
       }
 
       setErrorMessage(undefined);
+      reportAppEvent("online_room_action_succeeded", {
+        area: "online-room",
+        metadata: {
+          action: actionName,
+        },
+      });
       return true;
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Online room action failed.");
+      reportAppError(error, {
+        area: "online-room",
+        detail: "Online room action failed.",
+        metadata: {
+          action: actionName,
+        },
+      });
       return false;
     } finally {
       setIsMutating(false);
@@ -179,41 +211,54 @@ export function useOnlineRoom(
 
   return {
     clearError: () => setErrorMessage(undefined),
-    closeRoom: () => runMutation(() => (roomId ? closeOnlineRoom(roomId) : Promise.resolve())),
+    closeRoom: () =>
+      runMutation("close_room", () => (roomId ? closeOnlineRoom(roomId) : Promise.resolve())),
     connectionStatus,
     errorMessage,
     isLoading,
     isMutating,
     lastSyncedAt,
-    leaveRoom: () => runMutation(() => (roomId ? leaveOnlineRoom(roomId) : Promise.resolve())),
+    leaveRoom: () =>
+      runMutation("leave_room", () => (roomId ? leaveOnlineRoom(roomId) : Promise.resolve())),
     refresh,
     removeMember: (memberId) =>
-      runMutation(() => (roomId ? removeOnlineRoomMember(roomId, memberId) : Promise.resolve())),
+      runMutation("remove_member", () =>
+        roomId ? removeOnlineRoomMember(roomId, memberId) : Promise.resolve(),
+      ),
     removeOwnSubmission: (submissionId) =>
-      runMutation(() =>
+      runMutation("remove_own_submission", () =>
         roomId ? removeOwnOnlineSubmission(roomId, submissionId) : Promise.resolve(),
       ),
     prepareNextRound: () =>
-      runMutation(() => (roomId ? prepareNextOnlineRound(roomId) : Promise.resolve())),
+      runMutation("prepare_next_round", () =>
+        roomId ? prepareNextOnlineRound(roomId) : Promise.resolve(),
+      ),
     playAgain: () =>
-      runMutation(() => (roomId ? playAgainOnlineRoom(roomId) : Promise.resolve())),
+      runMutation("play_again", () => (roomId ? playAgainOnlineRoom(roomId) : Promise.resolve())),
     scheduleMatchupPreview: (matchupId, submissionId) =>
-      runMutation(() =>
+      runMutation("schedule_matchup_preview", () =>
         roomId ? scheduleOnlineMatchupPreview(roomId, matchupId, submissionId) : Promise.resolve(),
       ),
     selectMatchupWinner: (matchupId, winnerSubmissionId) =>
-      runMutation(() =>
+      runMutation("select_matchup_winner", () =>
         roomId
           ? selectOnlineMatchupWinner(roomId, matchupId, winnerSubmissionId)
           : Promise.resolve(),
       ),
     snapshot,
-    startRoom: () => runMutation(() => (roomId ? startOnlineRoom(roomId) : Promise.resolve())),
+    startRoom: () =>
+      runMutation("start_room", () => (roomId ? startOnlineRoom(roomId) : Promise.resolve())),
     submitSong: (song) =>
-      runMutation(() => (roomId ? submitOnlineRoundSong(roomId, song) : Promise.resolve())),
+      runMutation("submit_song", () =>
+        roomId ? submitOnlineRoundSong(roomId, song) : Promise.resolve(),
+      ),
     submitTopic: (topic) =>
-      runMutation(() => (roomId ? submitOnlineRoundTopic(roomId, topic) : Promise.resolve())),
+      runMutation("submit_topic", () =>
+        roomId ? submitOnlineRoundTopic(roomId, topic) : Promise.resolve(),
+      ),
     updateSettings: (update) =>
-      runMutation(() => (roomId ? updateOnlineRoomSettings(roomId, update) : Promise.resolve())),
+      runMutation("update_settings", () =>
+        roomId ? updateOnlineRoomSettings(roomId, update) : Promise.resolve(),
+      ),
   };
 }
