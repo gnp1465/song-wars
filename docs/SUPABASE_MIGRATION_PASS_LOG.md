@@ -43,3 +43,5 @@ Mark each check as `Pass`, `Fail`, or `Needs follow-up`.
 - Supabase migration pass status:
 - Remaining backend blockers:
 - Notes:
+
+If `npm run print:supabase-migrations:core` was used because Supabase rejected `realtime.messages` policy creation, note that here and keep the status incomplete until private Realtime Presence authorization is resolved.

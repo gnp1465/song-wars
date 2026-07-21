@@ -48,6 +48,14 @@ To print one ordered SQL block for the Supabase SQL editor, run:
 npm run print:supabase-migrations
 ```
 
+If Supabase fails with `ERROR: 42501: must be owner of table messages`, the SQL editor rejected the private Realtime Presence policy statements on `realtime.messages`. To unblock the core game backend first, print the same migrations without those Presence policy statements:
+
+```bash
+npm run print:supabase-migrations:core
+```
+
+Paste that output into the SQL editor, wait for the schema cache to refresh, then run `npm run check:online-room`. This core path should create the rooms, rounds, submissions, bracket, scoring, reset, and playback-event RPCs. Do not mark the Supabase migration pass log complete until private Realtime Presence authorization is also resolved.
+
 ## 4. Verify The Hosted Backend
 
 Run:
@@ -117,6 +125,8 @@ npm run check:supabase-migration-docs
 If the hosted check says `Anonymous sign-ins are disabled`, open Supabase Auth settings and enable Anonymous Sign-ins before rerunning it.
 
 If the hosted check says `Supabase anonymous auth rate limit reached`, wait for the rate-limit window to reset before rerunning it. The normal check creates four anonymous users; the optional capacity check creates more.
+
+If the hosted check says an RPC such as `submit_round_topic` is missing, the later migrations did not apply to the hosted Supabase project. Reprint the migrations with `npm run print:supabase-migrations` or, if the dashboard hit the `realtime.messages` ownership error, `npm run print:supabase-migrations:core`, then apply the SQL again.
 
 ## 5. Device Test
 
