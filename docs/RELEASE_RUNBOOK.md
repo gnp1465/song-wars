@@ -50,6 +50,8 @@ Run the full local gate:
 npm run verify
 ```
 
+This includes `npm run check:secret-safety`, which confirms committed files do not contain tracked env files or Supabase JWT-like keys.
+
 Run the hosted backend smoke check:
 
 ```bash

@@ -72,6 +72,7 @@
 - Beta device coverage checklist is documented and checked by `npm run verify`.
 - Beta release runbook is documented and checked by `npm run verify`.
 - EAS preview, simulator, production, and submit profiles are configured and checked by `npm run verify`.
+- Secret-safety checks are included in `npm run verify` to prevent committed env files or Supabase JWT-like keys.
 
 ## Waiting For Later Backend Milestones
 
