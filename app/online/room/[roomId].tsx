@@ -1,4 +1,5 @@
 import { router, useLocalSearchParams } from "expo-router";
+import * as Linking from "expo-linking";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -9,6 +10,7 @@ import {
   Text,
   View,
 } from "react-native";
+import QRCode from "react-native-qrcode-svg";
 import { RoomSettingsPanel } from "../../../src/components/game/RoomSettingsPanel";
 import { restoreOrCreateAnonymousSession } from "../../../src/services/online/AuthSessionService";
 import { getOnlineRoomExitNotice } from "../../../src/services/online/onlineRoomAccess";
@@ -23,6 +25,13 @@ export default function OnlineLobbyScreen() {
   const [currentUserId, setCurrentUserId] = useState<string | undefined>();
   const onlineRoom = useOnlineRoom(roomId, currentUserId);
   const snapshot = onlineRoom.snapshot;
+  const joinUrl = snapshot?.room.code
+    ? Linking.createURL("/online/join", {
+        queryParams: {
+          code: snapshot.room.code,
+        },
+      })
+    : undefined;
   const currentMember = snapshot?.members.find((member) => member.userId === currentUserId);
   const isHost = currentMember?.role === "host";
   const playersNeeded = snapshot
@@ -97,6 +106,26 @@ export default function OnlineLobbyScreen() {
                 Share this code. Players stay in the room if they briefly disconnect.
               </Text>
             </View>
+
+            {joinUrl && snapshot.room.code ? (
+              <View style={styles.invitePanel}>
+                <View>
+                  <Text style={styles.sectionTitle}>Quick join</Text>
+                  <Text style={styles.body}>Scan to open this room code.</Text>
+                </View>
+                <View style={styles.qrFrame}>
+                  <QRCode
+                    backgroundColor="#F9FAFB"
+                    color="#111827"
+                    size={168}
+                    value={joinUrl}
+                  />
+                </View>
+                <Text selectable style={styles.joinLink}>
+                  {joinUrl}
+                </Text>
+              </View>
+            ) : null}
 
             {onlineRoom.errorMessage ? (
               <Text style={styles.errorText}>{onlineRoom.errorMessage}</Text>
@@ -336,6 +365,26 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     gap: 8,
     padding: 14,
+  },
+  invitePanel: {
+    alignItems: "center",
+    backgroundColor: "#1F2937",
+    borderColor: "#334155",
+    borderRadius: 8,
+    borderWidth: 1,
+    gap: 12,
+    padding: 14,
+  },
+  qrFrame: {
+    backgroundColor: "#F9FAFB",
+    borderRadius: 8,
+    padding: 12,
+  },
+  joinLink: {
+    color: "#94A3B8",
+    fontSize: 12,
+    lineHeight: 18,
+    textAlign: "center",
   },
   waitingText: {
     color: "#FCA5A5",

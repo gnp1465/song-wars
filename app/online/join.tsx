@@ -1,4 +1,4 @@
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -17,6 +17,7 @@ import { getLastDisplayName, saveLastDisplayName } from "../../src/services/onli
 import { getMissingSupabaseConfigMessage, getSupabaseConfig } from "../../src/services/supabase/config";
 
 export default function JoinOnlineRoomScreen() {
+  const params = useLocalSearchParams<{ code?: string }>();
   const [displayName, setDisplayName] = useState("");
   const [roomCode, setRoomCode] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
@@ -29,6 +30,12 @@ export default function JoinOnlineRoomScreen() {
   useEffect(() => {
     void getLastDisplayName().then(setDisplayName);
   }, []);
+
+  useEffect(() => {
+    if (typeof params.code === "string") {
+      setRoomCode(params.code.replace(/\D/g, "").slice(0, 6));
+    }
+  }, [params.code]);
 
   async function joinRoom() {
     if (!canJoin) {

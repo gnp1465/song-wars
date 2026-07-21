@@ -7,9 +7,9 @@ Native iOS-first React Native/Expo prototype for a live song battle party game.
 The app now has two paths:
 
 - `Local Game`: the completed offline prototype with room creation, song search, preview playback, bracket judging, scoring, and final winner.
-- `Online Room`: the Supabase-backed multiplayer path with anonymous sessions, six-digit room codes, live player/settings sync, removals, online topic setup, song submissions, bracket judging, scoring, final winner, and host-controlled play-again/reset flow.
+- `Online Room`: the Supabase-backed multiplayer path with anonymous sessions, six-digit room codes, QR join, live player/settings sync, removals, online topic setup, song submissions, bracket judging, scoring, final winner, and host-controlled play-again/reset flow.
 
-QR codes, payments, persistent history, and account upgrades are later milestones.
+Payments, persistent history, and account upgrades are later milestones.
 
 ## Run The App
 

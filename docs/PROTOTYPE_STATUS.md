@@ -53,10 +53,10 @@
 - Final winner state.
 - Host-only online Play Again.
 - Host room closing after online gameplay starts.
+- QR-code join link for online lobby invites.
 
 ## Waiting For Later Backend Milestones
 
-- QR codes.
 - Server-clock remote playback.
 - Persistent game history.
 - Monetization tracking.

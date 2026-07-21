@@ -93,7 +93,7 @@ If the hosted check says `Supabase anonymous auth rate limit reached`, wait for 
 Run the app on two phones or simulators:
 
 - Create an online room on device A.
-- Join with the six-digit code on device B.
+- Join with the six-digit code or QR code on device B.
 - Confirm both devices see the same player list.
 - Change settings as host and confirm the guest sees updates.
 - Start with at least three players and confirm all devices transition to Round 1 setup.

@@ -15,6 +15,7 @@ Screens are full app views. They coordinate user flow and state.
 - `app/index.tsx` is the home screen for Local Game and Online Room choices.
 - `app/local.tsx` launches the completed local prototype.
 - `app/online/*` contains the Supabase-backed create, join, lobby, and round setup routes.
+- The online lobby uses an Expo deep link QR code to prefill the Join screen room code.
 - `src/screens/LocalBattleDemoScreen.tsx` runs the local playable battle flow.
 - `src/screens/RoomFlowDemoScreen.tsx` runs the local room/lobby flow using the shared room model.
 - `src/screens/PreviewPlaybackScreen.tsx` is a dev-only lab screen for testing search and preview playback. It is not part of the main app surface.
