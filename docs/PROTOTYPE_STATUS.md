@@ -62,6 +62,7 @@
 - Server-scheduled remote preview events.
 - Remote synchronized playback lock/progress UI.
 - iOS bundle identifier and `songwars://` deep-link scheme.
+- Root error boundary with a recovery screen for unexpected React errors.
 
 ## Waiting For Later Backend Milestones
 

@@ -4,7 +4,7 @@ This app is organized in layers. Each layer has a different job.
 
 ## App Entry And Navigation
 
-Expo Router owns the app entry. `app/_layout.tsx` configures preview audio and renders the route stack.
+Expo Router owns the app entry. `app/_layout.tsx` configures preview audio, wraps the app in a root error boundary, and renders the route stack.
 
 `app.json` owns native app identity such as the iOS bundle identifier and `songwars` deep-link scheme.
 
@@ -75,6 +75,7 @@ Services hold business logic and provider/API logic.
 - `services/media/storefront.ts` derives an Apple/iTunes storefront code from the device locale, with `US` as a fallback.
 - `services/online/onlinePlaybackEvents.ts` picks the newest server-scheduled synced preview event for the current room.
 - `services/supabase/*` configures the typed Supabase React Native client.
+- `services/diagnostics/logger.ts` centralizes local error reporting until a production crash service is added.
 - `services/media/MediaResolutionService.ts` resolves selected songs to playable previews.
 - `services/media/providers/*` adapt external music sources to the app's shared media shape.
 
