@@ -457,6 +457,7 @@ export default function OnlineRoundSetupScreen() {
                         <ActiveMatchupPanel
                           isPickingWinner={onlineRoom.isMutating || remotePlayback.isLocked}
                           matchup={activeMatchup}
+                          showPreviewActions={snapshot.room.mode !== "remote"}
                           onPickWinner={(winnerSubmissionId) =>
                             void pickMatchupWinner(winnerSubmissionId)
                           }

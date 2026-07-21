@@ -8,6 +8,7 @@ export interface ActiveMatchupPanelProps {
   matchup: BracketMatchup;
   onPickWinner: (submissionId: string) => void;
   onPlayPreview: (song: MediaTrack) => void;
+  showPreviewActions?: boolean;
 }
 
 export function ActiveMatchupPanel({
@@ -15,6 +16,7 @@ export function ActiveMatchupPanel({
   matchup,
   onPickWinner,
   onPlayPreview,
+  showPreviewActions = true,
 }: ActiveMatchupPanelProps) {
   return (
     <View style={styles.container}>
@@ -22,6 +24,7 @@ export function ActiveMatchupPanel({
       <SongChoice
         entry={matchup.left}
         isPickingWinner={isPickingWinner}
+        showPreviewActions={showPreviewActions}
         onPick={onPickWinner}
         onPlayPreview={onPlayPreview}
       />
@@ -29,6 +32,7 @@ export function ActiveMatchupPanel({
       <SongChoice
         entry={matchup.right}
         isPickingWinner={isPickingWinner}
+        showPreviewActions={showPreviewActions}
         onPick={onPickWinner}
         onPlayPreview={onPlayPreview}
       />
@@ -39,6 +43,7 @@ export function ActiveMatchupPanel({
 interface SongChoiceProps {
   entry: BracketMatchup["left"];
   isPickingWinner: boolean;
+  showPreviewActions: boolean;
   onPick: (submissionId: string) => void;
   onPlayPreview: (song: MediaTrack) => void;
 }
@@ -46,6 +51,7 @@ interface SongChoiceProps {
 function SongChoice({
   entry,
   isPickingWinner,
+  showPreviewActions,
   onPick,
   onPlayPreview,
 }: SongChoiceProps) {
@@ -55,9 +61,9 @@ function SongChoice({
       primaryDisabled={isPickingWinner}
       primaryLabel={isPickingWinner ? "Saving..." : "Pick Winner"}
       secondaryDisabled={isPickingWinner}
-      secondaryLabel={entry ? "Play Preview" : undefined}
+      secondaryLabel={entry && showPreviewActions ? "Play Preview" : undefined}
       onPrimaryPress={entry ? () => onPick(entry.submissionId) : undefined}
-      onSecondaryPress={entry ? () => onPlayPreview(entry.song) : undefined}
+      onSecondaryPress={entry && showPreviewActions ? () => onPlayPreview(entry.song) : undefined}
     />
   );
 }
