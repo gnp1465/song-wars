@@ -191,7 +191,12 @@ export default function OnlineRoundSetupScreen() {
         song.storefrontCode ?? getDeviceStorefrontCode(),
       );
 
-      await onlineRoom.submitSong(resolvedSong);
+      const didSubmit = await onlineRoom.submitSong(resolvedSong);
+
+      if (!didSubmit) {
+        return;
+      }
+
       await previewAudio.stopSongPreview("Submitted");
       songSearch.clearResults();
     } catch (error) {
@@ -204,7 +209,12 @@ export default function OnlineRoundSetupScreen() {
   }
 
   async function removeSubmission(submissionId: string) {
-    await onlineRoom.removeOwnSubmission(submissionId);
+    const didRemove = await onlineRoom.removeOwnSubmission(submissionId);
+
+    if (!didRemove) {
+      return;
+    }
+
     await previewAudio.stopSongPreview("Removed submission");
   }
 
@@ -213,7 +223,12 @@ export default function OnlineRoundSetupScreen() {
       return;
     }
 
-    await onlineRoom.selectMatchupWinner(activeMatchup.id, winnerSubmissionId);
+    const didPickWinner = await onlineRoom.selectMatchupWinner(activeMatchup.id, winnerSubmissionId);
+
+    if (!didPickWinner) {
+      return;
+    }
+
     await previewAudio.stopSongPreview("Winner picked");
   }
 
@@ -231,7 +246,12 @@ export default function OnlineRoundSetupScreen() {
       return;
     }
 
-    await onlineRoom.prepareNextRound();
+    const didPrepare = await onlineRoom.prepareNextRound();
+
+    if (!didPrepare) {
+      return;
+    }
+
     await previewAudio.stopSongPreview("No preview playing");
     await clearPreviewCache();
     songSearch.clearResults();
@@ -242,7 +262,12 @@ export default function OnlineRoundSetupScreen() {
       return;
     }
 
-    await onlineRoom.playAgain();
+    const didPlayAgain = await onlineRoom.playAgain();
+
+    if (!didPlayAgain) {
+      return;
+    }
+
     await previewAudio.stopSongPreview("No preview playing");
     await clearPreviewCache();
     songSearch.clearResults();
@@ -253,7 +278,12 @@ export default function OnlineRoundSetupScreen() {
       return;
     }
 
-    await onlineRoom.closeRoom();
+    const didReset = await onlineRoom.closeRoom();
+
+    if (!didReset) {
+      return;
+    }
+
     await previewAudio.stopSongPreview("No preview playing");
     await clearPreviewCache();
   }
@@ -263,14 +293,14 @@ export default function OnlineRoundSetupScreen() {
       return;
     }
 
+    const didExit = isHost ? await onlineRoom.closeRoom() : await onlineRoom.leaveRoom();
+
+    if (!didExit) {
+      return;
+    }
+
     await previewAudio.stopSongPreview("No preview playing");
     await clearPreviewCache();
-
-    if (isHost) {
-      await onlineRoom.closeRoom();
-    } else {
-      await onlineRoom.leaveRoom();
-    }
 
     await clearLastOnlineRoomId();
     router.replace("/");

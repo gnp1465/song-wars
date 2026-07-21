@@ -33,18 +33,18 @@ export interface UseOnlineRoomResult {
   refresh: () => Promise<void>;
   snapshot?: OnlineRoomSnapshot;
   clearError: () => void;
-  closeRoom: () => Promise<void>;
-  leaveRoom: () => Promise<void>;
-  removeMember: (memberId: string) => Promise<void>;
-  removeOwnSubmission: (submissionId: string) => Promise<void>;
-  scheduleMatchupPreview: (matchupId: string, submissionId: string) => Promise<void>;
-  selectMatchupWinner: (matchupId: string, winnerSubmissionId: string) => Promise<void>;
-  startRoom: () => Promise<void>;
-  submitSong: (song: MediaTrack) => Promise<void>;
-  submitTopic: (topic: string) => Promise<void>;
-  prepareNextRound: () => Promise<void>;
-  playAgain: () => Promise<void>;
-  updateSettings: (update: OnlineRoomSettingsUpdate) => Promise<void>;
+  closeRoom: () => Promise<boolean>;
+  leaveRoom: () => Promise<boolean>;
+  removeMember: (memberId: string) => Promise<boolean>;
+  removeOwnSubmission: (submissionId: string) => Promise<boolean>;
+  scheduleMatchupPreview: (matchupId: string, submissionId: string) => Promise<boolean>;
+  selectMatchupWinner: (matchupId: string, winnerSubmissionId: string) => Promise<boolean>;
+  startRoom: () => Promise<boolean>;
+  submitSong: (song: MediaTrack) => Promise<boolean>;
+  submitTopic: (topic: string) => Promise<boolean>;
+  prepareNextRound: () => Promise<boolean>;
+  playAgain: () => Promise<boolean>;
+  updateSettings: (update: OnlineRoomSettingsUpdate) => Promise<boolean>;
 }
 
 export function useOnlineRoom(
@@ -168,8 +168,10 @@ export function useOnlineRoom(
       }
 
       setErrorMessage(undefined);
+      return true;
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Online room action failed.");
+      return false;
     } finally {
       setIsMutating(false);
     }

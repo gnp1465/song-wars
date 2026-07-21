@@ -78,10 +78,10 @@ export default function OnlineLobbyScreen() {
       return;
     }
 
-    if (isHost) {
-      await onlineRoom.closeRoom();
-    } else {
-      await onlineRoom.leaveRoom();
+    const didExit = isHost ? await onlineRoom.closeRoom() : await onlineRoom.leaveRoom();
+
+    if (!didExit) {
+      return;
     }
 
     await clearLastOnlineRoomId();
