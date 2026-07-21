@@ -3,6 +3,7 @@ import * as Linking from "expo-linking";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Pressable,
   SafeAreaView,
   ScrollView,
@@ -84,6 +85,30 @@ export default function OnlineLobbyScreen() {
 
     await clearLastOnlineRoomId();
     router.replace("/");
+  }
+
+  function confirmLeaveRoom() {
+    if (!snapshot || onlineRoom.isMutating) {
+      return;
+    }
+
+    Alert.alert(
+      isHost ? "Close online room?" : "Leave online room?",
+      isHost
+        ? "This closes the lobby for everyone and returns players Home."
+        : "You will leave this room and return Home.",
+      [
+        {
+          style: "cancel",
+          text: "Cancel",
+        },
+        {
+          onPress: () => void leaveRoom(),
+          style: isHost ? "destructive" : "default",
+          text: isHost ? "Close Room" : "Leave Room",
+        },
+      ],
+    );
   }
 
   async function startRoom() {
@@ -219,8 +244,13 @@ export default function OnlineLobbyScreen() {
             <Pressable
               accessibilityLabel={isHost ? "Close online room" : "Leave online room"}
               accessibilityRole="button"
-              style={styles.secondaryButton}
-              onPress={() => void leaveRoom()}
+              accessibilityState={{ disabled: onlineRoom.isMutating }}
+              disabled={onlineRoom.isMutating}
+              style={[
+                styles.secondaryButton,
+                onlineRoom.isMutating ? styles.disabledButton : undefined,
+              ]}
+              onPress={confirmLeaveRoom}
             >
               <Text style={styles.secondaryButtonText}>{isHost ? "Close Room" : "Leave Room"}</Text>
             </Pressable>
