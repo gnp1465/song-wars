@@ -79,11 +79,26 @@ function getListValue(label) {
 
 function getCriteriaRows() {
   const rows = [];
-
-  for (const line of log.split("\n")) {
+  const lines = log.split("\n");
+  const headerIndex = lines.findIndex((line) => {
     const trimmedLine = line.trim();
 
-    if (!trimmedLine.startsWith("|") || trimmedLine.includes("---")) {
+    return trimmedLine.startsWith("|") && trimmedLine.split("|")[1]?.trim() === "Area";
+  });
+
+  if (headerIndex === -1) {
+    issues.push("Missing required pass criteria table.");
+    return rows;
+  }
+
+  for (const line of lines.slice(headerIndex + 1)) {
+    const trimmedLine = line.trim();
+
+    if (!trimmedLine.startsWith("|")) {
+      break;
+    }
+
+    if (trimmedLine.includes("---")) {
       continue;
     }
 

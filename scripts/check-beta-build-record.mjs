@@ -90,11 +90,26 @@ function getListValue(label) {
 
 function getTableRows(firstColumnLabel) {
   const rows = [];
-
-  for (const line of record.split("\n")) {
+  const lines = record.split("\n");
+  const headerIndex = lines.findIndex((line) => {
     const trimmedLine = line.trim();
 
-    if (!trimmedLine.startsWith("|") || trimmedLine.includes("---")) {
+    return trimmedLine.startsWith("|") && trimmedLine.split("|")[1]?.trim() === firstColumnLabel;
+  });
+
+  if (headerIndex === -1) {
+    issues.push(`Missing table with first column: ${firstColumnLabel}`);
+    return rows;
+  }
+
+  for (const line of lines.slice(headerIndex + 1)) {
+    const trimmedLine = line.trim();
+
+    if (!trimmedLine.startsWith("|")) {
+      break;
+    }
+
+    if (trimmedLine.includes("---")) {
       continue;
     }
 
