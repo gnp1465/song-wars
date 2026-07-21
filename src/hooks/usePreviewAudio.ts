@@ -1,7 +1,6 @@
 import { Audio } from "expo-av";
 import { useEffect, useRef, useState } from "react";
-import { MediaResolutionService } from "../services/media/MediaResolutionService";
-import { AppleITunesProvider } from "../services/media/providers/AppleITunesProvider";
+import { resolvePlayablePreviewTrack } from "../services/media/previewResolution";
 import type { MediaTrack } from "../types/media";
 
 export function usePreviewAudio() {
@@ -30,17 +29,11 @@ export function usePreviewAudio() {
       await unloadCurrentSound();
       setAudioStatus(`Loading ${song.title}...`);
 
-      const service = new MediaResolutionService({
-        providers: [new AppleITunesProvider()],
-      });
-      const result = await service.resolveTrackPreview({
-        sourceTrack: song,
-        storefrontCode: "US",
-        preferredProviderIds: ["apple_itunes"],
-      });
+      const resolvedTrack = await resolvePlayablePreviewTrack(song, "US");
+      const previewUrl = resolvedTrack.preview?.streamUrl;
 
-      if (!result.track.preview?.streamUrl) {
-        throw new Error(result.reason ?? "No preview found.");
+      if (!previewUrl) {
+        throw new Error("No playable preview found for this song.");
       }
 
       if (previewRequestIdRef.current !== requestId) {
@@ -48,7 +41,7 @@ export function usePreviewAudio() {
       }
 
       const { sound } = await Audio.Sound.createAsync(
-        { uri: result.track.preview.streamUrl },
+        { uri: previewUrl },
         { shouldPlay: true },
       );
 
@@ -59,7 +52,7 @@ export function usePreviewAudio() {
       }
 
       soundRef.current = sound;
-      setAudioStatus(`Playing ${result.track.title}`);
+      setAudioStatus(`Playing ${resolvedTrack.title}`);
     } catch (error) {
       if (previewRequestIdRef.current === requestId) {
         setAudioStatus(error instanceof Error ? error.message : "Preview playback failed.");

@@ -47,6 +47,7 @@
 - Synchronized transition to Round 1 setup.
 - Online judge topic submission.
 - Online song submission with duplicate blocking.
+- Online song submission requires an in-app playable preview URL.
 - Automatic transition from submitting to judging.
 - Online bracket judging and score updates.
 - Round winner becomes next judge online.

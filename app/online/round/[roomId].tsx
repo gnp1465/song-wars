@@ -24,6 +24,7 @@ import { useOnlineRoom } from "../../../src/hooks/useOnlineRoom";
 import { usePreviewAudio } from "../../../src/hooks/usePreviewAudio";
 import { useRemotePreviewPlayback } from "../../../src/hooks/useRemotePreviewPlayback";
 import { useSongSearch } from "../../../src/hooks/useSongSearch";
+import { resolvePlayablePreviewTrack } from "../../../src/services/media/previewResolution";
 import { restoreOrCreateAnonymousSession } from "../../../src/services/online/AuthSessionService";
 import { getOnlineRoomExitNotice } from "../../../src/services/online/onlineRoomAccess";
 import { clearLastOnlineRoomId } from "../../../src/services/online/onlineRoomResumeStorage";
@@ -53,6 +54,7 @@ export default function OnlineRoundSetupScreen() {
   const params = useLocalSearchParams<{ roomId?: string }>();
   const roomId = typeof params.roomId === "string" ? params.roomId : undefined;
   const [currentUserId, setCurrentUserId] = useState<string | undefined>();
+  const [isResolvingSubmission, setIsResolvingSubmission] = useState(false);
   const [topicInput, setTopicInput] = useState("");
   const onlineRoom = useOnlineRoom(roomId, currentUserId);
   const songSearch = useSongSearch({ limit: 8 });
@@ -121,7 +123,7 @@ export default function OnlineRoundSetupScreen() {
   const canSubmitSong = canSubmitOnlineSong({
     currentMember,
     currentRound,
-    isMutating: onlineRoom.isMutating,
+    isMutating: onlineRoom.isMutating || isResolvingSubmission,
     songsPerPlayer,
     submissions,
   });
@@ -171,13 +173,26 @@ export default function OnlineRoundSetupScreen() {
   }
 
   async function submitSong(song: MediaTrack) {
-    if (!canSubmitSong || isSongAlreadySubmitted(song, submissions)) {
+    if (!canSubmitSong || isResolvingSubmission || isSongAlreadySubmitted(song, submissions)) {
       return;
     }
 
-    await onlineRoom.submitSong(song);
-    await previewAudio.stopSongPreview("Submitted");
-    songSearch.clearResults();
+    setIsResolvingSubmission(true);
+
+    try {
+      previewAudio.setAudioStatus(`Checking preview for ${song.title}...`);
+      const resolvedSong = await resolvePlayablePreviewTrack(song, song.storefrontCode ?? "US");
+
+      await onlineRoom.submitSong(resolvedSong);
+      await previewAudio.stopSongPreview("Submitted");
+      songSearch.clearResults();
+    } catch (error) {
+      previewAudio.setAudioStatus(
+        error instanceof Error ? error.message : "No playable preview found for this song.",
+      );
+    } finally {
+      setIsResolvingSubmission(false);
+    }
   }
 
   async function removeSubmission(submissionId: string) {
@@ -425,8 +440,17 @@ export default function OnlineRoundSetupScreen() {
                                 return (
                                   <SongActionCard
                                     key={`${song.id}:${song.title}`}
-                                    primaryDisabled={!canSubmitSong || isDuplicate}
-                                    primaryLabel={isDuplicate ? "Already Picked" : "Submit"}
+                                    primaryDisabled={
+                                      !canSubmitSong || isResolvingSubmission || isDuplicate
+                                    }
+                                    primaryLabel={
+                                      isResolvingSubmission
+                                        ? "Checking..."
+                                        : isDuplicate
+                                          ? "Already Picked"
+                                          : "Submit"
+                                    }
+                                    secondaryDisabled={isResolvingSubmission}
                                     secondaryLabel="Play Preview"
                                     song={song}
                                     onPrimaryPress={() => void submitSong(song)}

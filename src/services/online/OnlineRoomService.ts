@@ -121,6 +121,10 @@ export async function submitOnlineRoundSong(
   roomId: string,
   song: MediaTrack,
 ): Promise<OnlineRoomSnapshot> {
+  if (!song.preview?.streamUrl) {
+    throw new Error("Choose a song with an in-app playable preview.");
+  }
+
   const result = await getSupabaseClient().rpc("submit_round_song", {
     album_name_value: song.albumName ?? null,
     artists_value: song.artists,

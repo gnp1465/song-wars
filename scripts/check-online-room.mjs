@@ -206,6 +206,16 @@ await expectRpcFailure(
   "judges should not submit songs",
 );
 
+await expectRpcFailure(
+  guestOne,
+  "submit_round_song",
+  {
+    ...makeSongArgs(roomId, 1000),
+    preview_url_value: "",
+  },
+  "songs without playable previews should be blocked",
+);
+
 const firstSubmission = await rpc(guestOne, "submit_round_song", makeSongArgs(roomId, 1));
 assert(firstSubmission.submissions.length === 1, "first contestant should submit a song");
 

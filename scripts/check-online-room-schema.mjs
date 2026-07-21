@@ -151,6 +151,10 @@ assert(
   "submit_round_song should reject missing artists.",
 );
 assert(
+  /if length\(trim\(coalesce\(preview_url_value, ''\)\)\) < 1 then/.test(migration),
+  "submit_round_song should require playable preview URLs.",
+);
+assert(
   /set status = 'judging'/.test(migration),
   "submit_round_song should advance the round after all required submissions.",
 );
