@@ -65,6 +65,8 @@ Services hold business logic and provider/API logic.
 - `services/online/onlineRoundTopic.ts` holds the client-side topic input rules used before calling the server.
 - `services/online/onlineRoundSubmissions.ts` holds the client-side submission eligibility and progress helpers used before calling the server.
 - `services/online/onlineRoundJudging.ts` holds the client-side active-matchup and judging eligibility helpers used before calling the server.
+- `services/audio/remotePlaybackSync.ts` holds server-clock offset and synced playback timing math.
+- `services/audio/previewCache.ts` holds local preview-cache helpers for future remote synchronized playback.
 - `services/supabase/*` configures the typed Supabase React Native client.
 - `services/media/MediaResolutionService.ts` resolves selected songs to playable previews.
 - `services/media/providers/*` adapt external music sources to the app's shared media shape.

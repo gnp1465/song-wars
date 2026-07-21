@@ -8,6 +8,14 @@ import {
   isPlaybackUiLocked,
   reducePlaybackState,
 } from "../state/playbackStateMachine.ts";
+import {
+  createClockSyncEstimate,
+  createRemotePlaybackPlan,
+} from "../services/audio/remotePlaybackSync.ts";
+import {
+  getPreviewCacheFileName,
+  getPreviewCacheUri,
+} from "../services/audio/previewCacheKey.ts";
 
 const offsetMs = estimateClockOffsetMs({
   serverNowMs: 1100,
@@ -27,6 +35,56 @@ const schedule = createPlaybackSchedule({
 assert.equal(schedule.localStartAtMs, 2000);
 assert.equal(schedule.delayMs, 1000);
 assert.equal(schedule.isLate, false);
+
+const clockEstimate = createClockSyncEstimate([
+  {
+    clientReceivedAtMs: 1200,
+    clientSentAtMs: 1000,
+    serverNowMs: 1075,
+  },
+  {
+    clientReceivedAtMs: 1110,
+    clientSentAtMs: 1000,
+    serverNowMs: 1030,
+  },
+]);
+
+assert.equal(clockEstimate.roundTripMs, 110);
+assert.equal(clockEstimate.clockOffsetMs, -25);
+assert.equal(clockEstimate.sampleCount, 2);
+
+const remotePlan = createRemotePlaybackPlan({
+  clockOffsetMs: -25,
+  durationMs: 30000,
+  localNowMs: 1000,
+  preloadLeadMs: 3000,
+  serverStartAtMs: 5025,
+});
+
+assert.equal(remotePlan.localStartAtMs, 5050);
+assert.equal(remotePlan.delayMs, 4050);
+assert.equal(remotePlan.localPreloadAtMs, 2050);
+assert.equal(remotePlan.uiUnlockAtMs, 35050);
+assert.equal(remotePlan.progressMsAtLocalNow, 0);
+assert.equal(remotePlan.isLate, false);
+
+assert.equal(
+  getPreviewCacheFileName({
+    previewUrl: "https://example.com/song-preview.m4a",
+    trackId: "song 1/id",
+  }).startsWith("song-1-id-"),
+  true,
+);
+assert.equal(
+  getPreviewCacheUri(
+    {
+      previewUrl: "https://example.com/song-preview.m4a",
+      trackId: "track-1",
+    },
+    "file:///cache/",
+  )?.startsWith("file:///cache/song-wars-previews/track-1-"),
+  true,
+);
 
 let state = initialPlaybackState;
 

@@ -54,9 +54,11 @@
 - Host-only online Play Again.
 - Host room closing after online gameplay starts.
 - QR-code join link for online lobby invites.
+- Remote playback clock-offset and pre-cache foundation utilities.
 
 ## Waiting For Later Backend Milestones
 
-- Server-clock remote playback.
+- Live Supabase events for server-clock remote playback.
+- UI lock/progress integration for remote synchronized playback.
 - Persistent game history.
 - Monetization tracking.
