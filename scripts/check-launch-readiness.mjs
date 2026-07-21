@@ -5,6 +5,7 @@ const issues = [];
 
 for (const path of [
   ".env.production.example",
+  "eas.json",
   "docs/APP_STORE_METADATA.md",
   "docs/BETA_DEVICE_MATRIX.md",
   "docs/DIAGNOSTICS.md",

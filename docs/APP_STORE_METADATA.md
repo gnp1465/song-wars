@@ -60,6 +60,7 @@ Online rooms require Supabase configuration. Testers can use Local Game without 
 
 - Hosted production Supabase project created.
 - Latest migrations applied to production Supabase.
+- EAS production build profile reviewed and `npm run check:eas-build-config` passes.
 - `npm run check:online-room` passes against the intended backend.
 - iOS device pass completed and recorded in `docs/DEVICE_PASS_LOG.md`.
 - Privacy policy reviewed against final analytics/crash-reporting/account/payment decisions.

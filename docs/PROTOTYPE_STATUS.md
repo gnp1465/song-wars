@@ -71,6 +71,7 @@
 - Privacy policy, App Store metadata draft, and launch-readiness docs are checked by `npm run verify`.
 - Beta device coverage checklist is documented and checked by `npm run verify`.
 - Beta release runbook is documented and checked by `npm run verify`.
+- EAS preview, simulator, production, and submit profiles are configured and checked by `npm run verify`.
 
 ## Waiting For Later Backend Milestones
 

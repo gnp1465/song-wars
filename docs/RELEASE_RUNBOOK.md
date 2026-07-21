@@ -80,7 +80,23 @@ sudo xcodebuild -runFirstLaunch
 
 Physical iPhone testing is still required before beta, even if simulator checks pass.
 
-## 6. Run Device Matrix
+## 6. Confirm Build Profiles
+
+Check the committed EAS build profiles:
+
+```bash
+npm run check:eas-build-config
+```
+
+Use these profiles:
+
+- `preview` for internal physical-device beta builds.
+- `preview-simulator` for simulator builds.
+- `production` for App Store/TestFlight release builds after the beta gates pass.
+
+Do not run a production build until hosted Supabase checks, privacy review, and the device matrix are complete.
+
+## 7. Run Device Matrix
 
 Use `docs/BETA_DEVICE_MATRIX.md` to choose devices and scenarios. At minimum, test:
 
@@ -93,7 +109,7 @@ Use `docs/BETA_DEVICE_MATRIX.md` to choose devices and scenarios. At minimum, te
 
 Record results in `docs/DEVICE_PASS_LOG.md`.
 
-## 7. Confirm Device Evidence
+## 8. Confirm Device Evidence
 
 After filling out the pass log, run:
 
@@ -109,7 +125,7 @@ npm run check:prototype-complete
 
 If a row is marked `Fail` or `Needs follow-up`, either fix the issue and retest it or write down why it is acceptable for the specific beta build.
 
-## 8. Review Release Documents
+## 9. Review Release Documents
 
 Before giving the app to testers, review:
 
@@ -122,7 +138,7 @@ Before giving the app to testers, review:
 
 The privacy policy must match the real data collected by the app. If analytics, crash reporting, payments, accounts, or persistent history are added, update the policy before release.
 
-## 9. Tag The Build Decision
+## 10. Tag The Build Decision
 
 When all checks and device tests pass, record:
 
