@@ -2,6 +2,10 @@ import type { OnlineRoomSnapshot } from "../../types/onlineRoom";
 
 export type OnlineRoomResumeRoute = "lobby" | "round";
 
+export function getOnlineRoomResumeFailureMessage(): string {
+  return "Could not verify your last online room. Check your connection and retry.";
+}
+
 export function getOnlineRoomResumeRoute(
   snapshot: OnlineRoomSnapshot,
   currentUserId: string,

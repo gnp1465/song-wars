@@ -52,6 +52,7 @@ Use this checklist before calling a build ready for multiplayer beta testing. Th
 - Guest loses network, appears offline, then reconnects.
 - Host loses network and reconnects.
 - Connection issue banner shows a Retry action when room loading fails.
+- Home shows Retry instead of Resume when the saved online room cannot be verified.
 - Reopened app restores the last online room when the anonymous session still has access.
 - Closed, expired, or removed rooms do not resume.
 

@@ -3,7 +3,10 @@ import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, Pressable, SafeAreaView, StyleSheet, Text, View } from "react-native";
 import { restoreOrCreateAnonymousSession } from "../src/services/online/AuthSessionService";
 import { fetchOnlineRoomSnapshot } from "../src/services/online/OnlineRoomService";
-import { getOnlineRoomResumeRoute } from "../src/services/online/onlineRoomResume";
+import {
+  getOnlineRoomResumeFailureMessage,
+  getOnlineRoomResumeRoute,
+} from "../src/services/online/onlineRoomResume";
 import {
   clearLastOnlineRoomId,
   getLastOnlineRoomId,
@@ -11,6 +14,7 @@ import {
 import { getSupabaseConfig } from "../src/services/supabase/config";
 
 interface ResumeRoomState {
+  errorMessage?: string;
   isChecking: boolean;
   roomId?: string;
   route?: "lobby" | "round";
@@ -23,6 +27,8 @@ export default function HomeScreen() {
   const hasSupabaseConfig = Boolean(getSupabaseConfig());
 
   const checkResumeRoom = useCallback(async () => {
+    setResumeRoom({ isChecking: true });
+
     if (!hasSupabaseConfig) {
       setResumeRoom({ isChecking: false });
       return;
@@ -53,9 +59,9 @@ export default function HomeScreen() {
       });
     } catch {
       setResumeRoom({
+        errorMessage: getOnlineRoomResumeFailureMessage(),
         isChecking: false,
         roomId,
-        route: "lobby",
       });
     }
   }, [hasSupabaseConfig]);
@@ -96,7 +102,20 @@ export default function HomeScreen() {
               <Text style={styles.resumeText}>Checking for an active online room...</Text>
             </View>
           ) : null}
-          {resumeRoom.roomId ? (
+          {resumeRoom.errorMessage ? (
+            <View style={styles.resumeWarning}>
+              <Text style={styles.resumeWarningText}>{resumeRoom.errorMessage}</Text>
+              <Pressable
+                accessibilityLabel="Retry online room resume check"
+                accessibilityRole="button"
+                style={styles.retryResumeButton}
+                onPress={() => void checkResumeRoom()}
+              >
+                <Text style={styles.retryResumeButtonText}>Retry</Text>
+              </Pressable>
+            </View>
+          ) : null}
+          {resumeRoom.roomId && resumeRoom.route ? (
             <HomeButton
               label="Resume Online Room"
               detail="Return to the last room from this phone."
@@ -200,6 +219,35 @@ const styles = StyleSheet.create({
     color: "#94A3B8",
     fontSize: 13,
     fontWeight: "700",
+  },
+  resumeWarning: {
+    backgroundColor: "#172033",
+    borderColor: "#334155",
+    borderRadius: 8,
+    borderWidth: 1,
+    gap: 10,
+    padding: 12,
+  },
+  resumeWarningText: {
+    color: "#CBD5E1",
+    fontSize: 14,
+    fontWeight: "700",
+    lineHeight: 20,
+  },
+  retryResumeButton: {
+    alignItems: "center",
+    alignSelf: "flex-start",
+    borderColor: "#38BDF8",
+    borderRadius: 8,
+    borderWidth: 1,
+    minHeight: 38,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+  },
+  retryResumeButtonText: {
+    color: "#E0F2FE",
+    fontSize: 14,
+    fontWeight: "900",
   },
   actionButton: {
     backgroundColor: "#1F2937",

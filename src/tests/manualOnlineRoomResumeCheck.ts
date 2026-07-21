@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
-import { getOnlineRoomResumeRoute } from "../services/online/onlineRoomResume.ts";
+import {
+  getOnlineRoomResumeFailureMessage,
+  getOnlineRoomResumeRoute,
+} from "../services/online/onlineRoomResume.ts";
 import type { OnlineRoomSnapshot } from "../types/onlineRoom.ts";
 
 const lobbySnapshot = makeSnapshot("lobby", "current-user");
@@ -32,6 +35,11 @@ assert.equal(
   getOnlineRoomResumeRoute(nonmemberSnapshot, "current-user"),
   undefined,
   "nonmembers should not be able to resume a room",
+);
+assert.equal(
+  getOnlineRoomResumeFailureMessage(),
+  "Could not verify your last online room. Check your connection and retry.",
+  "failed resume lookups should show a retryable message",
 );
 
 console.log("Online room resume checks passed.");

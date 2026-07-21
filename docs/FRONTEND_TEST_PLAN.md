@@ -82,6 +82,7 @@ Run this after the latest Supabase migrations have been applied to the hosted de
 - Temporarily interrupt network, confirm the online connection banner offers Retry, then restore network and tap Retry.
 - During an online round, confirm the active-game header shows an online count and changes when a device disconnects.
 - Fully return to Home and confirm Resume Online Room returns to the correct lobby or round.
+- With the backend/network unavailable, confirm Home does not show an unverified Resume button and offers Retry instead.
 - Remove device B as host and confirm device B returns Home with a clear message.
 - Rejoin device B, add a third player/device or simulator, then start the room.
 - Confirm all devices transition to Round 1 setup.
