@@ -2,6 +2,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -266,6 +267,30 @@ export default function OnlineRoundSetupScreen() {
 
     await clearLastOnlineRoomId();
     router.replace("/");
+  }
+
+  function confirmExitOnlineRoom() {
+    if (!snapshot || onlineRoom.isMutating) {
+      return;
+    }
+
+    Alert.alert(
+      isHost ? "Close online room?" : "Leave online room?",
+      isHost
+        ? "This closes the room for everyone and returns players Home."
+        : "You will leave this room and return Home.",
+      [
+        {
+          style: "cancel",
+          text: "Cancel",
+        },
+        {
+          onPress: () => void exitOnlineRoom(),
+          style: isHost ? "destructive" : "default",
+          text: isHost ? "Close Room" : "Leave Room",
+        },
+      ],
+    );
   }
 
   function goHome() {
@@ -605,7 +630,7 @@ export default function OnlineRoundSetupScreen() {
                 styles.dangerButton,
                 onlineRoom.isMutating ? styles.disabledButton : undefined,
               ]}
-              onPress={() => void exitOnlineRoom()}
+              onPress={confirmExitOnlineRoom}
             >
               <Text style={styles.dangerButtonText}>{isHost ? "Close Room" : "Leave Room"}</Text>
             </Pressable>
