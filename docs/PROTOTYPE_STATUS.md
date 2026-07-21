@@ -34,6 +34,7 @@
 - Record the device pass results in `docs/DEVICE_PASS_LOG.md`.
 - Run `npm run check:device-pass-log` after filling out the device pass log.
 - Run `npm run check:prototype-complete` as the final frontend prototype gate.
+- Use `docs/RELEASE_RUNBOOK.md` for the ordered beta release sequence.
 - Fix any spacing or copy issues found during the manual pass.
 
 ## Later Product Improvements
@@ -68,6 +69,7 @@
 - Root error boundary with a recovery screen for unexpected React errors.
 - Privacy policy, App Store metadata draft, and launch-readiness docs are checked by `npm run verify`.
 - Beta device coverage checklist is documented and checked by `npm run verify`.
+- Beta release runbook is documented and checked by `npm run verify`.
 
 ## Waiting For Later Backend Milestones
 

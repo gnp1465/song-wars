@@ -11,6 +11,7 @@ for (const path of [
   "docs/ONLINE_ROOM_SETUP.md",
   "docs/IOS_DEVICE_PASS_GUIDE.md",
   "docs/DEVICE_PASS_LOG.md",
+  "docs/RELEASE_RUNBOOK.md",
 ]) {
   if (!existsSync(path)) {
     issues.push(`Missing launch-readiness document: ${path}`);
@@ -50,6 +51,9 @@ const appStoreMetadata = existsSync("docs/APP_STORE_METADATA.md")
 const betaDeviceMatrix = existsSync("docs/BETA_DEVICE_MATRIX.md")
   ? readFileSync("docs/BETA_DEVICE_MATRIX.md", "utf8")
   : "";
+const releaseRunbook = existsSync("docs/RELEASE_RUNBOOK.md")
+  ? readFileSync("docs/RELEASE_RUNBOOK.md", "utf8")
+  : "";
 const gitignore = existsSync(".gitignore") ? readFileSync(".gitignore", "utf8") : "";
 
 if (!gitignore.split("\n").includes(".env.production")) {
@@ -86,6 +90,18 @@ for (const requiredText of [
 ]) {
   if (!betaDeviceMatrix.includes(requiredText)) {
     issues.push(`Beta device matrix is missing required section: ${requiredText}`);
+  }
+}
+
+for (const requiredText of [
+  "Confirm Scope",
+  "Apply Backend Migrations",
+  "Run Automated Checks",
+  "Run Device Matrix",
+  "Stop Conditions",
+]) {
+  if (!releaseRunbook.includes(requiredText)) {
+    issues.push(`Release runbook is missing required section: ${requiredText}`);
   }
 }
 
