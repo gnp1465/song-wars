@@ -4,7 +4,7 @@ Last updated: July 21, 2026
 
 Song Wars is a party game where players create or join temporary rooms, submit songs, preview audio, and vote through bracket-style battles.
 
-This draft describes the current beta design. Review it before App Store submission, especially if analytics, crash reporting, accounts, payments, or persistent history are added later.
+This draft describes the current beta design. Review it before App Store submission, especially if remote analytics, crash reporting, accounts, payments, or persistent history are added later.
 
 ## Data We Use
 
@@ -20,7 +20,7 @@ Song Wars does not currently require visible account creation, email addresses, 
 
 ## Diagnostics
 
-Song Wars currently uses local console diagnostics for app errors. It does not intentionally send crash reports or analytics events to a third-party service yet. Local diagnostic messages are redacted for common token-like values before printing. See `docs/DIAGNOSTICS.md` for the current diagnostic behavior.
+Song Wars currently uses local console diagnostics for app errors and a small set of local telemetry events. It does not intentionally send crash reports or analytics events to a third-party service yet. Local diagnostic messages are redacted for common token-like values before printing. See `docs/DIAGNOSTICS.md` for the current diagnostic behavior.
 
 ## Why We Use This Data
 
@@ -62,7 +62,7 @@ Song Wars is not currently designed for children under 13. If the target audienc
 
 ## Future Changes
 
-Later versions may add optional accounts, analytics, crash reporting, paid features, persistent history, friend groups, or additional music providers. If those features ship, this policy must be updated before release.
+Later versions may add optional accounts, remote analytics, crash reporting, paid features, persistent history, friend groups, or additional music providers. If those features ship, this policy must be updated before release.
 
 ## Contact
 

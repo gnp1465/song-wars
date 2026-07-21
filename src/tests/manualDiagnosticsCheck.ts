@@ -1,5 +1,11 @@
 import assert from "node:assert/strict";
-import { redactDiagnosticText } from "../services/diagnostics/logger.ts";
+import {
+  redactDiagnosticText,
+  reportAppError,
+  reportAppEvent,
+  setDiagnosticSink,
+  type DiagnosticRecord,
+} from "../services/diagnostics/logger.ts";
 
 const fakeJwt = "eyJabc.def456.ghi789";
 const rawText = [
@@ -25,5 +31,38 @@ assert.equal(redactedText.includes("access_token=[redacted]"), true);
 assert.equal(redactedText.includes("refresh_token=[redacted]"), true);
 assert.equal(redactedText.includes("apikey=[redacted]"), true);
 assert.equal(redactedText.includes("https://[supabase-project].supabase.co"), true);
+
+const records: DiagnosticRecord[] = [];
+const restoreSink = setDiagnosticSink({
+  record(record) {
+    records.push(record);
+  },
+});
+
+reportAppEvent("online_room_resume_available", {
+  area: "resume",
+  detail: "room=https://songwars-dev.supabase.co/rest/v1/rooms",
+  metadata: {
+    access_token: "abc123",
+    playerCount: 3,
+    route: "round",
+  },
+});
+reportAppError(new Error(`Failed with jwt=${fakeJwt}`), {
+  area: "online-room",
+  metadata: {
+    service_role: "never-log-this",
+  },
+});
+restoreSink();
+
+assert.equal(records.length, 2);
+assert.equal(records[0].kind, "event");
+assert.equal(records[0].detail?.includes("songwars-dev.supabase.co"), false);
+assert.equal(records[0].metadata?.access_token, "[redacted]");
+assert.equal(records[0].metadata?.playerCount, 3);
+assert.equal(records[1].kind, "error");
+assert.equal(records[1].message.includes(fakeJwt), false);
+assert.equal(records[1].metadata?.service_role, "[redacted]");
 
 console.log("Diagnostics redaction checks passed.");

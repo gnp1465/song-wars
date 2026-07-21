@@ -71,6 +71,7 @@
 - iOS bundle identifier and `songwars://` deep-link scheme.
 - Native app icon and splash assets are configured and checked by `npm run verify`.
 - Root error boundary with a recovery screen for unexpected React errors.
+- Local-only telemetry events and redacted diagnostics are centralized behind one diagnostics service.
 - Privacy policy, App Store metadata draft, and launch-readiness docs are checked by `npm run verify`.
 - Beta device coverage checklist is documented and checked by `npm run verify`.
 - Beta release runbook is documented and checked by `npm run verify`.

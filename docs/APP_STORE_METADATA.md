@@ -50,7 +50,7 @@ Song Wars can surface song titles, artist names, album artwork, and preview audi
 Song Wars currently uses anonymous Supabase sessions, temporary display names, temporary room data, and music-provider search/preview metadata. It does not currently require visible accounts, email addresses, phone numbers, contacts, precise GPS location, or payment information.
 
 Use `docs/PRIVACY_POLICY.md` as the detailed policy draft.
-Use `docs/DIAGNOSTICS.md` to confirm current local-only diagnostics behavior before adding crash reporting or analytics.
+Use `docs/DIAGNOSTICS.md` to confirm current local-only diagnostics behavior before adding crash reporting or remote analytics.
 
 ## Review Notes Draft
 
@@ -63,5 +63,5 @@ Online rooms require Supabase configuration. Testers can use Local Game without 
 - EAS production build profile reviewed and `npm run check:eas-build-config` passes.
 - `npm run check:online-room` passes against the intended backend.
 - iOS device pass completed and recorded in `docs/DEVICE_PASS_LOG.md`.
-- Privacy policy reviewed against final analytics/crash-reporting/account/payment decisions.
+- Privacy policy reviewed against final remote analytics/crash-reporting/account/payment decisions.
 - App icon/splash reviewed on device.

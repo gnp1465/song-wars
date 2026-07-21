@@ -1,6 +1,7 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, Pressable, SafeAreaView, StyleSheet, Text, View } from "react-native";
+import { reportAppError, reportAppEvent } from "../src/services/diagnostics/logger";
 import { restoreOrCreateAnonymousSession } from "../src/services/online/AuthSessionService";
 import { fetchOnlineRoomSnapshot } from "../src/services/online/OnlineRoomService";
 import {
@@ -57,7 +58,20 @@ export default function HomeScreen() {
         roomId,
         route,
       });
-    } catch {
+      reportAppEvent("online_room_resume_available", {
+        area: "online-room-resume",
+        metadata: {
+          route,
+        },
+      });
+    } catch (error) {
+      reportAppError(error, {
+        area: "online-room-resume",
+        detail: "Failed to restore the last online room snapshot.",
+      });
+      reportAppEvent("online_room_resume_failed", {
+        area: "online-room-resume",
+      });
       setResumeRoom({
         errorMessage: getOnlineRoomResumeFailureMessage(),
         isChecking: false,
