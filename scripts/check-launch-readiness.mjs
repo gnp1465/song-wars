@@ -5,6 +5,7 @@ const issues = [];
 
 for (const path of [
   ".env.production.example",
+  "docs/APP_STORE_METADATA.md",
   "docs/PRIVACY_POLICY.md",
   "docs/ONLINE_ROOM_SETUP.md",
   "docs/IOS_DEVICE_PASS_GUIDE.md",
@@ -42,6 +43,9 @@ if (appConfig.platforms?.includes("ios") !== true) {
 const privacyPolicy = existsSync("docs/PRIVACY_POLICY.md")
   ? readFileSync("docs/PRIVACY_POLICY.md", "utf8")
   : "";
+const appStoreMetadata = existsSync("docs/APP_STORE_METADATA.md")
+  ? readFileSync("docs/APP_STORE_METADATA.md", "utf8")
+  : "";
 const gitignore = existsSync(".gitignore") ? readFileSync(".gitignore", "utf8") : "";
 
 if (!gitignore.split("\n").includes(".env.production")) {
@@ -56,6 +60,17 @@ for (const requiredText of [
 ]) {
   if (!privacyPolicy.includes(requiredText)) {
     issues.push(`Privacy policy is missing required beta disclosure: ${requiredText}`);
+  }
+}
+
+for (const requiredText of [
+  "App Name",
+  "Subtitle",
+  "Privacy Summary Draft",
+  "Release Blockers Before Submission",
+]) {
+  if (!appStoreMetadata.includes(requiredText)) {
+    issues.push(`App Store metadata draft is missing required section: ${requiredText}`);
   }
 }
 

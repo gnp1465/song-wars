@@ -65,7 +65,7 @@
 - iOS bundle identifier and `songwars://` deep-link scheme.
 - Native app icon and splash assets are configured and checked by `npm run verify`.
 - Root error boundary with a recovery screen for unexpected React errors.
-- Privacy policy draft and launch-readiness docs are checked by `npm run verify`.
+- Privacy policy, App Store metadata draft, and launch-readiness docs are checked by `npm run verify`.
 
 ## Waiting For Later Backend Milestones
 
