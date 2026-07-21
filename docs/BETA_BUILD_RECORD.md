@@ -22,6 +22,7 @@ Mark each item as `Pass`, `Fail`, or `Needs follow-up`.
 | --- | --- | --- |
 | `npm run verify` |  |  |
 | `npm run check:online-room` |  |  |
+| `npm run check:supabase-migration-pass-log` |  |  |
 | `npm run check:device-pass-log` |  |  |
 | `npm run check:eas-build-config` |  |  |
 | GitHub Actions verify workflow |  |  |

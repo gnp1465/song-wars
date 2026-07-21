@@ -173,6 +173,7 @@ npm run check:beta-build-record
 ```
 
 This makes it possible to know exactly what was tested if a beta tester reports a bug later.
+The beta build record must include evidence for the Supabase migration pass log, because `npm run check:online-room` proves behavior only after the hosted project has the expected schema.
 
 ## Stop Conditions
 
