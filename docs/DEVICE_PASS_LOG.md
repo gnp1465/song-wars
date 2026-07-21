@@ -47,6 +47,7 @@ Mark each item as `Pass`, `Fail`, or `Needs follow-up`.
 | Online lobby shows the room is temporary/expiring |  |  |
 | Second device can join by six-digit code |  |  |
 | Second device can join by QR code/deep link |  |  |
+| Native Share Invite opens the iOS share sheet with room code/link |  |  |
 | Online player list and settings sync across devices |  |  |
 | Backgrounding and reopening a device refetches the latest room state |  |  |
 | Active online game shows online/offline presence summary |  |  |

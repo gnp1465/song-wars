@@ -6,6 +6,7 @@ import {
   Pressable,
   SafeAreaView,
   ScrollView,
+  Share,
   StyleSheet,
   Text,
   View,
@@ -93,6 +94,18 @@ export default function OnlineLobbyScreen() {
     await onlineRoom.startRoom();
   }
 
+  async function shareInvite() {
+    if (!snapshot?.room.code || !joinUrl) {
+      return;
+    }
+
+    await Share.share({
+      message: `Join my Song Wars room with code ${snapshot.room.code}: ${joinUrl}`,
+      title: "Join my Song Wars room",
+      url: joinUrl,
+    });
+  }
+
   return (
     <SafeAreaView style={styles.root}>
       <ScrollView contentContainerStyle={styles.content}>
@@ -137,6 +150,14 @@ export default function OnlineLobbyScreen() {
                 <Text selectable style={styles.joinLink}>
                   {joinUrl}
                 </Text>
+                <Pressable
+                  accessibilityLabel="Share online room invite"
+                  accessibilityRole="button"
+                  style={styles.shareButton}
+                  onPress={() => void shareInvite()}
+                >
+                  <Text style={styles.shareButtonText}>Share Invite</Text>
+                </Pressable>
               </View>
             ) : null}
 
@@ -402,6 +423,21 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 18,
     textAlign: "center",
+  },
+  shareButton: {
+    alignItems: "center",
+    borderColor: "#38BDF8",
+    borderRadius: 8,
+    borderWidth: 1,
+    justifyContent: "center",
+    minHeight: 42,
+    paddingHorizontal: 16,
+    width: "100%",
+  },
+  shareButtonText: {
+    color: "#7DD3FC",
+    fontSize: 14,
+    fontWeight: "900",
   },
   waitingText: {
     color: "#FCA5A5",
