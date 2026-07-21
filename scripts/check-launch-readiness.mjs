@@ -6,6 +6,7 @@ const issues = [];
 for (const path of [
   ".env.production.example",
   "docs/APP_STORE_METADATA.md",
+  "docs/BETA_DEVICE_MATRIX.md",
   "docs/PRIVACY_POLICY.md",
   "docs/ONLINE_ROOM_SETUP.md",
   "docs/IOS_DEVICE_PASS_GUIDE.md",
@@ -46,6 +47,9 @@ const privacyPolicy = existsSync("docs/PRIVACY_POLICY.md")
 const appStoreMetadata = existsSync("docs/APP_STORE_METADATA.md")
   ? readFileSync("docs/APP_STORE_METADATA.md", "utf8")
   : "";
+const betaDeviceMatrix = existsSync("docs/BETA_DEVICE_MATRIX.md")
+  ? readFileSync("docs/BETA_DEVICE_MATRIX.md", "utf8")
+  : "";
 const gitignore = existsSync(".gitignore") ? readFileSync(".gitignore", "utf8") : "";
 
 if (!gitignore.split("\n").includes(".env.production")) {
@@ -71,6 +75,17 @@ for (const requiredText of [
 ]) {
   if (!appStoreMetadata.includes(requiredText)) {
     issues.push(`App Store metadata draft is missing required section: ${requiredText}`);
+  }
+}
+
+for (const requiredText of [
+  "Required Before Beta",
+  "Audio Scenarios",
+  "Multiplayer Scenarios",
+  "Network Scenarios",
+]) {
+  if (!betaDeviceMatrix.includes(requiredText)) {
+    issues.push(`Beta device matrix is missing required section: ${requiredText}`);
   }
 }
 

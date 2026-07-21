@@ -70,6 +70,7 @@ Learning docs:
 - [docs/FRONTEND_TEST_PLAN.md](docs/FRONTEND_TEST_PLAN.md)
 - [docs/IOS_DEVICE_PASS_GUIDE.md](docs/IOS_DEVICE_PASS_GUIDE.md)
 - [docs/ONLINE_ROOM_SETUP.md](docs/ONLINE_ROOM_SETUP.md)
+- [docs/BETA_DEVICE_MATRIX.md](docs/BETA_DEVICE_MATRIX.md)
 - [docs/APP_STORE_METADATA.md](docs/APP_STORE_METADATA.md)
 - [docs/PRIVACY_POLICY.md](docs/PRIVACY_POLICY.md)
 - [docs/DEVICE_PASS_LOG.md](docs/DEVICE_PASS_LOG.md)
