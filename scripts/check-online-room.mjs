@@ -624,7 +624,7 @@ async function rpc(client, functionName, args) {
   if (result.error) {
     if (result.error.message.toLowerCase().includes("could not find the function")) {
       throw new Error(
-        `${functionName} failed: RPC is missing from Supabase. Apply the latest migrations and wait for Supabase schema cache to refresh.`,
+        `${functionName} failed: RPC is missing from Supabase. Run \`npm run print:supabase-migrations\`, paste the printed SQL into the Supabase SQL editor, run it, then wait for the Supabase schema cache to refresh.`,
       );
     }
 
