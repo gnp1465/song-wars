@@ -123,6 +123,16 @@ export default function CreateOnlineRoomScreen() {
             <Text style={styles.primaryButtonText}>Create Room</Text>
           )}
         </Pressable>
+        <Pressable
+          accessibilityLabel="Back to home"
+          accessibilityRole="button"
+          accessibilityState={{ disabled: isCreating }}
+          disabled={isCreating}
+          style={[styles.secondaryButton, isCreating ? styles.disabledButton : undefined]}
+          onPress={() => router.replace("/")}
+        >
+          <Text style={styles.secondaryButtonText}>Back Home</Text>
+        </Pressable>
       </ScrollView>
     </SafeAreaView>
   );
@@ -179,6 +189,19 @@ const styles = StyleSheet.create({
   primaryButtonText: {
     color: "#082F49",
     fontSize: 16,
+    fontWeight: "900",
+  },
+  secondaryButton: {
+    alignItems: "center",
+    borderColor: "#334155",
+    borderRadius: 8,
+    borderWidth: 1,
+    justifyContent: "center",
+    minHeight: 48,
+  },
+  secondaryButtonText: {
+    color: "#CBD5E1",
+    fontSize: 15,
     fontWeight: "900",
   },
   disabledButton: {
