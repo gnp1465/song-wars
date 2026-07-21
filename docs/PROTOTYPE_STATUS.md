@@ -78,6 +78,7 @@
 - Beta build record template and final completion check are in place.
 - Documentation link checks are included in `npm run verify`.
 - Accessibility surface checks are included in `npm run verify` for routed/core buttons and inputs.
+- Supabase migration documentation is checked against committed migration files by `npm run verify`.
 
 ## Waiting For Later Backend Milestones
 

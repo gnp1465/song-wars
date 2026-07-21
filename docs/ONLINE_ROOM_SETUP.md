@@ -100,6 +100,12 @@ npm run check:online-room-schema
 
 That check reads the committed migration and confirms the expected online-room tables, RPC functions, RLS policies, Realtime Presence policies, and publication setup are still present.
 
+You can verify that this setup guide lists the same migrations that exist on disk:
+
+```bash
+npm run check:supabase-migration-docs
+```
+
 If the hosted check says `Anonymous sign-ins are disabled`, open Supabase Auth settings and enable Anonymous Sign-ins before rerunning it.
 
 If the hosted check says `Supabase anonymous auth rate limit reached`, wait for the rate-limit window to reset before rerunning it. The normal check creates four anonymous users; the optional capacity check creates more.
