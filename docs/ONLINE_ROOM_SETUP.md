@@ -28,6 +28,7 @@ supabase/migrations/202607140001_online_room_lobby.sql
 supabase/migrations/202607190001_online_round_topic.sql
 supabase/migrations/202607190002_online_round_submissions.sql
 supabase/migrations/202607190003_online_round_judging.sql
+supabase/migrations/202607190004_online_game_reset.sql
 ```
 
 This creates the `rooms`, `room_members`, `rounds`, `round_submissions`, `round_matchups`, and `room_scores` tables plus the RPC functions used by the app.
@@ -62,6 +63,9 @@ This creates three separate anonymous host/guest clients and verifies:
 - judge-only winner selection
 - round winner scoring
 - next-round creation with the round winner as judge
+- final-game completion at the points-to-win target
+- host-only Play Again reset
+- host room closing after a game starts
 - join-code clearing after start
 
 The script stores reusable test sessions in `.cache/online-room-check-sessions.json` so repeated checks do not create new anonymous users every time. That file contains temporary auth tokens and is ignored by git.
@@ -97,3 +101,4 @@ Run the app on two phones or simulators:
 - Submit songs from every non-judge and confirm all devices transition to judging.
 - Pick matchup winners as judge and confirm contestants cannot pick winners.
 - Finish the bracket and confirm the round winner becomes the next judge.
+- Finish a first-to-one game and confirm the host can Play Again.

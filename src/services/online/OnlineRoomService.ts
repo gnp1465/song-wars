@@ -168,6 +168,14 @@ export async function prepareNextOnlineRound(roomId: string): Promise<OnlineRoom
   return unwrapSnapshotResult(result.data, result.error);
 }
 
+export async function playAgainOnlineRoom(roomId: string): Promise<OnlineRoomSnapshot> {
+  const result = await getSupabaseClient().rpc("play_again", {
+    room_id_value: roomId,
+  });
+
+  return unwrapSnapshotResult(result.data, result.error);
+}
+
 export async function closeOnlineRoom(roomId: string): Promise<OnlineRoomSnapshot> {
   const result = await getSupabaseClient().rpc("close_room", {
     room_id_value: roomId,

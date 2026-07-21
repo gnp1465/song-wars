@@ -325,6 +325,12 @@ export interface Database {
         };
         Returns: Json;
       };
+      play_again: {
+        Args: {
+          room_id_value: string;
+        };
+        Returns: Json;
+      };
       complete_game: {
         Args: {
           room_id_value: string;

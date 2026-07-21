@@ -15,6 +15,7 @@ import {
 } from "react-native";
 import { ActiveMatchupPanel } from "../../../src/components/game/ActiveMatchupPanel";
 import { BracketProgress } from "../../../src/components/game/BracketProgress";
+import { GameOverPanel } from "../../../src/components/game/GameOverPanel";
 import { RoundResultPanel } from "../../../src/components/game/RoundResultPanel";
 import { Scoreboard } from "../../../src/components/game/Scoreboard";
 import { SongActionCard } from "../../../src/components/game/SongActionCard";
@@ -54,6 +55,7 @@ export default function OnlineRoundSetupScreen() {
   const currentMember = snapshot?.members.find((member) => member.userId === currentUserId);
   const judgeMember = snapshot?.members.find((member) => member.id === currentRound?.judgeMemberId);
   const isJudge = Boolean(currentMember && judgeMember && currentMember.id === judgeMember.id);
+  const isHost = Boolean(snapshot && currentUserId === snapshot.room.hostUserId);
   const submissions = snapshot?.submissions ?? [];
   const matchups = snapshot?.matchups ?? [];
   const scores = snapshot?.scores ?? [];
@@ -184,6 +186,25 @@ export default function OnlineRoundSetupScreen() {
     await onlineRoom.prepareNextRound();
     await previewAudio.stopSongPreview("No preview playing");
     songSearch.clearResults();
+  }
+
+  async function playAgain() {
+    if (!isHost) {
+      return;
+    }
+
+    await onlineRoom.playAgain();
+    await previewAudio.stopSongPreview("No preview playing");
+    songSearch.clearResults();
+  }
+
+  async function resetRoom() {
+    if (!isHost) {
+      return;
+    }
+
+    await onlineRoom.closeRoom();
+    await previewAudio.stopSongPreview("No preview playing");
   }
 
   function goHome() {
@@ -452,17 +473,33 @@ export default function OnlineRoundSetupScreen() {
 
               {snapshot.room.status === "complete" ? (
                 <View style={styles.panel}>
-                  <Text style={styles.sectionTitle}>Game complete</Text>
-                  <Text style={styles.judgeName}>
-                    {gameWinnerMember?.displayName ?? "Winner"} wins
-                  </Text>
-                  {winningSubmission ? (
-                    <Text style={styles.body}>
-                      Final song: {winningSubmission.song.title} by{" "}
-                      {winningSubmission.song.artists.join(", ")}
-                    </Text>
-                  ) : null}
-                  <Scoreboard players={onlinePlayers} scores={playerScores} />
+                  {isHost && gameWinnerMember ? (
+                    <GameOverPanel
+                      players={onlinePlayers}
+                      pointsToWin={snapshot.room.pointsToWin}
+                      scores={playerScores}
+                      winnerName={gameWinnerMember.displayName}
+                      onPlayAgain={() => void playAgain()}
+                      onResetRoom={() => void resetRoom()}
+                    />
+                  ) : (
+                    <>
+                      <Text style={styles.sectionTitle}>Game complete</Text>
+                      <Text style={styles.judgeName}>
+                        {gameWinnerMember?.displayName ?? "Winner"} wins
+                      </Text>
+                      {winningSubmission ? (
+                        <Text style={styles.body}>
+                          Final song: {winningSubmission.song.title} by{" "}
+                          {winningSubmission.song.artists.join(", ")}
+                        </Text>
+                      ) : null}
+                      <Text style={styles.body}>
+                        Waiting for the host to play again or reset the room.
+                      </Text>
+                      <Scoreboard players={onlinePlayers} scores={playerScores} />
+                    </>
+                  )}
                 </View>
               ) : null}
             </>

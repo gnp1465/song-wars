@@ -89,7 +89,7 @@ Memorize: demo data is temporary. Later, real room and backend data will replace
 
 ## Supabase
 
-`supabase/migrations/*` defines the hosted database schema, security rules, and RPC functions. Online gameplay state is added in slices: lobby first, then topic setup, then song submissions, then bracket judging and scoring.
+`supabase/migrations/*` defines the hosted database schema, security rules, and RPC functions. Online gameplay state is added in slices: lobby first, then topic setup, song submissions, bracket judging and scoring, and host-controlled game reset.
 
 Memorize: the app uses the public anon key only. Server-authoritative actions happen through RPC functions protected by Row Level Security and `auth.uid()`.
 

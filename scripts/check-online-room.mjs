@@ -36,6 +36,12 @@ if (shouldVerifyCapacity) {
   console.log("Skipping capacity check. Set CHECK_ONLINE_ROOM_CAPACITY=1 to run it.");
 }
 
+await verifyGameCompletionAndPlayAgain({
+  guestOne,
+  guestTwo,
+  host,
+});
+
 const created = await rpc(host, "create_room", {
   host_display_name: "Host",
   points_to_win_value: 3,
@@ -462,6 +468,80 @@ async function verifyCapacityLimit({ reusableClients }) {
     },
     "rooms should reject the thirteenth player",
   );
+}
+
+async function verifyGameCompletionAndPlayAgain({ guestOne, guestTwo, host }) {
+  const restartRoom = await rpc(host, "create_room", {
+    host_display_name: "Restart Host",
+    points_to_win_value: 1,
+    room_mode: "single_speaker",
+    songs_per_player_value: 1,
+  });
+
+  await rpc(guestOne, "join_room", {
+    guest_display_name: "Restart Maya",
+    room_code: restartRoom.room.code,
+  });
+  await rpc(guestTwo, "join_room", {
+    guest_display_name: "Restart Jay",
+    room_code: restartRoom.room.code,
+  });
+  await rpc(host, "start_room", {
+    room_id_value: restartRoom.room.id,
+  });
+  await rpc(host, "submit_round_topic", {
+    room_id_value: restartRoom.room.id,
+    topic_value: "Road trip",
+  });
+  await rpc(guestOne, "submit_round_song", makeSongArgs(restartRoom.room.id, 101));
+  const readyToJudge = await rpc(
+    guestTwo,
+    "submit_round_song",
+    makeSongArgs(restartRoom.room.id, 102),
+  );
+  const readyMatchup = getReadyMatchup(readyToJudge);
+  const finalWinnerSubmissionId = readyMatchup.left_submission_id ?? readyMatchup.right_submission_id;
+
+  assert(finalWinnerSubmissionId, "restart scenario should have a final winner candidate");
+
+  const gameComplete = await rpc(host, "select_matchup_winner", {
+    matchup_id_value: readyMatchup.id,
+    room_id_value: restartRoom.room.id,
+    winner_submission_id_value: finalWinnerSubmissionId,
+  });
+
+  assert(gameComplete.room.status === "complete", "first-to-one game should complete");
+  assert(gameComplete.room.game_winner_member_id, "completed game should store a winner");
+
+  await expectRpcFailure(
+    guestOne,
+    "play_again",
+    {
+      room_id_value: restartRoom.room.id,
+    },
+    "guests should not restart completed games",
+  );
+
+  const restarted = await rpc(host, "play_again", {
+    room_id_value: restartRoom.room.id,
+  });
+
+  assert(restarted.room.status === "in_round", "play again should restart the game");
+  assert(restarted.room.game_winner_member_id === null, "play again should clear game winner");
+  assert(restarted.current_round?.round_number === 1, "play again should create a new round one");
+  assert(
+    restarted.current_round?.status === "waiting_for_topic",
+    "play again should wait for a fresh topic",
+  );
+  assert(restarted.submissions.length === 0, "play again should clear submissions");
+  assert(restarted.matchups.length === 0, "play again should clear matchups");
+  assert(restarted.scores.length === 0, "play again should clear scores");
+
+  const closedAfterRestart = await rpc(host, "close_room", {
+    room_id_value: restartRoom.room.id,
+  });
+
+  assert(closedAfterRestart.room.status === "closed", "host should close restarted rooms");
 }
 
 async function createSignedInTestClient(label) {

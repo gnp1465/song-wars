@@ -47,6 +47,7 @@ const requiredSnippets = [
   "create or replace function public.start_room",
   "create or replace function public.close_room",
   "create or replace function public.get_room_snapshot",
+  "create or replace function public.is_room_host_any_status",
   "grant execute on function public.create_room",
   "grant execute on function public.join_room",
   "grant execute on function public.leave_room",
@@ -63,6 +64,7 @@ const requiredSnippets = [
   "create or replace function public.select_matchup_winner",
   "create or replace function public.complete_round",
   "create or replace function public.prepare_next_round",
+  "create or replace function public.play_again",
   "create or replace function public.complete_game",
   "grant execute on function public.submit_round_topic",
   "grant execute on function public.submit_round_song",
@@ -71,6 +73,7 @@ const requiredSnippets = [
   "grant execute on function public.select_matchup_winner",
   "grant execute on function public.complete_round",
   "grant execute on function public.prepare_next_round",
+  "grant execute on function public.play_again",
   "grant execute on function public.complete_game",
   "alter publication supabase_realtime add table public.rooms",
   "alter publication supabase_realtime add table public.room_members",
@@ -158,6 +161,18 @@ assert(
 assert(
   /current_member\.id <> active_round\.winning_member_id/.test(migration),
   "prepare_next_round should allow the next judge to start the next round.",
+);
+assert(
+  /if target_room\.status <> 'complete' then/.test(migration),
+  "play_again should only restart completed games.",
+);
+assert(
+  /delete from public\.round_matchups/.test(migration),
+  "play_again should clear old bracket state.",
+);
+assert(
+  /delete from public\.room_scores/.test(migration),
+  "play_again should clear old scores.",
 );
 assert(
   /public\.normalize_display_name\(display_name\) = public\.normalize_display_name\(guest_display_name\)/.test(
