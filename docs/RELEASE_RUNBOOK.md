@@ -51,6 +51,7 @@ npm run verify
 ```
 
 This includes `npm run check:secret-safety`, which confirms committed files do not contain tracked env files or Supabase JWT-like keys.
+It also includes `npm run check:ci-config`, which confirms the GitHub Actions workflow runs the same verification gate on pushes and pull requests.
 
 Run the hosted backend smoke check:
 
