@@ -78,6 +78,7 @@ Run this after the latest Supabase migrations have been applied to the hosted de
 - Create another room and confirm device B can also join by scanning the QR code.
 - Change songs per player, points to win, and room mode as host; confirm the guest sees each update.
 - Background device B for a few seconds, reopen it, and confirm the latest player/settings state is shown.
+- Fully return to Home and confirm Resume Online Room returns to the correct lobby or round.
 - Remove device B as host and confirm device B returns Home with a clear message.
 - Rejoin device B, add a third player/device or simulator, then start the room.
 - Confirm all devices transition to Round 1 setup.

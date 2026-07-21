@@ -1,9 +1,77 @@
 import { router, useLocalSearchParams } from "expo-router";
-import { Pressable, SafeAreaView, StyleSheet, Text, View } from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import { ActivityIndicator, Pressable, SafeAreaView, StyleSheet, Text, View } from "react-native";
+import { restoreOrCreateAnonymousSession } from "../src/services/online/AuthSessionService";
+import { fetchOnlineRoomSnapshot } from "../src/services/online/OnlineRoomService";
+import { getOnlineRoomResumeRoute } from "../src/services/online/onlineRoomResume";
+import {
+  clearLastOnlineRoomId,
+  getLastOnlineRoomId,
+} from "../src/services/online/onlineRoomResumeStorage";
+import { getSupabaseConfig } from "../src/services/supabase/config";
+
+interface ResumeRoomState {
+  isChecking: boolean;
+  roomId?: string;
+  route?: "lobby" | "round";
+}
 
 export default function HomeScreen() {
   const params = useLocalSearchParams<{ notice?: string }>();
   const notice = typeof params.notice === "string" ? params.notice : undefined;
+  const [resumeRoom, setResumeRoom] = useState<ResumeRoomState>({ isChecking: true });
+  const hasSupabaseConfig = Boolean(getSupabaseConfig());
+
+  const checkResumeRoom = useCallback(async () => {
+    if (!hasSupabaseConfig) {
+      setResumeRoom({ isChecking: false });
+      return;
+    }
+
+    const roomId = await getLastOnlineRoomId();
+
+    if (!roomId) {
+      setResumeRoom({ isChecking: false });
+      return;
+    }
+
+    try {
+      const session = await restoreOrCreateAnonymousSession();
+      const snapshot = await fetchOnlineRoomSnapshot(roomId);
+      const route = getOnlineRoomResumeRoute(snapshot, session.userId);
+
+      if (!route) {
+        await clearLastOnlineRoomId();
+        setResumeRoom({ isChecking: false });
+        return;
+      }
+
+      setResumeRoom({
+        isChecking: false,
+        roomId,
+        route,
+      });
+    } catch {
+      await clearLastOnlineRoomId();
+      setResumeRoom({ isChecking: false });
+    }
+  }, [hasSupabaseConfig]);
+
+  useEffect(() => {
+    void checkResumeRoom();
+  }, [checkResumeRoom]);
+
+  function resumeOnlineRoom() {
+    if (!resumeRoom.roomId || !resumeRoom.route) {
+      return;
+    }
+
+    router.push(
+      resumeRoom.route === "lobby"
+        ? `/online/room/${resumeRoom.roomId}`
+        : `/online/round/${resumeRoom.roomId}`,
+    );
+  }
 
   return (
     <SafeAreaView style={styles.root}>
@@ -19,6 +87,19 @@ export default function HomeScreen() {
         {notice ? <Text style={styles.noticeText}>{notice}</Text> : null}
 
         <View style={styles.actions}>
+          {resumeRoom.isChecking ? (
+            <View style={styles.resumeStatus}>
+              <ActivityIndicator color="#38BDF8" />
+              <Text style={styles.resumeText}>Checking for an active online room...</Text>
+            </View>
+          ) : null}
+          {resumeRoom.roomId ? (
+            <HomeButton
+              label="Resume Online Room"
+              detail="Return to the last room from this phone."
+              onPress={resumeOnlineRoom}
+            />
+          ) : null}
           <HomeButton
             label="Create Online Room"
             detail="Host a six-digit room with anonymous sessions."
@@ -105,6 +186,17 @@ const styles = StyleSheet.create({
   },
   actions: {
     gap: 12,
+  },
+  resumeStatus: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 10,
+    minHeight: 36,
+  },
+  resumeText: {
+    color: "#94A3B8",
+    fontSize: 13,
+    fontWeight: "700",
   },
   actionButton: {
     backgroundColor: "#1F2937",

@@ -26,6 +26,7 @@ import { useRemotePreviewPlayback } from "../../../src/hooks/useRemotePreviewPla
 import { useSongSearch } from "../../../src/hooks/useSongSearch";
 import { restoreOrCreateAnonymousSession } from "../../../src/services/online/AuthSessionService";
 import { getOnlineRoomExitNotice } from "../../../src/services/online/onlineRoomAccess";
+import { clearLastOnlineRoomId } from "../../../src/services/online/onlineRoomResumeStorage";
 import {
   canSubmitOnlineSong,
   getOnlineSongsRemaining,
@@ -140,6 +141,7 @@ export default function OnlineRoundSetupScreen() {
     const notice = getOnlineRoomExitNotice(snapshot, onlineRoom.errorMessage);
 
     if (notice) {
+      void clearLastOnlineRoomId();
       router.replace({
         pathname: "/",
         params: {

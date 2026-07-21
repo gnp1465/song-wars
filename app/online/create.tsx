@@ -15,6 +15,7 @@ import { RoomSettingsPanel } from "../../src/components/game/RoomSettingsPanel";
 import { restoreOrCreateAnonymousSession } from "../../src/services/online/AuthSessionService";
 import { createOnlineRoom } from "../../src/services/online/OnlineRoomService";
 import { getLastDisplayName, saveLastDisplayName } from "../../src/services/online/displayNameStorage";
+import { saveLastOnlineRoomId } from "../../src/services/online/onlineRoomResumeStorage";
 import { getMissingSupabaseConfigMessage, getSupabaseConfig } from "../../src/services/supabase/config";
 import type { RoomMode } from "../../src/types/game";
 
@@ -50,6 +51,7 @@ export default function CreateOnlineRoomScreen() {
       });
 
       await saveLastDisplayName(displayName);
+      await saveLastOnlineRoomId(snapshot.room.id);
       router.replace(`/online/room/${snapshot.room.id}`);
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Could not create online room.");

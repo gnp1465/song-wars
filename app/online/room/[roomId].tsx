@@ -15,6 +15,7 @@ import { OnlineConnectionStatus } from "../../../src/components/game/OnlineConne
 import { RoomSettingsPanel } from "../../../src/components/game/RoomSettingsPanel";
 import { restoreOrCreateAnonymousSession } from "../../../src/services/online/AuthSessionService";
 import { getOnlineRoomExitNotice } from "../../../src/services/online/onlineRoomAccess";
+import { clearLastOnlineRoomId } from "../../../src/services/online/onlineRoomResumeStorage";
 import { useOnlineRoom } from "../../../src/hooks/useOnlineRoom";
 import type { OnlineRoomMember, OnlineRoomSnapshot } from "../../../src/types/onlineRoom";
 
@@ -56,6 +57,7 @@ export default function OnlineLobbyScreen() {
     const notice = getOnlineRoomExitNotice(snapshot, onlineRoom.errorMessage);
 
     if (notice) {
+      void clearLastOnlineRoomId();
       router.replace({
         pathname: "/",
         params: {
@@ -77,6 +79,7 @@ export default function OnlineLobbyScreen() {
       await onlineRoom.leaveRoom();
     }
 
+    await clearLastOnlineRoomId();
     router.replace("/");
   }
 

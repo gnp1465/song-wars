@@ -14,6 +14,7 @@ import {
 import { restoreOrCreateAnonymousSession } from "../../src/services/online/AuthSessionService";
 import { joinOnlineRoom } from "../../src/services/online/OnlineRoomService";
 import { getLastDisplayName, saveLastDisplayName } from "../../src/services/online/displayNameStorage";
+import { saveLastOnlineRoomId } from "../../src/services/online/onlineRoomResumeStorage";
 import { getMissingSupabaseConfigMessage, getSupabaseConfig } from "../../src/services/supabase/config";
 
 export default function JoinOnlineRoomScreen() {
@@ -53,6 +54,7 @@ export default function JoinOnlineRoomScreen() {
       });
 
       await saveLastDisplayName(displayName);
+      await saveLastOnlineRoomId(snapshot.room.id);
       router.replace(`/online/room/${snapshot.room.id}`);
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Could not join online room.");
