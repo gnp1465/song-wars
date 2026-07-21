@@ -16,6 +16,7 @@ import { RoomSettingsPanel } from "../../../src/components/game/RoomSettingsPane
 import { restoreOrCreateAnonymousSession } from "../../../src/services/online/AuthSessionService";
 import { getOnlineRoomExpiryLabel } from "../../../src/services/online/onlineRoomExpiry";
 import { getOnlineRoomExitNotice } from "../../../src/services/online/onlineRoomAccess";
+import { getOnlineMemberPresenceStatus } from "../../../src/services/online/onlineRoomPresence";
 import { clearLastOnlineRoomId } from "../../../src/services/online/onlineRoomResumeStorage";
 import { useOnlineRoom } from "../../../src/hooks/useOnlineRoom";
 import type { OnlineRoomMember, OnlineRoomSnapshot } from "../../../src/types/onlineRoom";
@@ -256,9 +257,7 @@ function OnlinePlayerList({
 }
 
 function getPresenceLabel(snapshot: OnlineRoomSnapshot, member: OnlineRoomMember): string {
-  const presence = snapshot.presence.find((item) => item.memberId === member.id);
-
-  return presence?.status === "online" ? "Online" : "Offline";
+  return getOnlineMemberPresenceStatus(snapshot, member) === "online" ? "Online" : "Offline";
 }
 
 function formatRoomSettings(snapshot: OnlineRoomSnapshot): string {

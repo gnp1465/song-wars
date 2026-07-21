@@ -29,6 +29,7 @@ import { resolvePlayablePreviewTrack } from "../../../src/services/media/preview
 import { getDeviceStorefrontCode } from "../../../src/services/media/storefront";
 import { restoreOrCreateAnonymousSession } from "../../../src/services/online/AuthSessionService";
 import { getOnlineRoomExitNotice } from "../../../src/services/online/onlineRoomAccess";
+import { getOnlinePresenceSummary } from "../../../src/services/online/onlineRoomPresence";
 import { clearLastOnlineRoomId } from "../../../src/services/online/onlineRoomResumeStorage";
 import {
   canSubmitOnlineSong,
@@ -63,6 +64,7 @@ export default function OnlineRoundSetupScreen() {
   const previewAudio = usePreviewAudio();
   const snapshot = onlineRoom.snapshot;
   const currentRound = snapshot?.currentRound;
+  const presenceSummary = snapshot ? getOnlinePresenceSummary(snapshot) : undefined;
   const currentMember = snapshot?.members.find((member) => member.userId === currentUserId);
   const judgeMember = snapshot?.members.find((member) => member.id === currentRound?.judgeMemberId);
   const isJudge = Boolean(currentMember && judgeMember && currentMember.id === judgeMember.id);
@@ -324,7 +326,20 @@ export default function OnlineRoundSetupScreen() {
               />
 
               <View style={styles.panel}>
-                <Text style={styles.sectionTitle}>Current judge</Text>
+                <View style={styles.progressHeader}>
+                  <Text style={styles.sectionTitle}>Current judge</Text>
+                  {presenceSummary ? (
+                    <Text
+                      style={
+                        presenceSummary.onlineCount === presenceSummary.totalCount
+                          ? styles.readyText
+                          : styles.waitingText
+                      }
+                    >
+                      {presenceSummary.label}
+                    </Text>
+                  ) : null}
+                </View>
                 <Text style={styles.judgeName}>{judgeMember?.displayName ?? "Waiting..."}</Text>
                 {currentRound?.topic ? (
                   <View style={styles.topicBox}>
@@ -896,6 +911,11 @@ const styles = StyleSheet.create({
   },
   readyText: {
     color: "#7DD3FC",
+    fontSize: 14,
+    fontWeight: "800",
+  },
+  waitingText: {
+    color: "#FCA5A5",
     fontSize: 14,
     fontWeight: "800",
   },

@@ -49,6 +49,7 @@ Mark each item as `Pass`, `Fail`, or `Needs follow-up`.
 | Second device can join by QR code/deep link |  |  |
 | Online player list and settings sync across devices |  |  |
 | Backgrounding and reopening a device refetches the latest room state |  |  |
+| Active online game shows online/offline presence summary |  |  |
 | Home Resume Online Room returns to the correct active online room |  |  |
 | Removed guest returns Home with a clear message |  |  |
 | Host can close an online room and guests return Home |  |  |
