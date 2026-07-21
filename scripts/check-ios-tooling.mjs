@@ -11,7 +11,7 @@ const checks = [
     command: "xcrun",
     args: ["simctl", "list", "devices"],
     failMessage: "iOS simulator tooling is not available.",
-    fix: "Open Xcode once so it can finish installing simulator components, then retry this command.",
+    fix: "Open Xcode once so it can finish installing simulator components. If it still fails, run `sudo xcodebuild -runFirstLaunch`, then retry this command.",
   },
 ];
 

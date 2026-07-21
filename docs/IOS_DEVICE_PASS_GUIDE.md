@@ -45,21 +45,27 @@ npm run check:device-pass-log
 
 1. Install Xcode from the Mac App Store.
 2. Open Xcode once so it can install required developer components.
-3. Confirm simulator tooling works:
+3. If simulator tooling is still missing after opening Xcode, run:
+
+```bash
+sudo xcodebuild -runFirstLaunch
+```
+
+4. Confirm simulator tooling works:
 
 ```bash
 npm run check:ios-tooling
 ```
 
-4. Start the app in the simulator:
+5. Start the app in the simulator:
 
 ```bash
 npm run ios
 ```
 
-5. Play through `docs/FRONTEND_TEST_PLAN.md`.
-6. Record results in `docs/DEVICE_PASS_LOG.md`.
-7. Confirm the recorded evidence is complete:
+6. Play through `docs/FRONTEND_TEST_PLAN.md`.
+7. Record results in `docs/DEVICE_PASS_LOG.md`.
+8. Confirm the recorded evidence is complete:
 
 ```bash
 npm run check:device-pass-log
