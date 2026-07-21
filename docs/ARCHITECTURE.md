@@ -6,7 +6,7 @@ This app is organized in layers. Each layer has a different job.
 
 Expo Router owns the app entry. `app/_layout.tsx` configures preview audio, wraps the app in a root error boundary, and renders the route stack.
 
-`app.json` owns native app identity such as the iOS bundle identifier and `songwars` deep-link scheme.
+`app.json` owns native app identity such as the iOS bundle identifier and `songwars` deep-link scheme. `npm run check:app-config` verifies the iOS-first beta assumptions in that file.
 
 Memorize: the entry layer should stay small. It chooses top-level routes; it should not contain game rules.
 

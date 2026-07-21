@@ -79,6 +79,7 @@
 - Documentation link checks are included in `npm run verify`.
 - Accessibility surface checks are included in `npm run verify` for routed/core buttons and inputs.
 - Supabase migration documentation is checked against committed migration files by `npm run verify`.
+- Native app config is checked by `npm run verify` for iOS-only beta identity and routing assumptions.
 
 ## Waiting For Later Backend Milestones
 
