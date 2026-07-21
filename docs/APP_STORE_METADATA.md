@@ -52,6 +52,10 @@ Song Wars currently uses anonymous Supabase sessions, temporary display names, t
 Use `docs/PRIVACY_POLICY.md` as the detailed policy draft.
 Use `docs/DIAGNOSTICS.md` to confirm current local-only diagnostics behavior before adding crash reporting or remote analytics.
 
+## Export Compliance Draft
+
+The current beta uses standard HTTPS/TLS networking through Supabase and music-provider APIs. The iOS config sets `ITSAppUsesNonExemptEncryption` to `false` because the app does not currently include custom or non-exempt encryption code.
+
 ## Review Notes Draft
 
 Online rooms require Supabase configuration. Testers can use Local Game without a backend. For online testing, create a room on one device, join from another device using the six-digit code or QR invite, then submit a topic and songs to reach bracket judging.
@@ -64,4 +68,5 @@ Online rooms require Supabase configuration. Testers can use Local Game without 
 - `npm run check:online-room` passes against the intended backend.
 - iOS device pass completed and recorded in `docs/DEVICE_PASS_LOG.md`.
 - Privacy policy reviewed against final remote analytics/crash-reporting/account/payment decisions.
+- Export compliance answer reviewed against final networking/encryption behavior.
 - App icon/splash reviewed on device.

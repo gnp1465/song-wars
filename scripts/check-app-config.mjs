@@ -39,6 +39,12 @@ if (!/^\d+$/.test(appConfig.ios?.buildNumber ?? "")) {
   issues.push("app.json ios.buildNumber should be a numeric string.");
 }
 
+if (appConfig.ios?.infoPlist?.ITSAppUsesNonExemptEncryption !== false) {
+  issues.push(
+    "app.json ios.infoPlist.ITSAppUsesNonExemptEncryption should be false for the HTTPS-only beta.",
+  );
+}
+
 if (appConfig.ios?.supportsTablet !== false) {
   issues.push("app.json ios.supportsTablet should stay false until tablet layouts are tested.");
 }

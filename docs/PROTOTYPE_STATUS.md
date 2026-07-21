@@ -69,6 +69,7 @@
 - Remote synchronized playback lock/progress UI.
 - Remote preview cache cleanup on next round, play again, room close, and room leave.
 - iOS bundle identifier and `songwars://` deep-link scheme.
+- iOS export-compliance config is set for the HTTPS-only beta and checked by `npm run verify`.
 - Native app icon and splash assets are configured and checked by `npm run verify`.
 - Root error boundary with a recovery screen for unexpected React errors.
 - Local-only telemetry events and redacted diagnostics are centralized behind one diagnostics service.
