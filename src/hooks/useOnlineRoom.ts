@@ -5,8 +5,10 @@ import {
   closeOnlineRoom,
   fetchOnlineRoomSnapshot,
   leaveOnlineRoom,
+  prepareNextOnlineRound,
   removeOwnOnlineSubmission,
   removeOnlineRoomMember,
+  selectOnlineMatchupWinner,
   startOnlineRoom,
   submitOnlineRoundSong,
   submitOnlineRoundTopic,
@@ -27,9 +29,11 @@ export interface UseOnlineRoomResult {
   leaveRoom: () => Promise<void>;
   removeMember: (memberId: string) => Promise<void>;
   removeOwnSubmission: (submissionId: string) => Promise<void>;
+  selectMatchupWinner: (matchupId: string, winnerSubmissionId: string) => Promise<void>;
   startRoom: () => Promise<void>;
   submitSong: (song: MediaTrack) => Promise<void>;
   submitTopic: (topic: string) => Promise<void>;
+  prepareNextRound: () => Promise<void>;
   updateSettings: (update: OnlineRoomSettingsUpdate) => Promise<void>;
 }
 
@@ -138,6 +142,14 @@ export function useOnlineRoom(
     removeOwnSubmission: (submissionId) =>
       runMutation(() =>
         roomId ? removeOwnOnlineSubmission(roomId, submissionId) : Promise.resolve(),
+      ),
+    prepareNextRound: () =>
+      runMutation(() => (roomId ? prepareNextOnlineRound(roomId) : Promise.resolve())),
+    selectMatchupWinner: (matchupId, winnerSubmissionId) =>
+      runMutation(() =>
+        roomId
+          ? selectOnlineMatchupWinner(roomId, matchupId, winnerSubmissionId)
+          : Promise.resolve(),
       ),
     snapshot,
     startRoom: () => runMutation(() => (roomId ? startOnlineRoom(roomId) : Promise.resolve())),

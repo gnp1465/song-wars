@@ -1,7 +1,7 @@
-import type { RoomMode } from "./game";
+import type { BracketMatchup, RoomMode } from "./game";
 import type { MediaTrack } from "./media";
 
-export type OnlineRoomStatus = "lobby" | "in_round" | "closed" | "expired";
+export type OnlineRoomStatus = "lobby" | "in_round" | "complete" | "closed" | "expired";
 export type OnlineRoomMemberRole = "host" | "guest";
 export type OnlineRoomMemberPresenceStatus = "online" | "offline";
 export type OnlineRoundStatus = "waiting_for_topic" | "submitting" | "judging" | "complete";
@@ -16,6 +16,7 @@ export interface OnlineRoom {
   pointsToWin: number;
   createdAt: string;
   expiresAt: string;
+  gameWinnerMemberId?: string;
 }
 
 export interface OnlineRoomMember {
@@ -40,6 +41,8 @@ export interface OnlineRound {
   judgeMemberId: string;
   status: OnlineRoundStatus;
   topic?: string;
+  winningSubmissionId?: string;
+  winningMemberId?: string;
   createdAt: string;
 }
 
@@ -52,12 +55,21 @@ export interface OnlineRoundSubmission {
   submittedAt: string;
 }
 
+export interface OnlineRoomScore {
+  roomId: string;
+  memberId: string;
+  points: number;
+  updatedAt: string;
+}
+
 export interface OnlineRoomSnapshot {
   room: OnlineRoom;
   members: OnlineRoomMember[];
   presence: OnlineRoomMemberPresence[];
   currentRound?: OnlineRound;
   submissions: OnlineRoundSubmission[];
+  matchups: BracketMatchup[];
+  scores: OnlineRoomScore[];
 }
 
 export interface OnlineRoomSettingsUpdate {

@@ -14,34 +14,37 @@ export interface Database {
           id: string;
           code: string | null;
           host_user_id: string;
-          status: "lobby" | "in_round" | "closed" | "expired";
+          status: "lobby" | "in_round" | "complete" | "closed" | "expired";
           mode: "single_speaker" | "remote";
           songs_per_player: number;
           points_to_win: number;
           created_at: string;
           expires_at: string;
+          game_winner_member_id: string | null;
         };
         Insert: {
           id?: string;
           code?: string | null;
           host_user_id: string;
-          status?: "lobby" | "in_round" | "closed" | "expired";
+          status?: "lobby" | "in_round" | "complete" | "closed" | "expired";
           mode?: "single_speaker" | "remote";
           songs_per_player?: number;
           points_to_win?: number;
           created_at?: string;
           expires_at?: string;
+          game_winner_member_id?: string | null;
         };
         Update: {
           id?: string;
           code?: string | null;
           host_user_id?: string;
-          status?: "lobby" | "in_round" | "closed" | "expired";
+          status?: "lobby" | "in_round" | "complete" | "closed" | "expired";
           mode?: "single_speaker" | "remote";
           songs_per_player?: number;
           points_to_win?: number;
           created_at?: string;
           expires_at?: string;
+          game_winner_member_id?: string | null;
         };
         Relationships: [];
       };
@@ -83,6 +86,8 @@ export interface Database {
           judge_member_id: string;
           status: "waiting_for_topic" | "submitting" | "judging" | "complete";
           topic: string | null;
+          winning_submission_id: string | null;
+          winning_member_id: string | null;
           created_at: string;
         };
         Insert: {
@@ -92,6 +97,8 @@ export interface Database {
           judge_member_id: string;
           status?: "waiting_for_topic" | "submitting" | "judging" | "complete";
           topic?: string | null;
+          winning_submission_id?: string | null;
+          winning_member_id?: string | null;
           created_at?: string;
         };
         Update: {
@@ -101,6 +108,8 @@ export interface Database {
           judge_member_id?: string;
           status?: "waiting_for_topic" | "submitting" | "judging" | "complete";
           topic?: string | null;
+          winning_submission_id?: string | null;
+          winning_member_id?: string | null;
           created_at?: string;
         };
         Relationships: [];
@@ -150,6 +159,69 @@ export interface Database {
           preview_url?: string | null;
           provider_refs?: Json;
           submitted_at?: string;
+        };
+        Relationships: [];
+      };
+      room_scores: {
+        Row: {
+          room_id: string;
+          member_id: string;
+          points: number;
+          updated_at: string;
+        };
+        Insert: {
+          room_id: string;
+          member_id: string;
+          points?: number;
+          updated_at?: string;
+        };
+        Update: {
+          room_id?: string;
+          member_id?: string;
+          points?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      round_matchups: {
+        Row: {
+          id: string;
+          room_id: string;
+          round_id: string;
+          bracket_round_number: number;
+          position: number;
+          status: "pending" | "ready" | "complete";
+          left_submission_id: string | null;
+          right_submission_id: string | null;
+          winner_submission_id: string | null;
+          has_bye: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          room_id: string;
+          round_id: string;
+          bracket_round_number: number;
+          position: number;
+          status?: "pending" | "ready" | "complete";
+          left_submission_id?: string | null;
+          right_submission_id?: string | null;
+          winner_submission_id?: string | null;
+          has_bye?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          room_id?: string;
+          round_id?: string;
+          bracket_round_number?: number;
+          position?: number;
+          status?: "pending" | "ready" | "complete";
+          left_submission_id?: string | null;
+          right_submission_id?: string | null;
+          winner_submission_id?: string | null;
+          has_bye?: boolean;
+          created_at?: string;
         };
         Relationships: [];
       };
@@ -224,6 +296,38 @@ export interface Database {
         Args: {
           room_id_value: string;
           submission_id_value: string;
+        };
+        Returns: Json;
+      };
+      create_round_bracket: {
+        Args: {
+          room_id_value: string;
+        };
+        Returns: Json;
+      };
+      select_matchup_winner: {
+        Args: {
+          room_id_value: string;
+          matchup_id_value: string;
+          winner_submission_id_value: string;
+        };
+        Returns: Json;
+      };
+      complete_round: {
+        Args: {
+          room_id_value: string;
+        };
+        Returns: Json;
+      };
+      prepare_next_round: {
+        Args: {
+          room_id_value: string;
+        };
+        Returns: Json;
+      };
+      complete_game: {
+        Args: {
+          room_id_value: string;
         };
         Returns: Json;
       };

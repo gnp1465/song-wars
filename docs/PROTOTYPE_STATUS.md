@@ -36,7 +36,7 @@
 
 ## Later Product Improvements
 
-- Online judging and scoring.
+- Online play-again and reset actions.
 - Dev-only audio lab can stay available in code, but it should remain out of the main player flow.
 
 ## Backend Foundation
@@ -49,10 +49,12 @@
 - Online judge topic submission.
 - Online song submission with duplicate blocking.
 - Automatic transition from submitting to judging.
+- Online bracket judging and score updates.
+- Round winner becomes next judge online.
 
 ## Waiting For Later Backend Milestones
 
-- Online judging and scoring.
+- Online play-again and reset actions.
 - QR codes.
 - Server-clock remote playback.
 - Persistent game history.

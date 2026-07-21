@@ -18,6 +18,8 @@ const requiredSnippets = [
   "create table if not exists public.room_members",
   "create table if not exists public.rounds",
   "create table if not exists public.round_submissions",
+  "create table if not exists public.room_scores",
+  "create table if not exists public.round_matchups",
   "code text unique",
   "constraint rooms_code_format check",
   "now() + interval '12 hours'",
@@ -28,9 +30,13 @@ const requiredSnippets = [
   "alter table public.rooms enable row level security",
   "alter table public.room_members enable row level security",
   "alter table public.rounds enable row level security",
+  "alter table public.room_scores enable row level security",
+  "alter table public.round_matchups enable row level security",
   "create policy \"room members can read rooms\"",
   "create policy \"room members can read members\"",
   "create policy \"room members can read rounds\"",
+  "create policy \"room members can read scores\"",
+  "create policy \"room members can read matchups\"",
   "create policy \"room members can read room presence\"",
   "create policy \"room members can track room presence\"",
   "create or replace function public.create_room",
@@ -53,13 +59,25 @@ const requiredSnippets = [
   "create or replace function public.submit_round_topic",
   "create or replace function public.submit_round_song",
   "create or replace function public.remove_own_submission",
+  "create or replace function public.create_round_bracket",
+  "create or replace function public.select_matchup_winner",
+  "create or replace function public.complete_round",
+  "create or replace function public.prepare_next_round",
+  "create or replace function public.complete_game",
   "grant execute on function public.submit_round_topic",
   "grant execute on function public.submit_round_song",
   "grant execute on function public.remove_own_submission",
+  "grant execute on function public.create_round_bracket",
+  "grant execute on function public.select_matchup_winner",
+  "grant execute on function public.complete_round",
+  "grant execute on function public.prepare_next_round",
+  "grant execute on function public.complete_game",
   "alter publication supabase_realtime add table public.rooms",
   "alter publication supabase_realtime add table public.room_members",
   "alter publication supabase_realtime add table public.rounds",
   "alter publication supabase_realtime add table public.round_submissions",
+  "alter publication supabase_realtime add table public.round_matchups",
+  "alter publication supabase_realtime add table public.room_scores",
 ];
 
 for (const snippet of requiredSnippets) {
@@ -124,6 +142,22 @@ assert(
 assert(
   /set status = 'judging'/.test(migration),
   "submit_round_song should advance the round after all required submissions.",
+);
+assert(
+  /status in \('lobby', 'in_round', 'complete', 'closed', 'expired'\)/.test(migration),
+  "room status should support complete games.",
+);
+assert(
+  /if current_member_id <> active_round\.judge_member_id then/.test(migration),
+  "select_matchup_winner should require the current judge.",
+);
+assert(
+  /winner_points >= active_round\.points_to_win/.test(migration),
+  "select_matchup_winner should complete the game at the win condition.",
+);
+assert(
+  /current_member\.id <> active_round\.winning_member_id/.test(migration),
+  "prepare_next_round should allow the next judge to start the next round.",
 );
 assert(
   /public\.normalize_display_name\(display_name\) = public\.normalize_display_name\(guest_display_name\)/.test(

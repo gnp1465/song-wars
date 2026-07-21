@@ -234,6 +234,10 @@ assert(
   submissionsComplete.submissions.length === 4,
   "two contestants with two songs each should create four submissions",
 );
+assert(
+  submissionsComplete.matchups.length > 0,
+  "completing submissions should create the judging bracket",
+);
 
 await expectRpcFailure(
   guestOne,
@@ -243,6 +247,66 @@ await expectRpcFailure(
     submission_id_value: submissionsComplete.submissions[0].id,
   },
   "submissions should lock after the round moves to judging",
+);
+
+await expectRpcFailure(
+  guestOne,
+  "select_matchup_winner",
+  {
+    matchup_id_value: getReadyMatchup(submissionsComplete).id,
+    room_id_value: roomId,
+    winner_submission_id_value: getReadyMatchup(submissionsComplete).left_submission_id,
+  },
+  "contestants should not pick matchup winners",
+);
+
+let judgingSnapshot = submissionsComplete;
+
+while (judgingSnapshot.current_round?.status === "judging") {
+  const readyMatchup = getReadyMatchup(judgingSnapshot);
+  const winnerSubmissionId = readyMatchup.left_submission_id ?? readyMatchup.right_submission_id;
+
+  assert(winnerSubmissionId, "ready matchups should include a selectable winner");
+
+  judgingSnapshot = await rpc(host, "select_matchup_winner", {
+    matchup_id_value: readyMatchup.id,
+    room_id_value: roomId,
+    winner_submission_id_value: winnerSubmissionId,
+  });
+}
+
+assert(
+  judgingSnapshot.current_round?.status === "complete",
+  "judge selections should complete the round after the final matchup",
+);
+assert(
+  judgingSnapshot.current_round?.winning_member_id,
+  "completed rounds should store the winning member",
+);
+assert(
+  judgingSnapshot.current_round?.winning_submission_id,
+  "completed rounds should store the winning submission",
+);
+assert(
+  judgingSnapshot.scores.some(
+    (score) => score.member_id === judgingSnapshot.current_round.winning_member_id &&
+      score.points === 1,
+  ),
+  "round winner should receive one point",
+);
+
+const nextRound = await rpc(host, "prepare_next_round", {
+  room_id_value: roomId,
+});
+
+assert(nextRound.current_round?.round_number === 2, "next round should increment round number");
+assert(
+  nextRound.current_round?.judge_member_id === judgingSnapshot.current_round.winning_member_id,
+  "round winner should become the next judge",
+);
+assert(
+  nextRound.current_round?.status === "waiting_for_topic",
+  "next round should wait for a new topic",
 );
 
 await rpc(guestTwo, "leave_room", {
@@ -508,6 +572,14 @@ function makeSongArgs(roomId, index) {
     title_value: `Song ${index}`,
     track_id_value: `track-${index}`,
   };
+}
+
+function getReadyMatchup(snapshot) {
+  const matchup = snapshot.matchups.find((item) => item.status === "ready");
+
+  assert(matchup, "snapshot should include a ready matchup");
+
+  return matchup;
 }
 
 function loadLocalEnv() {

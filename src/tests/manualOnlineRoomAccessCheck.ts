@@ -27,6 +27,7 @@ console.log("Online room access checks passed.");
 
 function makeSnapshot(status: OnlineRoomSnapshot["room"]["status"]): OnlineRoomSnapshot {
   return {
+    matchups: [],
     members: [],
     presence: [],
     room: {
@@ -39,6 +40,7 @@ function makeSnapshot(status: OnlineRoomSnapshot["room"]["status"]): OnlineRoomS
       songsPerPlayer: 1,
       status,
     },
+    scores: [],
     submissions: [],
   };
 }

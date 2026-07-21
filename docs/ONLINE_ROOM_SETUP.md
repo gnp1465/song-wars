@@ -27,9 +27,10 @@ Apply every SQL file in `supabase/migrations` in filename order. The first migra
 supabase/migrations/202607140001_online_room_lobby.sql
 supabase/migrations/202607190001_online_round_topic.sql
 supabase/migrations/202607190002_online_round_submissions.sql
+supabase/migrations/202607190003_online_round_judging.sql
 ```
 
-This creates the `rooms`, `room_members`, `rounds`, and `round_submissions` tables plus the RPC functions used by the app.
+This creates the `rooms`, `room_members`, `rounds`, `round_submissions`, `round_matchups`, and `room_scores` tables plus the RPC functions used by the app.
 
 ## 4. Verify The Hosted Backend
 
@@ -57,6 +58,10 @@ This creates three separate anonymous host/guest clients and verifies:
 - duplicate song blocking inside a round
 - own-submission removal while the round is still accepting songs
 - automatic transition to judging after all required songs are submitted
+- automatic bracket creation
+- judge-only winner selection
+- round winner scoring
+- next-round creation with the round winner as judge
 - join-code clearing after start
 
 The script stores reusable test sessions in `.cache/online-room-check-sessions.json` so repeated checks do not create new anonymous users every time. That file contains temporary auth tokens and is ignored by git.
@@ -90,3 +95,5 @@ Run the app on two phones or simulators:
 - Start with at least three players and confirm all devices transition to Round 1 setup.
 - Submit a topic as judge and confirm all devices transition to song submissions.
 - Submit songs from every non-judge and confirm all devices transition to judging.
+- Pick matchup winners as judge and confirm contestants cannot pick winners.
+- Finish the bracket and confirm the round winner becomes the next judge.

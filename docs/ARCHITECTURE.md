@@ -63,6 +63,7 @@ Services hold business logic and provider/API logic.
 - `services/online/onlineRoomAccess.ts` centralizes when online users should be returned Home after removal, room closure, or expiration.
 - `services/online/onlineRoundTopic.ts` holds the client-side topic input rules used before calling the server.
 - `services/online/onlineRoundSubmissions.ts` holds the client-side submission eligibility and progress helpers used before calling the server.
+- `services/online/onlineRoundJudging.ts` holds the client-side active-matchup and judging eligibility helpers used before calling the server.
 - `services/supabase/*` configures the typed Supabase React Native client.
 - `services/media/MediaResolutionService.ts` resolves selected songs to playable previews.
 - `services/media/providers/*` adapt external music sources to the app's shared media shape.
@@ -88,7 +89,7 @@ Memorize: demo data is temporary. Later, real room and backend data will replace
 
 ## Supabase
 
-`supabase/migrations/*` defines the hosted database schema, security rules, and RPC functions. Online gameplay state is added in slices: lobby first, then topic setup, then song submissions.
+`supabase/migrations/*` defines the hosted database schema, security rules, and RPC functions. Online gameplay state is added in slices: lobby first, then topic setup, then song submissions, then bracket judging and scoring.
 
 Memorize: the app uses the public anon key only. Server-authoritative actions happen through RPC functions protected by Row Level Security and `auth.uid()`.
 

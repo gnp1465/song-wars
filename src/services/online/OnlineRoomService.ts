@@ -1,9 +1,10 @@
 import type { RealtimeChannel } from "@supabase/supabase-js";
-import type { RoomMode } from "../../types/game";
+import type { BracketMatchup, MatchupEntry, RoomMode } from "../../types/game";
 import type {
   OnlineRoom,
   OnlineRoomMember,
   OnlineRoomMemberPresence,
+  OnlineRoomScore,
   OnlineRoomSettingsUpdate,
   OnlineRoomSnapshot,
   OnlineRound,
@@ -145,6 +146,28 @@ export async function removeOwnOnlineSubmission(
   return unwrapSnapshotResult(result.data, result.error);
 }
 
+export async function selectOnlineMatchupWinner(
+  roomId: string,
+  matchupId: string,
+  winnerSubmissionId: string,
+): Promise<OnlineRoomSnapshot> {
+  const result = await getSupabaseClient().rpc("select_matchup_winner", {
+    matchup_id_value: matchupId,
+    room_id_value: roomId,
+    winner_submission_id_value: winnerSubmissionId,
+  });
+
+  return unwrapSnapshotResult(result.data, result.error);
+}
+
+export async function prepareNextOnlineRound(roomId: string): Promise<OnlineRoomSnapshot> {
+  const result = await getSupabaseClient().rpc("prepare_next_round", {
+    room_id_value: roomId,
+  });
+
+  return unwrapSnapshotResult(result.data, result.error);
+}
+
 export async function closeOnlineRoom(roomId: string): Promise<OnlineRoomSnapshot> {
   const result = await getSupabaseClient().rpc("close_room", {
     room_id_value: roomId,
@@ -195,6 +218,26 @@ export function subscribeToOnlineRoom(
       },
       onSnapshotNeeded,
     )
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "round_matchups",
+        filter: `room_id=eq.${roomId}`,
+      },
+      onSnapshotNeeded,
+    )
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "room_scores",
+        filter: `room_id=eq.${roomId}`,
+      },
+      onSnapshotNeeded,
+    )
     .on("presence", { event: "sync" }, () => {
       onPresenceChange(readPresence(channel));
     })
@@ -225,14 +268,20 @@ function unwrapSnapshotResult(data: Json, error: Error | null): OnlineRoomSnapsh
 }
 
 function mapSnapshot(data: Record<string, Json | undefined>): OnlineRoomSnapshot {
+  const submissions = asArray(data.submissions).map((submission) =>
+    mapSubmission(asRecord(submission)),
+  );
+
   return {
     currentRound: data.current_round ? mapRound(asRecord(data.current_round)) : undefined,
+    matchups: asArray(data.matchups).map((matchup) =>
+      mapMatchup(asRecord(matchup), submissions),
+    ),
     members: asArray(data.members).map((member) => mapMember(asRecord(member))),
     presence: asArray(data.presence).map((presence) => mapPresence(asRecord(presence))),
     room: mapRoom(asRecord(data.room)),
-    submissions: asArray(data.submissions).map((submission) =>
-      mapSubmission(asRecord(submission)),
-    ),
+    scores: asArray(data.scores).map((score) => mapScore(asRecord(score))),
+    submissions,
   };
 }
 
@@ -241,6 +290,7 @@ function mapRoom(data: Record<string, Json | undefined>): OnlineRoom {
     code: typeof data.code === "string" ? data.code : undefined,
     createdAt: stringValue(data.created_at),
     expiresAt: stringValue(data.expires_at),
+    gameWinnerMemberId: stringOrUndefined(data.game_winner_member_id),
     hostUserId: stringValue(data.host_user_id),
     id: stringValue(data.id),
     mode: data.mode === "remote" ? "remote" : "single_speaker",
@@ -278,6 +328,8 @@ function mapRound(data: Record<string, Json | undefined>): OnlineRound {
     roundNumber: numberValue(data.round_number),
     status: onlineRoundStatusValue(data.status),
     topic: typeof data.topic === "string" ? data.topic : undefined,
+    winningMemberId: stringOrUndefined(data.winning_member_id),
+    winningSubmissionId: stringOrUndefined(data.winning_submission_id),
   };
 }
 
@@ -312,6 +364,48 @@ function mapSubmission(data: Record<string, Json | undefined>): OnlineRoundSubmi
       title: stringValue(data.title),
     },
     submittedAt: stringValue(data.submitted_at),
+  };
+}
+
+function mapMatchup(
+  data: Record<string, Json | undefined>,
+  submissions: OnlineRoundSubmission[],
+): BracketMatchup {
+  return {
+    hasBye: Boolean(data.has_bye),
+    id: stringValue(data.id),
+    left: mapMatchupEntry(stringOrUndefined(data.left_submission_id), submissions),
+    position: numberValue(data.position),
+    right: mapMatchupEntry(stringOrUndefined(data.right_submission_id), submissions),
+    roundNumber: numberValue(data.bracket_round_number),
+    status: matchupStatusValue(data.status),
+    winnerSubmissionId: stringOrUndefined(data.winner_submission_id),
+  };
+}
+
+function mapMatchupEntry(
+  submissionId: string | undefined,
+  submissions: OnlineRoundSubmission[],
+): MatchupEntry | undefined {
+  const submission = submissions.find((item) => item.id === submissionId);
+
+  if (!submission) {
+    return undefined;
+  }
+
+  return {
+    playerId: submission.memberId,
+    song: submission.song,
+    submissionId: submission.id,
+  };
+}
+
+function mapScore(data: Record<string, Json | undefined>): OnlineRoomScore {
+  return {
+    memberId: stringValue(data.member_id),
+    points: numberValue(data.points),
+    roomId: stringValue(data.room_id),
+    updatedAt: stringValue(data.updated_at),
   };
 }
 
@@ -379,7 +473,7 @@ function providerTrackRefIdValue(value: Json | undefined): ProviderTrackRef["pro
 }
 
 function onlineRoomStatusValue(value: Json | undefined): OnlineRoom["status"] {
-  if (value === "in_round" || value === "closed" || value === "expired") {
+  if (value === "in_round" || value === "complete" || value === "closed" || value === "expired") {
     return value;
   }
 
@@ -392,4 +486,12 @@ function onlineRoundStatusValue(value: Json | undefined): OnlineRound["status"] 
   }
 
   return "waiting_for_topic";
+}
+
+function matchupStatusValue(value: Json | undefined): BracketMatchup["status"] {
+  if (value === "ready" || value === "complete") {
+    return value;
+  }
+
+  return "pending";
 }

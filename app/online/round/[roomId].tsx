@@ -13,6 +13,10 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { ActiveMatchupPanel } from "../../../src/components/game/ActiveMatchupPanel";
+import { BracketProgress } from "../../../src/components/game/BracketProgress";
+import { RoundResultPanel } from "../../../src/components/game/RoundResultPanel";
+import { Scoreboard } from "../../../src/components/game/Scoreboard";
 import { SongActionCard } from "../../../src/components/game/SongActionCard";
 import { useOnlineRoom } from "../../../src/hooks/useOnlineRoom";
 import { usePreviewAudio } from "../../../src/hooks/usePreviewAudio";
@@ -25,11 +29,17 @@ import {
   getOnlineSubmissionCountForMember,
 } from "../../../src/services/online/onlineRoundSubmissions";
 import {
+  canJudgeOnlineMatchup,
+  getActiveOnlineMatchup,
+} from "../../../src/services/online/onlineRoundJudging";
+import {
   canSubmitOnlineTopic,
   MAX_ONLINE_TOPIC_LENGTH,
   normalizeOnlineTopic,
 } from "../../../src/services/online/onlineRoundTopic";
 import type { MediaTrack } from "../../../src/types/media";
+import type { Player } from "../../../src/types/game";
+import type { PlayerScore } from "../../../src/services/game/scoring";
 
 export default function OnlineRoundSetupScreen() {
   const params = useLocalSearchParams<{ roomId?: string }>();
@@ -45,11 +55,40 @@ export default function OnlineRoundSetupScreen() {
   const judgeMember = snapshot?.members.find((member) => member.id === currentRound?.judgeMemberId);
   const isJudge = Boolean(currentMember && judgeMember && currentMember.id === judgeMember.id);
   const submissions = snapshot?.submissions ?? [];
+  const matchups = snapshot?.matchups ?? [];
+  const scores = snapshot?.scores ?? [];
   const songsPerPlayer = snapshot?.room.songsPerPlayer ?? 1;
   const contestantMembers =
     snapshot?.members.filter((member) => member.id !== currentRound?.judgeMemberId) ?? [];
   const ownSubmissions = submissions.filter((submission) => submission.memberId === currentMember?.id);
   const requiredSubmissionCount = contestantMembers.length * songsPerPlayer;
+  const activeMatchup = getActiveOnlineMatchup(matchups);
+  const onlinePlayers: Player[] =
+    snapshot?.members.map((member) => ({
+      displayName: member.displayName,
+      id: member.id,
+      isGuest: member.role === "guest",
+      isHost: member.role === "host",
+    })) ?? [];
+  const playerScores: PlayerScore[] = scores.map((score) => ({
+    playerId: score.memberId,
+    points: score.points,
+  }));
+  const roundWinnerMember = snapshot?.members.find(
+    (member) => member.id === currentRound?.winningMemberId,
+  );
+  const winningSubmission = submissions.find(
+    (submission) => submission.id === currentRound?.winningSubmissionId,
+  );
+  const gameWinnerMember = snapshot?.members.find(
+    (member) => member.id === snapshot.room.gameWinnerMemberId,
+  );
+  const canPrepareNextRound = Boolean(
+    currentMember &&
+      currentRound?.winningMemberId &&
+      (currentMember.id === currentRound.winningMemberId ||
+        currentUserId === snapshot?.room.hostUserId),
+  );
   const songsRemaining = getOnlineSongsRemaining({
     currentMember,
     songsPerPlayer,
@@ -68,6 +107,12 @@ export default function OnlineRoundSetupScreen() {
     isMutating: onlineRoom.isMutating,
     songsPerPlayer,
     submissions,
+  });
+  const canJudgeMatchup = canJudgeOnlineMatchup({
+    currentMember,
+    currentRound,
+    isMutating: onlineRoom.isMutating,
+    matchups,
   });
   const normalizedTopic = normalizeOnlineTopic(topicInput);
 
@@ -120,6 +165,25 @@ export default function OnlineRoundSetupScreen() {
   async function removeSubmission(submissionId: string) {
     await onlineRoom.removeOwnSubmission(submissionId);
     await previewAudio.stopSongPreview("Removed submission");
+  }
+
+  async function pickMatchupWinner(winnerSubmissionId: string) {
+    if (!activeMatchup || !canJudgeMatchup) {
+      return;
+    }
+
+    await onlineRoom.selectMatchupWinner(activeMatchup.id, winnerSubmissionId);
+    await previewAudio.stopSongPreview("Winner picked");
+  }
+
+  async function startNextRound() {
+    if (!canPrepareNextRound) {
+      return;
+    }
+
+    await onlineRoom.prepareNextRound();
+    await previewAudio.stopSongPreview("No preview playing");
+    songSearch.clearResults();
   }
 
   function goHome() {
@@ -331,10 +395,74 @@ export default function OnlineRoundSetupScreen() {
 
               {currentRound?.status === "judging" ? (
                 <View style={styles.panel}>
-                  <Text style={styles.sectionTitle}>Ready for judging</Text>
-                  <Text style={styles.body}>
-                    All songs are submitted. The online bracket judging screen is next.
+                  <View style={styles.progressHeader}>
+                    <Text style={styles.sectionTitle}>Judging bracket</Text>
+                    {onlineRoom.isMutating ? <ActivityIndicator color="#38BDF8" /> : null}
+                  </View>
+                  {activeMatchup ? (
+                    isJudge ? (
+                      <>
+                        <ActiveMatchupPanel
+                          isPickingWinner={onlineRoom.isMutating}
+                          matchup={activeMatchup}
+                          onPickWinner={(winnerSubmissionId) =>
+                            void pickMatchupWinner(winnerSubmissionId)
+                          }
+                          onPlayPreview={(song) => void previewAudio.playSongPreview(song)}
+                        />
+                        <Text style={styles.audioStatus}>{previewAudio.audioStatus}</Text>
+                      </>
+                    ) : (
+                      <Text style={styles.body}>
+                        Waiting for {judgeMember?.displayName ?? "the judge"} to pick a winner.
+                      </Text>
+                    )
+                  ) : (
+                    <Text style={styles.body}>Preparing the next matchup...</Text>
+                  )}
+                  <BracketProgress activeMatchupId={activeMatchup?.id} matchups={matchups} />
+                  <Scoreboard players={onlinePlayers} scores={playerScores} />
+                </View>
+              ) : null}
+
+              {currentRound?.status === "complete" && snapshot.room.status !== "complete" ? (
+                <View style={styles.panel}>
+                  {roundWinnerMember && winningSubmission ? (
+                    canPrepareNextRound ? (
+                      <RoundResultPanel
+                        winnerName={roundWinnerMember.displayName}
+                        winningSongLabel={`Winning song: ${winningSubmission.song.title} by ${winningSubmission.song.artists.join(", ")}`}
+                        onStartNextRound={() => void startNextRound()}
+                      />
+                    ) : (
+                      <>
+                        <Text style={styles.sectionTitle}>Round complete</Text>
+                        <Text style={styles.judgeName}>{roundWinnerMember.displayName} wins</Text>
+                        <Text style={styles.body}>
+                          Waiting for the host or next judge to start the next round.
+                        </Text>
+                      </>
+                    )
+                  ) : (
+                    <Text style={styles.body}>Round complete.</Text>
+                  )}
+                  <Scoreboard players={onlinePlayers} scores={playerScores} />
+                </View>
+              ) : null}
+
+              {snapshot.room.status === "complete" ? (
+                <View style={styles.panel}>
+                  <Text style={styles.sectionTitle}>Game complete</Text>
+                  <Text style={styles.judgeName}>
+                    {gameWinnerMember?.displayName ?? "Winner"} wins
                   </Text>
+                  {winningSubmission ? (
+                    <Text style={styles.body}>
+                      Final song: {winningSubmission.song.title} by{" "}
+                      {winningSubmission.song.artists.join(", ")}
+                    </Text>
+                  ) : null}
+                  <Scoreboard players={onlinePlayers} scores={playerScores} />
                 </View>
               ) : null}
             </>
@@ -365,6 +493,10 @@ function getRoundTitle(status: string | undefined): string {
     return "Judging next";
   }
 
+  if (status === "complete") {
+    return "Round complete";
+  }
+
   return "Topic setup";
 }
 
@@ -375,6 +507,10 @@ function getRoundSubtitle(status: string | undefined): string {
 
   if (status === "judging") {
     return "The submission phase is complete.";
+  }
+
+  if (status === "complete") {
+    return "Scores are updated and the next judge is set.";
   }
 
   return "The judge sets the prompt for this round.";
