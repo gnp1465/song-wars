@@ -27,7 +27,7 @@ npm start
 
 Then open the app with Expo Go or an iOS simulator.
 
-For online rooms, create `.env` from `.env.example` and follow:
+For online rooms, create `.env` from `.env.example`. A separate `.env.production.example` exists for later release builds. Then follow:
 
 [docs/ONLINE_ROOM_SETUP.md](docs/ONLINE_ROOM_SETUP.md)
 

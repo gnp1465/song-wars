@@ -19,6 +19,8 @@ EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 
 Never put a service role key in the mobile app.
 
+For a later production build, copy `.env.production.example` to `.env.production` and point it at the production Supabase project. Keep development and production Supabase projects separate so beta tests cannot modify release data.
+
 Check the local Supabase config before running the app:
 
 ```bash
