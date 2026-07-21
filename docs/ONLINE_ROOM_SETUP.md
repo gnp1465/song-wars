@@ -19,6 +19,12 @@ EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 
 Never put a service role key in the mobile app.
 
+Check the local Supabase config before running the app:
+
+```bash
+npm run check:supabase-env
+```
+
 ## 3. Apply The Migration
 
 Apply every SQL file in `supabase/migrations` in filename order. The first migration creates the lobby foundation, and later migrations extend the online game flow.
