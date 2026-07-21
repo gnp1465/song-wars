@@ -152,6 +152,12 @@ When all checks and device tests pass, record:
 - device list
 - known accepted limitations
 
+Use `docs/BETA_BUILD_RECORD.md` for this record. After filling it out, run:
+
+```bash
+npm run check:beta-build-record
+```
+
 This makes it possible to know exactly what was tested if a beta tester reports a bug later.
 
 ## Stop Conditions

@@ -8,6 +8,7 @@ for (const path of [
   ".github/workflows/verify.yml",
   "eas.json",
   "docs/APP_STORE_METADATA.md",
+  "docs/BETA_BUILD_RECORD.md",
   "docs/BETA_DEVICE_MATRIX.md",
   "docs/DIAGNOSTICS.md",
   "docs/PRIVACY_POLICY.md",

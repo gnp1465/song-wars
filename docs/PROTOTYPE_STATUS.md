@@ -34,6 +34,7 @@
 - Record the device pass results in `docs/DEVICE_PASS_LOG.md`.
 - Run `npm run check:device-pass-log` after filling out the device pass log.
 - Run `npm run check:prototype-complete` as the final frontend prototype gate.
+- Fill out `docs/BETA_BUILD_RECORD.md` before calling a beta build ready.
 - Use `docs/RELEASE_RUNBOOK.md` for the ordered beta release sequence.
 - Fix any spacing or copy issues found during the manual pass.
 
@@ -74,6 +75,7 @@
 - EAS preview, simulator, production, and submit profiles are configured and checked by `npm run verify`.
 - Secret-safety checks are included in `npm run verify` to prevent committed env files or Supabase JWT-like keys.
 - GitHub Actions CI runs `npm run verify` on pushes and pull requests, and the CI workflow is checked by `npm run verify`.
+- Beta build record template and final completion check are in place.
 
 ## Waiting For Later Backend Milestones
 
