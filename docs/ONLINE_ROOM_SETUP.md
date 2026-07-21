@@ -56,6 +56,14 @@ npm run print:supabase-migrations:core
 
 Paste that output into the SQL editor, wait for the schema cache to refresh, then run `npm run check:online-room`. This core path should create the rooms, rounds, submissions, bracket, scoring, reset, and playback-event RPCs. Do not mark the Supabase migration pass log complete until private Realtime Presence authorization is also resolved.
 
+To print only one migration file, pass its filename after `--`:
+
+```bash
+npm run print:supabase-migration -- 202607190001_online_round_topic.sql
+```
+
+Use this only when you know exactly which migration is missing. For a normal setup, use the full ordered print command.
+
 ## 4. Verify The Hosted Backend
 
 Run:

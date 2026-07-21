@@ -634,7 +634,7 @@ async function rpc(client, functionName, args) {
   if (result.error) {
     if (result.error.message.toLowerCase().includes("could not find the function")) {
       throw new Error(
-        `${functionName} failed: RPC is missing from Supabase. Run \`npm run print:supabase-migrations\`, paste the printed SQL into the Supabase SQL editor, run it, then wait for the Supabase schema cache to refresh.`,
+        `${functionName} failed: RPC is missing from Supabase. Run \`npm run print:supabase-migrations\`, paste the printed SQL into the Supabase SQL editor, run it, then wait for the Supabase schema cache to refresh. If the SQL editor previously failed with ERROR 42501 on realtime.messages, run \`npm run print:supabase-migrations:core\` instead to apply the core game schema first.`,
       );
     }
 

@@ -42,6 +42,8 @@ Paste the output into the Supabase SQL editor for the intended development or pr
 
 If the dashboard fails with `ERROR: 42501: must be owner of table messages`, use `npm run print:supabase-migrations:core` to apply the core game schema without the private Presence policy statements, then resolve Realtime Presence authorization before calling the backend complete.
 
+If a hosted check reports one missing RPC after a partial migration attempt, print the relevant individual migration with `npm run print:supabase-migration -- <migration-file.sql>`. Prefer the full ordered migration command for fresh projects.
+
 After applying migrations, wait briefly for Supabase's schema cache to refresh before running hosted checks.
 
 Record the hosted migration pass in `docs/SUPABASE_MIGRATION_PASS_LOG.md`. This is the checklist that proves which Supabase project was migrated and which hosted checks passed.
