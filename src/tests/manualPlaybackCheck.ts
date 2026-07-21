@@ -11,6 +11,7 @@ import {
 import {
   createClockSyncEstimate,
   createRemotePlaybackPlan,
+  getRemotePlaybackProgress,
 } from "../services/audio/remotePlaybackSync.ts";
 import {
   getPreviewCacheFileName,
@@ -67,6 +68,10 @@ assert.equal(remotePlan.localPreloadAtMs, 2050);
 assert.equal(remotePlan.uiUnlockAtMs, 35050);
 assert.equal(remotePlan.progressMsAtLocalNow, 0);
 assert.equal(remotePlan.isLate, false);
+assert.equal(getRemotePlaybackProgress(-500, 30000), 0);
+assert.equal(getRemotePlaybackProgress(15000, 30000), 0.5);
+assert.equal(getRemotePlaybackProgress(45000, 30000), 1);
+assert.equal(getRemotePlaybackProgress(1000, 0), 0);
 
 assert.equal(
   getPreviewCacheFileName({

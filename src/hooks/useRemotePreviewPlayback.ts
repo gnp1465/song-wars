@@ -1,6 +1,10 @@
 import { Audio } from "expo-av";
 import { useEffect, useRef, useState } from "react";
-import { createClockSyncEstimate, createRemotePlaybackPlan } from "../services/audio/remotePlaybackSync";
+import {
+  createClockSyncEstimate,
+  createRemotePlaybackPlan,
+  getRemotePlaybackProgress,
+} from "../services/audio/remotePlaybackSync";
 import { precachePreview } from "../services/audio/previewCache";
 import { fetchOnlineServerNowMs } from "../services/online/OnlineRoomService";
 import type { OnlinePlaybackEvent } from "../types/onlineRoom";
@@ -99,68 +103,87 @@ export function useRemotePreviewPlayback(
         setState({
           isLocked: true,
           phase: plan.isLate ? "playing" : "scheduled",
-          progress: playbackEvent.durationMs
-            ? plan.progressMsAtLocalNow / playbackEvent.durationMs
-            : 0,
+          progress: getRemotePlaybackProgress(
+            plan.progressMsAtLocalNow,
+            playbackEvent.durationMs,
+          ),
           statusLabel: plan.isLate
             ? `Joining ${playbackEvent.title}`
             : `Synced preview starts in ${Math.ceil(plan.delayMs / 1000)}s`,
         });
 
         const startTimer = setTimeout(async () => {
-          if (runIdRef.current !== runId) {
-            return;
-          }
+          try {
+            if (runIdRef.current !== runId) {
+              return;
+            }
 
-          const startPlan = createRemotePlaybackPlan({
-            clockOffsetMs: clockEstimate.clockOffsetMs,
-            durationMs: playbackEvent.durationMs,
-            localNowMs: Date.now(),
-            serverStartAtMs: Date.parse(playbackEvent.serverStartAt),
-          });
-          const { sound } = await Audio.Sound.createAsync(
-            { uri: cachedUri },
-            {
-              positionMillis: startPlan.progressMsAtLocalNow,
-              shouldPlay: true,
-            },
-          );
-
-          soundRef.current = sound;
-          setState({
-            isLocked: true,
-            phase: "playing",
-            progress: startPlan.progressMsAtLocalNow / playbackEvent.durationMs,
-            statusLabel: `Playing ${playbackEvent.title}`,
-          });
-
-          const progressInterval = setInterval(() => {
-            const progressPlan = createRemotePlaybackPlan({
+            const startPlan = createRemotePlaybackPlan({
               clockOffsetMs: clockEstimate.clockOffsetMs,
               durationMs: playbackEvent.durationMs,
               localNowMs: Date.now(),
               serverStartAtMs: Date.parse(playbackEvent.serverStartAt),
             });
-            const progress = progressPlan.progressMsAtLocalNow / playbackEvent.durationMs;
+            const { sound } = await Audio.Sound.createAsync(
+              { uri: cachedUri },
+              {
+                positionMillis: startPlan.progressMsAtLocalNow,
+                shouldPlay: true,
+              },
+            );
 
-            setState((currentState) => ({
-              ...currentState,
-              progress,
-            }));
+            soundRef.current = sound;
+            setState({
+              isLocked: true,
+              phase: "playing",
+              progress: getRemotePlaybackProgress(
+                startPlan.progressMsAtLocalNow,
+                playbackEvent.durationMs,
+              ),
+              statusLabel: `Playing ${playbackEvent.title}`,
+            });
 
-            if (progress >= 1) {
-              clearInterval(progressInterval);
-              void unloadCurrentSound();
+            const progressInterval = setInterval(() => {
+              const progressPlan = createRemotePlaybackPlan({
+                clockOffsetMs: clockEstimate.clockOffsetMs,
+                durationMs: playbackEvent.durationMs,
+                localNowMs: Date.now(),
+                serverStartAtMs: Date.parse(playbackEvent.serverStartAt),
+              });
+              const progress = getRemotePlaybackProgress(
+                progressPlan.progressMsAtLocalNow,
+                playbackEvent.durationMs,
+              );
+
+              setState((currentState) => ({
+                ...currentState,
+                progress,
+              }));
+
+              if (progress >= 1) {
+                clearInterval(progressInterval);
+                void unloadCurrentSound();
+                setState({
+                  isLocked: false,
+                  phase: "finished",
+                  progress: 1,
+                  statusLabel: "Synced preview finished",
+                });
+              }
+            }, 500);
+
+            intervals.push(progressInterval);
+          } catch (error) {
+            if (runIdRef.current === runId) {
               setState({
+                errorMessage: error instanceof Error ? error.message : "Synced preview failed.",
                 isLocked: false,
-                phase: "finished",
-                progress: 1,
-                statusLabel: "Synced preview finished",
+                phase: "failed",
+                progress: 0,
+                statusLabel: "Synced preview failed",
               });
             }
-          }, 500);
-
-          intervals.push(progressInterval);
+          }
         }, plan.delayMs);
 
         timers.push(startTimer);

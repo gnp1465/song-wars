@@ -64,6 +64,14 @@ export function createRemotePlaybackPlan({
   };
 }
 
+export function getRemotePlaybackProgress(progressMs: number, durationMs: number): number {
+  if (durationMs <= 0) {
+    return 0;
+  }
+
+  return clamp(progressMs / durationMs, 0, 1);
+}
+
 function getRoundTripMs(sample: ClockOffsetSample): number {
   return sample.clientReceivedAtMs - sample.clientSentAtMs;
 }
