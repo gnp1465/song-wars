@@ -16,6 +16,7 @@ import {
 import { ActiveMatchupPanel } from "../../../src/components/game/ActiveMatchupPanel";
 import { BracketProgress } from "../../../src/components/game/BracketProgress";
 import { GameOverPanel } from "../../../src/components/game/GameOverPanel";
+import { OnlineConnectionStatus } from "../../../src/components/game/OnlineConnectionStatus";
 import { RoundResultPanel } from "../../../src/components/game/RoundResultPanel";
 import { Scoreboard } from "../../../src/components/game/Scoreboard";
 import { SongActionCard } from "../../../src/components/game/SongActionCard";
@@ -247,12 +248,18 @@ export default function OnlineRoundSetupScreen() {
             <Text style={styles.body}>{getRoundSubtitle(currentRound?.status)}</Text>
           </View>
 
-          {onlineRoom.errorMessage ? (
+          {onlineRoom.errorMessage && onlineRoom.connectionStatus !== "error" ? (
             <Text style={styles.errorText}>{onlineRoom.errorMessage}</Text>
           ) : null}
 
           {snapshot ? (
             <>
+              <OnlineConnectionStatus
+                errorMessage={onlineRoom.errorMessage}
+                lastSyncedAt={onlineRoom.lastSyncedAt}
+                status={onlineRoom.connectionStatus}
+              />
+
               <View style={styles.panel}>
                 <Text style={styles.sectionTitle}>Current judge</Text>
                 <Text style={styles.judgeName}>{judgeMember?.displayName ?? "Waiting..."}</Text>

@@ -11,6 +11,7 @@ import {
   View,
 } from "react-native";
 import QRCode from "react-native-qrcode-svg";
+import { OnlineConnectionStatus } from "../../../src/components/game/OnlineConnectionStatus";
 import { RoomSettingsPanel } from "../../../src/components/game/RoomSettingsPanel";
 import { restoreOrCreateAnonymousSession } from "../../../src/services/online/AuthSessionService";
 import { getOnlineRoomExitNotice } from "../../../src/services/online/onlineRoomAccess";
@@ -107,6 +108,12 @@ export default function OnlineLobbyScreen() {
               </Text>
             </View>
 
+            <OnlineConnectionStatus
+              errorMessage={onlineRoom.errorMessage}
+              lastSyncedAt={onlineRoom.lastSyncedAt}
+              status={onlineRoom.connectionStatus}
+            />
+
             {joinUrl && snapshot.room.code ? (
               <View style={styles.invitePanel}>
                 <View>
@@ -127,7 +134,7 @@ export default function OnlineLobbyScreen() {
               </View>
             ) : null}
 
-            {onlineRoom.errorMessage ? (
+            {onlineRoom.errorMessage && onlineRoom.connectionStatus !== "error" ? (
               <Text style={styles.errorText}>{onlineRoom.errorMessage}</Text>
             ) : null}
 

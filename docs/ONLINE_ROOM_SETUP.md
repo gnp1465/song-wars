@@ -104,6 +104,7 @@ Run the app on two phones or simulators:
 - Join with the six-digit code or QR code on device B.
 - Confirm both devices see the same player list.
 - Change settings as host and confirm the guest sees updates.
+- Briefly background and reopen one device, then confirm it refetches the latest room state.
 - Start with at least three players and confirm all devices transition to Round 1 setup.
 - Submit a topic as judge and confirm all devices transition to song submissions.
 - Submit songs from every non-judge and confirm all devices transition to judging.

@@ -51,7 +51,7 @@ Hooks are reusable React behavior.
 
 - `usePreviewAudio` owns preview playback state and actions.
 - `useSongSearch` owns search query, loading state, results, and errors.
-- `useOnlineRoom` owns online room snapshots, realtime subscriptions, mutation state, and refreshes.
+- `useOnlineRoom` owns online room snapshots, realtime subscriptions, Presence, mutation state, foreground refreshes, and a heartbeat refetch for missed socket events.
 
 Memorize: hooks are the "brain" a component or screen can reuse.
 

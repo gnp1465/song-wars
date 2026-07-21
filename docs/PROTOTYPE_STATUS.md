@@ -54,6 +54,7 @@
 - Host-only online Play Again.
 - Host room closing after online gameplay starts.
 - QR-code join link for online lobby invites.
+- Online room heartbeat refetch for reconnect/Realtime recovery.
 - Remote playback clock-offset and pre-cache foundation utilities.
 - Server-scheduled remote preview events.
 - Remote synchronized playback lock/progress UI.

@@ -20,10 +20,16 @@ import {
 import type { OnlineRoomSettingsUpdate } from "../types/onlineRoom";
 import type { MediaTrack } from "../types/media";
 
+const ONLINE_ROOM_HEARTBEAT_MS = 15000;
+
+export type OnlineRoomConnectionStatus = "idle" | "loading" | "connected" | "reconnecting" | "error";
+
 export interface UseOnlineRoomResult {
+  connectionStatus: OnlineRoomConnectionStatus;
   errorMessage?: string;
   isLoading: boolean;
   isMutating: boolean;
+  lastSyncedAt?: number;
   refresh: () => Promise<void>;
   snapshot?: OnlineRoomSnapshot;
   clearError: () => void;
@@ -49,22 +55,44 @@ export function useOnlineRoom(
   const [isLoading, setIsLoading] = useState(Boolean(roomId));
   const [isMutating, setIsMutating] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
+  const [connectionStatus, setConnectionStatus] = useState<OnlineRoomConnectionStatus>(
+    roomId ? "loading" : "idle",
+  );
+  const [lastSyncedAt, setLastSyncedAt] = useState<number | undefined>();
+  const snapshotRef = useRef<OnlineRoomSnapshot | undefined>(undefined);
   const subscriptionRef = useRef<{ unsubscribe: () => Promise<void> } | undefined>(undefined);
 
-  const refresh = useCallback(async () => {
+  useEffect(() => {
+    snapshotRef.current = snapshot;
+  }, [snapshot]);
+
+  const refresh = useCallback(async (options?: { silent?: boolean }) => {
     if (!roomId || !currentUserId) {
       return;
     }
 
-    setIsLoading(true);
+    const hasSnapshot = Boolean(snapshotRef.current);
+    const shouldShowInitialLoading = !options?.silent && !hasSnapshot;
+
+    if (shouldShowInitialLoading) {
+      setIsLoading(true);
+      setConnectionStatus("loading");
+    } else if (!options?.silent && hasSnapshot) {
+      setConnectionStatus("reconnecting");
+    }
 
     try {
       setSnapshot(await fetchOnlineRoomSnapshot(roomId));
       setErrorMessage(undefined);
+      setConnectionStatus("connected");
+      setLastSyncedAt(Date.now());
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "Could not load online room.");
+      setConnectionStatus("error");
     } finally {
-      setIsLoading(false);
+      if (shouldShowInitialLoading) {
+        setIsLoading(false);
+      }
     }
   }, [currentUserId, roomId]);
 
@@ -75,7 +103,7 @@ export function useOnlineRoom(
   useEffect(() => {
     const subscription = AppState.addEventListener("change", (nextState) => {
       if (nextState === "active") {
-        void refresh();
+        void refresh({ silent: false });
       }
     });
 
@@ -83,6 +111,20 @@ export function useOnlineRoom(
       subscription.remove();
     };
   }, [refresh]);
+
+  useEffect(() => {
+    if (!roomId || !currentUserId) {
+      return undefined;
+    }
+
+    const heartbeat = setInterval(() => {
+      void refresh({ silent: true });
+    }, ONLINE_ROOM_HEARTBEAT_MS);
+
+    return () => {
+      clearInterval(heartbeat);
+    };
+  }, [currentUserId, refresh, roomId]);
 
   useEffect(() => {
     if (!roomId || !snapshot) {
@@ -95,7 +137,7 @@ export function useOnlineRoom(
       roomId,
       currentMember?.id,
       () => {
-        void refresh();
+        void refresh({ silent: true });
       },
       (presence) => {
         setSnapshot((currentSnapshot) =>
@@ -136,9 +178,11 @@ export function useOnlineRoom(
   return {
     clearError: () => setErrorMessage(undefined),
     closeRoom: () => runMutation(() => (roomId ? closeOnlineRoom(roomId) : Promise.resolve())),
+    connectionStatus,
     errorMessage,
     isLoading,
     isMutating,
+    lastSyncedAt,
     leaveRoom: () => runMutation(() => (roomId ? leaveOnlineRoom(roomId) : Promise.resolve())),
     refresh,
     removeMember: (memberId) =>
