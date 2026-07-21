@@ -9,6 +9,27 @@ const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 const shouldVerifyCapacity = process.env.CHECK_ONLINE_ROOM_CAPACITY === "1";
 const sessionCache = loadSessionCache();
+const rpcMigrationHints = {
+  close_room: "202607140001_online_room_lobby.sql",
+  complete_game: "202607190003_online_round_judging.sql",
+  complete_round: "202607190003_online_round_judging.sql",
+  create_room: "202607140001_online_room_lobby.sql",
+  create_round_bracket: "202607190003_online_round_judging.sql",
+  get_room_snapshot: "202607140001_online_room_lobby.sql",
+  get_server_time: "202607210001_online_playback_events.sql",
+  join_room: "202607140001_online_room_lobby.sql",
+  leave_room: "202607140001_online_room_lobby.sql",
+  play_again: "202607190004_online_game_reset.sql",
+  prepare_next_round: "202607190003_online_round_judging.sql",
+  remove_own_submission: "202607190002_online_round_submissions.sql",
+  remove_room_member: "202607140001_online_room_lobby.sql",
+  schedule_matchup_preview: "202607210001_online_playback_events.sql",
+  select_matchup_winner: "202607190003_online_round_judging.sql",
+  start_room: "202607140001_online_room_lobby.sql",
+  submit_round_song: "202607190002_online_round_submissions.sql",
+  submit_round_topic: "202607190001_online_round_topic.sql",
+  update_room_settings: "202607140001_online_room_lobby.sql",
+};
 
 if (!supabaseUrl || !supabaseAnonKey) {
   console.log("Missing EXPO_PUBLIC_SUPABASE_URL or EXPO_PUBLIC_SUPABASE_ANON_KEY.");
@@ -634,7 +655,7 @@ async function rpc(client, functionName, args) {
   if (result.error) {
     if (result.error.message.toLowerCase().includes("could not find the function")) {
       throw new Error(
-        `${functionName} failed: RPC is missing from Supabase. Run \`npm run print:supabase-migrations\`, paste the printed SQL into the Supabase SQL editor, run it, then wait for the Supabase schema cache to refresh. If the SQL editor previously failed with ERROR 42501 on realtime.messages, run \`npm run print:supabase-migrations:core\` instead to apply the core game schema first.`,
+        getMissingRpcMessage(functionName),
       );
     }
 
@@ -642,6 +663,15 @@ async function rpc(client, functionName, args) {
   }
 
   return result.data;
+}
+
+function getMissingRpcMessage(functionName) {
+  const migrationHint = rpcMigrationHints[functionName];
+  const migrationHintText = migrationHint
+    ? ` This RPC is expected from \`${migrationHint}\`; to print only that file, run \`npm run print:supabase-migration -- ${migrationHint}\`.`
+    : "";
+
+  return `${functionName} failed: RPC is missing from Supabase.${migrationHintText} Run \`npm run print:supabase-migrations\`, paste the printed SQL into the Supabase SQL editor, run it, then wait for the Supabase schema cache to refresh. If the SQL editor previously failed with ERROR 42501 on realtime.messages, run \`npm run print:supabase-migrations:core\` instead to apply the core game schema first.`;
 }
 
 async function expectRpcFailure(client, functionName, args, message) {
