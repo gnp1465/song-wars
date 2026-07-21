@@ -42,6 +42,8 @@ Paste the output into the Supabase SQL editor for the intended development or pr
 
 After applying migrations, wait briefly for Supabase's schema cache to refresh before running hosted checks.
 
+Record the hosted migration pass in `docs/SUPABASE_MIGRATION_PASS_LOG.md`. This is the checklist that proves which Supabase project was migrated and which hosted checks passed.
+
 ## 4. Run Automated Checks
 
 Run the full local gate:
@@ -64,6 +66,12 @@ Run the optional capacity check when Supabase auth rate limits are not a concern
 
 ```bash
 CHECK_ONLINE_ROOM_CAPACITY=1 npm run check:online-room
+```
+
+After the hosted checks pass and the migration pass log is filled out, run:
+
+```bash
+npm run check:supabase-migration-pass-log
 ```
 
 Do not continue to device testing while any of these checks are failing.
@@ -137,6 +145,7 @@ Before giving the app to testers, review:
 - `docs/APP_STORE_METADATA.md`
 - `docs/PROTOTYPE_STATUS.md`
 - `docs/ONLINE_ROOM_SETUP.md`
+- `docs/SUPABASE_MIGRATION_PASS_LOG.md`
 - `docs/BETA_DEVICE_MATRIX.md`
 - `docs/DEVICE_PASS_LOG.md`
 
@@ -167,6 +176,7 @@ Do not ship a beta build if:
 
 - `npm run verify` fails
 - `npm run check:online-room` fails
+- `npm run check:supabase-migration-pass-log` fails
 - the app cannot complete one full online game
 - preview audio cannot be stopped reliably
 - removed or closed-room users get stuck away from Home

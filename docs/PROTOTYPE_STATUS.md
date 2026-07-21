@@ -31,6 +31,8 @@
 - Use `docs/IOS_DEVICE_PASS_GUIDE.md` to launch the app on a phone or simulator.
 - Complete a manual phone/simulator pass using `docs/FRONTEND_TEST_PLAN.md`.
 - Use `docs/BETA_DEVICE_MATRIX.md` to cover required beta device, audio, multiplayer, and network scenarios.
+- Record hosted Supabase migration/backend results in `docs/SUPABASE_MIGRATION_PASS_LOG.md`.
+- Run `npm run check:supabase-migration-pass-log` after filling out the Supabase migration pass log.
 - Record the device pass results in `docs/DEVICE_PASS_LOG.md`.
 - Run `npm run check:device-pass-log` after filling out the device pass log.
 - Run `npm run check:prototype-complete` as the final frontend prototype gate.
@@ -79,6 +81,7 @@
 - Documentation link checks are included in `npm run verify`.
 - Accessibility surface checks are included in `npm run verify` for routed/core buttons and inputs.
 - Supabase migration documentation is checked against committed migration files by `npm run verify`.
+- Supabase migration pass log and final backend gate are in place for hosted project proof.
 - Native app config is checked by `npm run verify` for iOS-only beta identity and routing assumptions.
 
 ## Waiting For Later Backend Milestones

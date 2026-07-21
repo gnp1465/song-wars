@@ -13,6 +13,7 @@ for (const path of [
   "docs/DIAGNOSTICS.md",
   "docs/PRIVACY_POLICY.md",
   "docs/ONLINE_ROOM_SETUP.md",
+  "docs/SUPABASE_MIGRATION_PASS_LOG.md",
   "docs/IOS_DEVICE_PASS_GUIDE.md",
   "docs/DEVICE_PASS_LOG.md",
   "docs/RELEASE_RUNBOOK.md",

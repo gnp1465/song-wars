@@ -92,6 +92,14 @@ The twelve-player capacity check creates extra anonymous users, so it is opt-in 
 CHECK_ONLINE_ROOM_CAPACITY=1 npm run check:online-room
 ```
 
+After the hosted migration and backend checks pass, fill out `docs/SUPABASE_MIGRATION_PASS_LOG.md` with the Supabase project, migration results, and check evidence. Then run:
+
+```bash
+npm run check:supabase-migration-pass-log
+```
+
+That check is intentionally separate from `npm run verify` because it depends on real hosted Supabase evidence, not local code.
+
 You can also run the local schema contract check without Supabase credentials:
 
 ```bash

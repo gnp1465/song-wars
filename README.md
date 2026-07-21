@@ -51,6 +51,12 @@ Run the hosted Supabase online-room smoke check after applying the migration:
 npm run check:online-room
 ```
 
+After applying hosted Supabase migrations and passing backend checks, record the result in `docs/SUPABASE_MIGRATION_PASS_LOG.md` and run:
+
+```bash
+npm run check:supabase-migration-pass-log
+```
+
 After completing the phone or simulator pass and filling out `docs/DEVICE_PASS_LOG.md`, run the final frontend prototype gate:
 
 ```bash
@@ -70,6 +76,7 @@ Learning docs:
 - [docs/FRONTEND_TEST_PLAN.md](docs/FRONTEND_TEST_PLAN.md)
 - [docs/IOS_DEVICE_PASS_GUIDE.md](docs/IOS_DEVICE_PASS_GUIDE.md)
 - [docs/ONLINE_ROOM_SETUP.md](docs/ONLINE_ROOM_SETUP.md)
+- [docs/SUPABASE_MIGRATION_PASS_LOG.md](docs/SUPABASE_MIGRATION_PASS_LOG.md)
 - [docs/BETA_BUILD_RECORD.md](docs/BETA_BUILD_RECORD.md)
 - [docs/BETA_DEVICE_MATRIX.md](docs/BETA_DEVICE_MATRIX.md)
 - [docs/DIAGNOSTICS.md](docs/DIAGNOSTICS.md)
