@@ -62,6 +62,21 @@ export interface OnlineRoomScore {
   updatedAt: string;
 }
 
+export interface OnlinePlaybackEvent {
+  id: string;
+  roomId: string;
+  roundId: string;
+  matchupId: string;
+  submissionId: string;
+  createdByMemberId: string;
+  trackId: string;
+  title: string;
+  previewUrl: string;
+  durationMs: number;
+  serverStartAt: string;
+  createdAt: string;
+}
+
 export interface OnlineRoomSnapshot {
   room: OnlineRoom;
   members: OnlineRoomMember[];
@@ -70,6 +85,7 @@ export interface OnlineRoomSnapshot {
   submissions: OnlineRoundSubmission[];
   matchups: BracketMatchup[];
   scores: OnlineRoomScore[];
+  playbackEvents: OnlinePlaybackEvent[];
 }
 
 export interface OnlineRoomSettingsUpdate {

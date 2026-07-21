@@ -4,6 +4,7 @@ import type {
   OnlineRoom,
   OnlineRoomMember,
   OnlineRoomMemberPresence,
+  OnlinePlaybackEvent,
   OnlineRoomScore,
   OnlineRoomSettingsUpdate,
   OnlineRoomSnapshot,
@@ -160,6 +161,34 @@ export async function selectOnlineMatchupWinner(
   return unwrapSnapshotResult(result.data, result.error);
 }
 
+export async function scheduleOnlineMatchupPreview(
+  roomId: string,
+  matchupId: string,
+  submissionId: string,
+): Promise<OnlineRoomSnapshot> {
+  const result = await getSupabaseClient().rpc("schedule_matchup_preview", {
+    matchup_id_value: matchupId,
+    room_id_value: roomId,
+    submission_id_value: submissionId,
+  });
+
+  return unwrapSnapshotResult(result.data, result.error);
+}
+
+export async function fetchOnlineServerNowMs(): Promise<number> {
+  const result = await getSupabaseClient().rpc("get_server_time", {});
+
+  if (result.error) {
+    throw result.error;
+  }
+
+  if (!result.data || typeof result.data !== "object" || Array.isArray(result.data)) {
+    throw new Error("Server time check did not return a valid result.");
+  }
+
+  return numberValue(result.data.server_now_ms);
+}
+
 export async function prepareNextOnlineRound(roomId: string): Promise<OnlineRoomSnapshot> {
   const result = await getSupabaseClient().rpc("prepare_next_round", {
     room_id_value: roomId,
@@ -231,6 +260,16 @@ export function subscribeToOnlineRoom(
       {
         event: "*",
         schema: "public",
+        table: "room_playback_events",
+        filter: `room_id=eq.${roomId}`,
+      },
+      onSnapshotNeeded,
+    )
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
         table: "round_matchups",
         filter: `room_id=eq.${roomId}`,
       },
@@ -287,6 +326,9 @@ function mapSnapshot(data: Record<string, Json | undefined>): OnlineRoomSnapshot
     ),
     members: asArray(data.members).map((member) => mapMember(asRecord(member))),
     presence: asArray(data.presence).map((presence) => mapPresence(asRecord(presence))),
+    playbackEvents: asArray(data.playback_events).map((event) =>
+      mapPlaybackEvent(asRecord(event)),
+    ),
     room: mapRoom(asRecord(data.room)),
     scores: asArray(data.scores).map((score) => mapScore(asRecord(score))),
     submissions,
@@ -414,6 +456,23 @@ function mapScore(data: Record<string, Json | undefined>): OnlineRoomScore {
     points: numberValue(data.points),
     roomId: stringValue(data.room_id),
     updatedAt: stringValue(data.updated_at),
+  };
+}
+
+function mapPlaybackEvent(data: Record<string, Json | undefined>): OnlinePlaybackEvent {
+  return {
+    createdAt: stringValue(data.created_at),
+    createdByMemberId: stringValue(data.created_by_member_id),
+    durationMs: numberValue(data.duration_ms),
+    id: stringValue(data.id),
+    matchupId: stringValue(data.matchup_id),
+    previewUrl: stringValue(data.preview_url),
+    roomId: stringValue(data.room_id),
+    roundId: stringValue(data.round_id),
+    serverStartAt: stringValue(data.server_start_at),
+    submissionId: stringValue(data.submission_id),
+    title: stringValue(data.title),
+    trackId: stringValue(data.track_id),
   };
 }
 

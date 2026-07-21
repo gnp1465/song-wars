@@ -55,11 +55,11 @@
 - Host room closing after online gameplay starts.
 - QR-code join link for online lobby invites.
 - Remote playback clock-offset and pre-cache foundation utilities.
+- Server-scheduled remote preview events.
+- Remote synchronized playback lock/progress UI.
 - iOS bundle identifier and `songwars://` deep-link scheme.
 
 ## Waiting For Later Backend Milestones
 
-- Live Supabase events for server-clock remote playback.
-- UI lock/progress integration for remote synchronized playback.
 - Persistent game history.
 - Monetization tracking.

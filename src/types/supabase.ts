@@ -225,6 +225,51 @@ export interface Database {
         };
         Relationships: [];
       };
+      room_playback_events: {
+        Row: {
+          id: string;
+          room_id: string;
+          round_id: string;
+          matchup_id: string;
+          submission_id: string;
+          created_by_member_id: string;
+          track_id: string;
+          title: string;
+          preview_url: string;
+          duration_ms: number;
+          server_start_at: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          room_id: string;
+          round_id: string;
+          matchup_id: string;
+          submission_id: string;
+          created_by_member_id: string;
+          track_id: string;
+          title: string;
+          preview_url: string;
+          duration_ms?: number;
+          server_start_at: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          room_id?: string;
+          round_id?: string;
+          matchup_id?: string;
+          submission_id?: string;
+          created_by_member_id?: string;
+          track_id?: string;
+          title?: string;
+          preview_url?: string;
+          duration_ms?: number;
+          server_start_at?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -329,6 +374,19 @@ export interface Database {
         Args: {
           room_id_value: string;
         };
+        Returns: Json;
+      };
+      schedule_matchup_preview: {
+        Args: {
+          room_id_value: string;
+          matchup_id_value: string;
+          submission_id_value: string;
+          lead_ms_value?: number;
+        };
+        Returns: Json;
+      };
+      get_server_time: {
+        Args: Record<string, never>;
         Returns: Json;
       };
       complete_game: {

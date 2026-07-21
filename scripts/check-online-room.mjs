@@ -266,6 +266,34 @@ await expectRpcFailure(
   "contestants should not pick matchup winners",
 );
 
+await expectRpcFailure(
+  guestOne,
+  "schedule_matchup_preview",
+  {
+    lead_ms_value: 1500,
+    matchup_id_value: getReadyMatchup(submissionsComplete).id,
+    room_id_value: roomId,
+    submission_id_value: getReadyMatchup(submissionsComplete).left_submission_id,
+  },
+  "contestants should not schedule synced previews",
+);
+
+const previewScheduled = await rpc(host, "schedule_matchup_preview", {
+  lead_ms_value: 1500,
+  matchup_id_value: getReadyMatchup(submissionsComplete).id,
+  room_id_value: roomId,
+  submission_id_value: getReadyMatchup(submissionsComplete).left_submission_id,
+});
+
+assert(
+  previewScheduled.playback_events.length === 1,
+  "judge should schedule a synced playback event",
+);
+assert(
+  previewScheduled.playback_events[0].server_start_at,
+  "synced playback events should include a server start time",
+);
+
 let judgingSnapshot = submissionsComplete;
 
 while (judgingSnapshot.current_round?.status === "judging") {

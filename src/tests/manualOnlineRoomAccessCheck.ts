@@ -30,6 +30,7 @@ function makeSnapshot(status: OnlineRoomSnapshot["room"]["status"]): OnlineRoomS
     matchups: [],
     members: [],
     presence: [],
+    playbackEvents: [],
     room: {
       createdAt: "2026-07-18T00:00:00.000Z",
       expiresAt: "2026-07-18T12:00:00.000Z",

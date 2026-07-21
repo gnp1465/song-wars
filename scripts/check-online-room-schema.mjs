@@ -20,6 +20,7 @@ const requiredSnippets = [
   "create table if not exists public.round_submissions",
   "create table if not exists public.room_scores",
   "create table if not exists public.round_matchups",
+  "create table if not exists public.room_playback_events",
   "code text unique",
   "constraint rooms_code_format check",
   "now() + interval '12 hours'",
@@ -32,11 +33,13 @@ const requiredSnippets = [
   "alter table public.rounds enable row level security",
   "alter table public.room_scores enable row level security",
   "alter table public.round_matchups enable row level security",
+  "alter table public.room_playback_events enable row level security",
   "create policy \"room members can read rooms\"",
   "create policy \"room members can read members\"",
   "create policy \"room members can read rounds\"",
   "create policy \"room members can read scores\"",
   "create policy \"room members can read matchups\"",
+  "create policy \"room members can read playback events\"",
   "create policy \"room members can read room presence\"",
   "create policy \"room members can track room presence\"",
   "create or replace function public.create_room",
@@ -65,6 +68,8 @@ const requiredSnippets = [
   "create or replace function public.complete_round",
   "create or replace function public.prepare_next_round",
   "create or replace function public.play_again",
+  "create or replace function public.schedule_matchup_preview",
+  "create or replace function public.get_server_time",
   "create or replace function public.complete_game",
   "grant execute on function public.submit_round_topic",
   "grant execute on function public.submit_round_song",
@@ -74,6 +79,8 @@ const requiredSnippets = [
   "grant execute on function public.complete_round",
   "grant execute on function public.prepare_next_round",
   "grant execute on function public.play_again",
+  "grant execute on function public.schedule_matchup_preview",
+  "grant execute on function public.get_server_time",
   "grant execute on function public.complete_game",
   "alter publication supabase_realtime add table public.rooms",
   "alter publication supabase_realtime add table public.room_members",
@@ -81,6 +88,7 @@ const requiredSnippets = [
   "alter publication supabase_realtime add table public.round_submissions",
   "alter publication supabase_realtime add table public.round_matchups",
   "alter publication supabase_realtime add table public.room_scores",
+  "alter publication supabase_realtime add table public.room_playback_events",
 ];
 
 for (const snippet of requiredSnippets) {
@@ -173,6 +181,14 @@ assert(
 assert(
   /delete from public\.room_scores/.test(migration),
   "play_again should clear old scores.",
+);
+assert(
+  /target_room\.mode <> 'remote'/.test(migration),
+  "schedule_matchup_preview should require Remote Sync mode.",
+);
+assert(
+  /clock_timestamp\(\) \+ \(normalized_lead_ms \|\| ' milliseconds'\)::interval/.test(migration),
+  "schedule_matchup_preview should schedule a future server start time.",
 );
 assert(
   /public\.normalize_display_name\(display_name\) = public\.normalize_display_name\(guest_display_name\)/.test(

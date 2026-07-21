@@ -69,6 +69,7 @@ Services hold business logic and provider/API logic.
 - `services/online/onlineRoundJudging.ts` holds the client-side active-matchup and judging eligibility helpers used before calling the server.
 - `services/audio/remotePlaybackSync.ts` holds server-clock offset and synced playback timing math.
 - `services/audio/previewCache.ts` holds local preview-cache helpers for future remote synchronized playback.
+- `services/online/onlinePlaybackEvents.ts` picks the newest server-scheduled synced preview event for the current room.
 - `services/supabase/*` configures the typed Supabase React Native client.
 - `services/media/MediaResolutionService.ts` resolves selected songs to playable previews.
 - `services/media/providers/*` adapt external music sources to the app's shared media shape.
@@ -94,7 +95,7 @@ Memorize: demo data is temporary. Later, real room and backend data will replace
 
 ## Supabase
 
-`supabase/migrations/*` defines the hosted database schema, security rules, and RPC functions. Online gameplay state is added in slices: lobby first, then topic setup, song submissions, bracket judging and scoring, and host-controlled game reset.
+`supabase/migrations/*` defines the hosted database schema, security rules, and RPC functions. Online gameplay state is added in slices: lobby first, then topic setup, song submissions, bracket judging and scoring, host-controlled game reset, and remote playback events.
 
 Memorize: the app uses the public anon key only. Server-authoritative actions happen through RPC functions protected by Row Level Security and `auth.uid()`.
 
