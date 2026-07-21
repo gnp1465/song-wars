@@ -33,6 +33,12 @@ supabase/migrations/202607190004_online_game_reset.sql
 
 This creates the `rooms`, `room_members`, `rounds`, `round_submissions`, `round_matchups`, and `room_scores` tables plus the RPC functions used by the app.
 
+To print one ordered SQL block for the Supabase SQL editor, run:
+
+```bash
+npm run print:supabase-migrations
+```
+
 ## 4. Verify The Hosted Backend
 
 Run:
