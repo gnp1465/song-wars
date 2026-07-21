@@ -60,6 +60,7 @@ export function useOnlineRoom(
     roomId ? "loading" : "idle",
   );
   const [lastSyncedAt, setLastSyncedAt] = useState<number | undefined>();
+  const isMutatingRef = useRef(false);
   const snapshotRef = useRef<OnlineRoomSnapshot | undefined>(undefined);
   const subscriptionRef = useRef<{ unsubscribe: () => Promise<void> } | undefined>(undefined);
 
@@ -177,6 +178,18 @@ export function useOnlineRoom(
     actionName: string,
     action: () => Promise<OnlineRoomSnapshot | void>,
   ) {
+    if (isMutatingRef.current) {
+      reportAppEvent("online_room_action_ignored", {
+        area: "online-room",
+        metadata: {
+          action: actionName,
+          reason: "mutation_in_progress",
+        },
+      });
+      return false;
+    }
+
+    isMutatingRef.current = true;
     setIsMutating(true);
 
     try {
@@ -205,6 +218,7 @@ export function useOnlineRoom(
       });
       return false;
     } finally {
+      isMutatingRef.current = false;
       setIsMutating(false);
     }
   }

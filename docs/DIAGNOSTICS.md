@@ -18,12 +18,13 @@ Current event names live in `src/services/diagnostics/logger.ts` and include:
 
 - `app_started`
 - `audio_mode_configured`
+- `online_room_action_ignored`
 - `online_room_action_succeeded`
 - `online_room_resume_available`
 - `online_room_resume_failed`
 - `online_room_snapshot_loaded`
 
-Online action failures are reported as redacted error records through the same service. Metadata names the action type, such as `submit_topic` or `select_matchup_winner`, without storing room IDs, display names, song titles, or raw search terms.
+Online action failures are reported as redacted error records through the same service. Metadata names the action type, such as `submit_topic` or `select_matchup_winner`, without storing room IDs, display names, song titles, or raw search terms. Duplicate online actions ignored during an in-progress mutation are also reported locally so fast-tap bugs are easier to investigate.
 
 ## Redaction
 

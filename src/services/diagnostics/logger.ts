@@ -25,6 +25,7 @@ export type DiagnosticRecord =
 export type AppEventName =
   | "app_started"
   | "audio_mode_configured"
+  | "online_room_action_ignored"
   | "online_room_action_succeeded"
   | "online_room_resume_available"
   | "online_room_resume_failed"
