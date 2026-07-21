@@ -52,8 +52,11 @@ export default function HomeScreen() {
         route,
       });
     } catch {
-      await clearLastOnlineRoomId();
-      setResumeRoom({ isChecking: false });
+      setResumeRoom({
+        isChecking: false,
+        roomId,
+        route: "lobby",
+      });
     }
   }, [hasSupabaseConfig]);
 
