@@ -66,3 +66,26 @@ Run these before pushing frontend changes:
 ```bash
 npm run verify
 ```
+
+## Online Multiplayer Device Pass
+
+Run this after the latest Supabase migrations have been applied to the hosted development project.
+
+- Start the app on two physical iPhones or one iPhone plus one simulator.
+- On device A, create an online room with a display name.
+- Confirm there is no visible login screen and the room shows a six-digit code.
+- On device B, join the room with the six-digit code.
+- Create another room and confirm device B can also join by scanning the QR code.
+- Change songs per player, points to win, and room mode as host; confirm the guest sees each update.
+- Background device B for a few seconds, reopen it, and confirm the latest player/settings state is shown.
+- Remove device B as host and confirm device B returns Home with a clear message.
+- Rejoin device B, add a third player/device or simulator, then start the room.
+- Confirm all devices transition to Round 1 setup.
+- Submit the topic as judge and confirm all devices move into submissions.
+- Confirm the judge cannot submit songs.
+- Submit all contestant songs and confirm all devices move into judging.
+- Pick winners as judge and confirm contestants cannot pick winners.
+- Finish the round and confirm the winner gets one point and becomes the next judge.
+- Finish a first-to-one online game and confirm the final winner screen appears.
+- Tap Play Again as host and confirm the same players stay in the room with fresh game state.
+- In Remote Sync mode, schedule a synced preview and confirm all devices show locked playback progress.

@@ -43,6 +43,23 @@ Mark each item as `Pass`, `Fail`, or `Needs follow-up`.
 | No important text overlaps or gets cut off |  |  |
 | Keyboard does not hide the active input |  |  |
 | Core buttons are easy to tap on the device |  |  |
+| Online room can be created with an anonymous host session |  |  |
+| Second device can join by six-digit code |  |  |
+| Second device can join by QR code/deep link |  |  |
+| Online player list and settings sync across devices |  |  |
+| Backgrounding and reopening a device refetches the latest room state |  |  |
+| Removed guest returns Home with a clear message |  |  |
+| Host can close an online room and guests return Home |  |  |
+| Online game starts only with at least 3 players |  |  |
+| Online judge submits topic and all devices enter submissions |  |  |
+| Online judge cannot submit songs |  |  |
+| Online duplicate song submissions are blocked |  |  |
+| Online submissions trigger bracket judging after all required songs are in |  |  |
+| Online judge-only winner picking advances the bracket |  |  |
+| Online scores update and round winner becomes next judge |  |  |
+| Online final winner appears at the points-to-win target |  |  |
+| Online Play Again resets gameplay without changing room players |  |  |
+| Remote Sync mode shows locked synced-preview progress on all devices |  |  |
 
 ## Bugs Found
 
