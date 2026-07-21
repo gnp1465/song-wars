@@ -32,7 +32,7 @@ Date: 2026-06-09
 - Scoring detects the first player to the configured point target.
 - Round results show the exact winning submission, even when one player submitted multiple songs.
 - Final winner screen supports Play Again and Reset Room.
-- Audio Lab is not part of the main app flow.
+- Audio Lab is not part of the main app flow, and `npm run check:app-surface` verifies it is not routed.
 - `src/tests/manualPrototypeFlowCheck.ts` verifies the full local prototype path from room creation through final winner.
 
 ## Verified Commands
@@ -42,6 +42,8 @@ npm run verify
 ```
 
 This runs `tsc --noEmit` and `npm test`.
+
+`npm run verify` also runs `npm run check:app-surface` to confirm only the intended Expo Router app files are exposed to users.
 
 After the phone/simulator pass has been recorded, run:
 

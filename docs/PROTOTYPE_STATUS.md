@@ -40,6 +40,7 @@
 ## Later Product Improvements
 
 - Dev-only audio lab can stay available in code, but it should remain out of the main player flow.
+- App surface checks verify the dev-only audio lab is not exposed as a routed screen.
 
 ## Backend Foundation
 
