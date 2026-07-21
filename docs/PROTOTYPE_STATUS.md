@@ -55,6 +55,7 @@
 - Host room closing after online gameplay starts.
 - QR-code join link for online lobby invites.
 - Remote playback clock-offset and pre-cache foundation utilities.
+- iOS bundle identifier and `songwars://` deep-link scheme.
 
 ## Waiting For Later Backend Milestones
 

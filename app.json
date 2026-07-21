@@ -2,12 +2,16 @@
   "expo": {
     "name": "Song Wars",
     "slug": "song-wars",
+    "scheme": "songwars",
     "version": "0.1.0",
     "orientation": "portrait",
     "platforms": [
       "ios"
     ],
+    "userInterfaceStyle": "dark",
     "ios": {
+      "bundleIdentifier": "com.gnp1465.songwars",
+      "buildNumber": "1",
       "supportsTablet": false
     },
     "plugins": [
