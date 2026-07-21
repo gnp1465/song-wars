@@ -150,6 +150,7 @@ export default function OnlineLobbyScreen() {
 
             {isHost ? (
               <RoomSettingsPanel
+                disabled={onlineRoom.isMutating}
                 mode={snapshot.room.mode}
                 pointsToWin={snapshot.room.pointsToWin}
                 songsPerPlayer={snapshot.room.songsPerPlayer}

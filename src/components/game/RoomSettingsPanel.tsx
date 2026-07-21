@@ -8,6 +8,7 @@ import {
 import type { RoomMode } from "../../types/game";
 
 export interface RoomSettingsPanelProps {
+  disabled?: boolean;
   mode: RoomMode;
   pointsToWin: number;
   songsPerPlayer: number;
@@ -17,6 +18,7 @@ export interface RoomSettingsPanelProps {
 }
 
 export function RoomSettingsPanel({
+  disabled = false,
   mode,
   pointsToWin,
   songsPerPlayer,
@@ -25,17 +27,19 @@ export function RoomSettingsPanel({
   onSongsPerPlayerChange,
 }: RoomSettingsPanelProps) {
   return (
-    <View style={styles.panel}>
+    <View style={[styles.panel, disabled ? styles.disabledPanel : undefined]}>
       <Text style={styles.sectionTitle}>Room settings</Text>
       <View style={styles.settingBlock}>
         <Text style={styles.settingLabel}>Audio mode</Text>
         <View style={styles.modeRow}>
           <ModeButton
+            disabled={disabled}
             isSelected={mode === "single_speaker"}
             label="Single Speaker"
             onPress={() => onModeChange("single_speaker")}
           />
           <ModeButton
+            disabled={disabled}
             isSelected={mode === "remote"}
             label="Remote Sync"
             onPress={() => onModeChange("remote")}
@@ -51,6 +55,7 @@ export function RoomSettingsPanel({
         </View>
         <SettingStepper
           label="songs per player"
+          disabled={disabled}
           maxValue={MAX_SONGS_PER_PLAYER}
           minValue={MIN_SONGS_PER_PLAYER}
           value={songsPerPlayer}
@@ -66,6 +71,7 @@ export function RoomSettingsPanel({
         </View>
         <SettingStepper
           label="points to win"
+          disabled={disabled}
           maxValue={MAX_POINTS_TO_WIN}
           minValue={MIN_POINTS_TO_WIN}
           value={pointsToWin}
@@ -77,18 +83,26 @@ export function RoomSettingsPanel({
 }
 
 interface ModeButtonProps {
+  disabled: boolean;
   isSelected: boolean;
   label: string;
   onPress: () => void;
 }
 
-function ModeButton({ isSelected, label, onPress }: ModeButtonProps) {
+function ModeButton({ disabled, isSelected, label, onPress }: ModeButtonProps) {
+  const isDisabled = disabled || isSelected;
+
   return (
     <Pressable
       accessibilityLabel={`${label} audio mode`}
       accessibilityRole="button"
-      accessibilityState={{ selected: isSelected }}
-      style={[styles.modeButton, isSelected ? styles.selectedModeButton : undefined]}
+      accessibilityState={{ disabled: isDisabled, selected: isSelected }}
+      disabled={isDisabled}
+      style={[
+        styles.modeButton,
+        isSelected ? styles.selectedModeButton : undefined,
+        isDisabled && !isSelected ? styles.disabledStepperButton : undefined,
+      ]}
       onPress={onPress}
     >
       <Text
@@ -101,6 +115,7 @@ function ModeButton({ isSelected, label, onPress }: ModeButtonProps) {
 }
 
 interface SettingStepperProps {
+  disabled: boolean;
   label: string;
   maxValue: number;
   minValue: number;
@@ -109,14 +124,15 @@ interface SettingStepperProps {
 }
 
 function SettingStepper({
+  disabled,
   label,
   maxValue,
   minValue,
   value,
   onChange,
 }: SettingStepperProps) {
-  const canDecrease = value > minValue;
-  const canIncrease = value < maxValue;
+  const canDecrease = !disabled && value > minValue;
+  const canIncrease = !disabled && value < maxValue;
 
   return (
     <View style={styles.stepper}>
@@ -155,6 +171,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     gap: 10,
     padding: 14,
+  },
+  disabledPanel: {
+    opacity: 0.72,
   },
   sectionTitle: {
     color: "#CBD5E1",

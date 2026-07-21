@@ -93,6 +93,7 @@ export default function CreateOnlineRoomScreen() {
         />
 
         <RoomSettingsPanel
+          disabled={isCreating}
           mode={mode}
           pointsToWin={pointsToWin}
           songsPerPlayer={songsPerPlayer}
