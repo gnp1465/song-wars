@@ -170,6 +170,12 @@ export default function OnlineRoundSetupScreen() {
   }, [currentRound?.status]);
 
   useEffect(() => {
+    return () => {
+      void clearPreviewCache();
+    };
+  }, []);
+
+  useEffect(() => {
     if (snapshot?.room.mode !== "remote" || currentRound?.status !== "judging" || !activeMatchup) {
       return;
     }
@@ -356,6 +362,7 @@ export default function OnlineRoundSetupScreen() {
 
   function goHome() {
     void previewAudio.stopSongPreview("No preview playing");
+    void clearPreviewCache();
     router.replace("/");
   }
 
