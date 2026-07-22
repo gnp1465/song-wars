@@ -23,6 +23,12 @@ import {
 } from "../../src/services/online/displayName";
 import { reportAppError, reportAppEvent } from "../../src/services/diagnostics/logger";
 import { getLastDisplayName, saveLastDisplayName } from "../../src/services/online/displayNameStorage";
+import {
+  getOnlineRoomCodeValidationMessage,
+  isValidOnlineRoomCode,
+  normalizeOnlineRoomCode,
+  ONLINE_ROOM_CODE_LENGTH,
+} from "../../src/services/online/onlineRoomCode";
 import { saveLastOnlineRoomId } from "../../src/services/online/onlineRoomResumeStorage";
 import { getMissingSupabaseConfigMessage, getSupabaseConfig } from "../../src/services/supabase/config";
 
@@ -36,11 +42,12 @@ export default function JoinOnlineRoomScreen() {
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
   const [isJoining, setIsJoining] = useState(false);
   const hasSupabaseConfig = Boolean(getSupabaseConfig());
-  const normalizedRoomCode = roomCode.replace(/\D/g, "").slice(0, 6);
+  const normalizedRoomCode = normalizeOnlineRoomCode(roomCode);
   const displayNameValidationMessage = getOnlineDisplayNameValidationMessage(displayName);
+  const roomCodeValidationMessage = getOnlineRoomCodeValidationMessage(roomCode);
   const canJoin =
     isValidOnlineDisplayName(displayName) &&
-    normalizedRoomCode.length === 6 &&
+    isValidOnlineRoomCode(roomCode) &&
     !isJoining &&
     hasSupabaseConfig;
 
@@ -50,7 +57,7 @@ export default function JoinOnlineRoomScreen() {
 
   useEffect(() => {
     if (typeof params.code === "string") {
-      setRoomCode(params.code.replace(/\D/g, "").slice(0, 6));
+      setRoomCode(normalizeOnlineRoomCode(params.code));
       setErrorMessage(undefined);
     }
   }, [params.code]);
@@ -116,9 +123,9 @@ export default function JoinOnlineRoomScreen() {
             accessibilityLabel="Room code"
             editable={!isJoining}
             keyboardType="number-pad"
-            maxLength={6}
+            maxLength={ONLINE_ROOM_CODE_LENGTH}
             onChangeText={(nextCode) => {
-              setRoomCode(nextCode.replace(/\D/g, "").slice(0, 6));
+              setRoomCode(normalizeOnlineRoomCode(nextCode));
               setErrorMessage(undefined);
             }}
             onSubmitEditing={() => displayNameInputRef.current?.focus()}
@@ -128,6 +135,9 @@ export default function JoinOnlineRoomScreen() {
             style={styles.input}
             value={normalizedRoomCode}
           />
+          {roomCodeValidationMessage && roomCode.length > 0 ? (
+            <Text style={styles.errorText}>{roomCodeValidationMessage}</Text>
+          ) : null}
           <TextInput
             ref={displayNameInputRef}
             accessibilityLabel="Display name"
