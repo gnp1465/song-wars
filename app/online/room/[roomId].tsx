@@ -14,15 +14,15 @@ import {
 } from "react-native";
 import QRCode from "react-native-qrcode-svg";
 import { OnlineConnectionStatus } from "../../../src/components/game/OnlineConnectionStatus";
+import { OnlinePlayerList } from "../../../src/components/game/OnlinePlayerList";
 import { RoomSettingsPanel } from "../../../src/components/game/RoomSettingsPanel";
 import { clearPreviewCache } from "../../../src/services/audio/previewCache";
 import { restoreOrCreateAnonymousSession } from "../../../src/services/online/AuthSessionService";
 import { getOnlineRoomExpiryLabel } from "../../../src/services/online/onlineRoomExpiry";
 import { getOnlineRoomExitNotice } from "../../../src/services/online/onlineRoomAccess";
-import { getOnlineMemberPresenceStatus } from "../../../src/services/online/onlineRoomPresence";
 import { clearLastOnlineRoomId } from "../../../src/services/online/onlineRoomResumeStorage";
 import { useOnlineRoom } from "../../../src/hooks/useOnlineRoom";
-import type { OnlineRoomMember, OnlineRoomSnapshot } from "../../../src/types/onlineRoom";
+import type { OnlineRoomSnapshot } from "../../../src/types/onlineRoom";
 
 const MINIMUM_PLAYERS_TO_START = 3;
 
@@ -196,6 +196,7 @@ export default function OnlineLobbyScreen() {
             <OnlinePlayerList
               currentMemberId={currentMember?.id}
               isHost={isHost}
+              isMutating={onlineRoom.isMutating}
               snapshot={snapshot}
               onRemoveMember={(memberId) => void onlineRoom.removeMember(memberId)}
             />
@@ -264,56 +265,6 @@ export default function OnlineLobbyScreen() {
   );
 }
 
-interface OnlinePlayerListProps {
-  currentMemberId?: string;
-  isHost: boolean;
-  snapshot: OnlineRoomSnapshot;
-  onRemoveMember: (memberId: string) => void;
-}
-
-function OnlinePlayerList({
-  currentMemberId,
-  isHost,
-  snapshot,
-  onRemoveMember,
-}: OnlinePlayerListProps) {
-  return (
-    <View style={styles.playerPanel}>
-      <View style={styles.listHeader}>
-        <Text style={styles.sectionTitle}>Players</Text>
-        <Text style={styles.countText}>{snapshot.members.length}/12</Text>
-      </View>
-      {snapshot.members.map((member) => (
-        <View key={member.id} style={styles.playerRow}>
-          <View>
-            <Text style={styles.playerName}>
-              {member.displayName}
-              {member.id === currentMemberId ? " (You)" : ""}
-            </Text>
-            <Text style={styles.playerMeta}>
-              {member.role === "host" ? "Host" : "Guest"} · {getPresenceLabel(snapshot, member)}
-            </Text>
-          </View>
-          {isHost && member.role === "guest" ? (
-            <Pressable
-              accessibilityLabel={`Remove ${member.displayName}`}
-              accessibilityRole="button"
-              style={styles.removeButton}
-              onPress={() => onRemoveMember(member.id)}
-            >
-              <Text style={styles.removeButtonText}>Remove</Text>
-            </Pressable>
-          ) : null}
-        </View>
-      ))}
-    </View>
-  );
-}
-
-function getPresenceLabel(snapshot: OnlineRoomSnapshot, member: OnlineRoomMember): string {
-  return getOnlineMemberPresenceStatus(snapshot, member) === "online" ? "Online" : "Offline";
-}
-
 function formatRoomSettings(snapshot: OnlineRoomSnapshot): string {
   const modeLabel = snapshot.room.mode === "single_speaker" ? "Single Speaker" : "Remote Sync";
 
@@ -369,65 +320,11 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     lineHeight: 20,
   },
-  playerPanel: {
-    backgroundColor: "#1F2937",
-    borderColor: "#334155",
-    borderRadius: 8,
-    borderWidth: 1,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-  },
-  listHeader: {
-    alignItems: "center",
-    borderBottomColor: "#243244",
-    borderBottomWidth: 1,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    minHeight: 38,
-  },
   sectionTitle: {
     color: "#CBD5E1",
     fontSize: 14,
     fontWeight: "800",
     textTransform: "uppercase",
-  },
-  countText: {
-    color: "#7DD3FC",
-    fontSize: 14,
-    fontWeight: "900",
-  },
-  playerRow: {
-    alignItems: "center",
-    borderBottomColor: "#243244",
-    borderBottomWidth: 1,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    minHeight: 52,
-  },
-  playerName: {
-    color: "#F9FAFB",
-    fontSize: 15,
-    fontWeight: "800",
-  },
-  playerMeta: {
-    color: "#94A3B8",
-    fontSize: 12,
-    fontWeight: "700",
-    marginTop: 2,
-  },
-  removeButton: {
-    alignItems: "center",
-    borderColor: "#475569",
-    borderRadius: 8,
-    borderWidth: 1,
-    justifyContent: "center",
-    minHeight: 32,
-    paddingHorizontal: 10,
-  },
-  removeButtonText: {
-    color: "#F9FAFB",
-    fontSize: 12,
-    fontWeight: "800",
   },
   readOnlyPanel: {
     backgroundColor: "#1F2937",
