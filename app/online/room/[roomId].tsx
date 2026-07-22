@@ -40,6 +40,7 @@ export default function OnlineLobbyScreen() {
       })
     : undefined;
   const currentMember = snapshot?.members.find((member) => member.userId === currentUserId);
+  const exitNotice = getOnlineRoomExitNotice(snapshot, onlineRoom.errorMessage, currentUserId);
   const isHost = currentMember?.role === "host";
   const playersNeeded = snapshot
     ? Math.max(0, MINIMUM_PLAYERS_TO_START - snapshot.members.length)
@@ -59,18 +60,16 @@ export default function OnlineLobbyScreen() {
   }, [snapshot?.currentRound?.id, snapshot?.room.id, snapshot?.room.status]);
 
   useEffect(() => {
-    const notice = getOnlineRoomExitNotice(snapshot, onlineRoom.errorMessage);
-
-    if (notice) {
+    if (exitNotice) {
       void clearLastOnlineRoomId();
       router.replace({
         pathname: "/",
         params: {
-          notice,
+          notice: exitNotice,
         },
       });
     }
-  }, [onlineRoom.errorMessage, snapshot?.room.status]);
+  }, [exitNotice]);
 
   async function leaveRoom() {
     if (!snapshot) {

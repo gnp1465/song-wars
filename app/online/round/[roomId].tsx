@@ -74,6 +74,7 @@ export default function OnlineRoundSetupScreen() {
   const currentRound = snapshot?.currentRound;
   const presenceSummary = snapshot ? getOnlinePresenceSummary(snapshot) : undefined;
   const currentMember = snapshot?.members.find((member) => member.userId === currentUserId);
+  const exitNotice = getOnlineRoomExitNotice(snapshot, onlineRoom.errorMessage, currentUserId);
   const judgeMember = snapshot?.members.find((member) => member.id === currentRound?.judgeMemberId);
   const isJudge = Boolean(currentMember && judgeMember && currentMember.id === judgeMember.id);
   const isHost = Boolean(snapshot && currentUserId === snapshot.room.hostUserId);
@@ -152,18 +153,16 @@ export default function OnlineRoundSetupScreen() {
   }, []);
 
   useEffect(() => {
-    const notice = getOnlineRoomExitNotice(snapshot, onlineRoom.errorMessage);
-
-    if (notice) {
+    if (exitNotice) {
       void clearLastOnlineRoomId();
       router.replace({
         pathname: "/",
         params: {
-          notice,
+          notice: exitNotice,
         },
       });
     }
-  }, [onlineRoom.errorMessage, snapshot?.room.status]);
+  }, [exitNotice]);
 
   useEffect(() => {
     if (currentRound?.status !== "submitting") {
