@@ -11,7 +11,6 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from "react-native";
 import { ActiveMatchupPanel } from "../../../src/components/game/ActiveMatchupPanel";
@@ -22,10 +21,10 @@ import {
   RemotePlaybackControls,
   RemotePlaybackPanel,
 } from "../../../src/components/game/OnlineRemotePlayback";
+import { OnlineSubmissionPanel } from "../../../src/components/game/OnlineSubmissionPanel";
 import { OnlineTopicPanel } from "../../../src/components/game/OnlineTopicPanel";
 import { RoundResultPanel } from "../../../src/components/game/RoundResultPanel";
 import { Scoreboard } from "../../../src/components/game/Scoreboard";
-import { SongActionCard } from "../../../src/components/game/SongActionCard";
 import { useOnlineRoom } from "../../../src/hooks/useOnlineRoom";
 import { usePreviewAudio } from "../../../src/hooks/usePreviewAudio";
 import { useRemotePreviewPlayback } from "../../../src/hooks/useRemotePreviewPlayback";
@@ -41,7 +40,6 @@ import { clearLastOnlineRoomId } from "../../../src/services/online/onlineRoomRe
 import {
   canSubmitOnlineSong,
   getOnlineSongsRemaining,
-  getOnlineSubmissionCountForMember,
   hasDuplicateOnlineSongSubmission,
 } from "../../../src/services/online/onlineRoundSubmissions";
 import {
@@ -421,140 +419,29 @@ export default function OnlineRoundSetupScreen() {
               />
 
               {currentRound?.status === "submitting" ? (
-                <View style={styles.panel}>
-                  <View style={styles.progressHeader}>
-                    <View>
-                      <Text style={styles.sectionTitle}>Submission progress</Text>
-                      <Text style={styles.progressText}>
-                        {submissions.length}/{requiredSubmissionCount} songs submitted
-                      </Text>
-                    </View>
-                    {onlineRoom.isMutating ? <ActivityIndicator color="#38BDF8" /> : null}
-                  </View>
-
-                  {contestantMembers.map((member) => (
-                    <View key={member.id} style={styles.progressRow}>
-                      <Text style={styles.memberName}>{member.displayName}</Text>
-                      <Text style={styles.progressCount}>
-                        {getOnlineSubmissionCountForMember(submissions, member.id)}/{songsPerPlayer}
-                      </Text>
-                    </View>
-                  ))}
-
-                  {isJudge ? (
-                    <Text style={styles.body}>
-                      Waiting for contestants to finish submitting songs.
-                    </Text>
-                  ) : (
-                    <View style={styles.submissionArea}>
-                      <Text style={styles.body}>
-                        You have {songsRemaining} song{songsRemaining === 1 ? "" : "s"} left.
-                      </Text>
-
-                      {ownSubmissions.length > 0 ? (
-                        <View style={styles.submittedList}>
-                          <Text style={styles.sectionTitle}>Your songs</Text>
-                          {ownSubmissions.map((submission) => (
-                            <View key={submission.id} style={styles.submittedRow}>
-                              <View style={styles.submittedText}>
-                                <Text style={styles.submittedTitle}>{submission.song.title}</Text>
-                                <Text style={styles.submittedArtist}>
-                                  {submission.song.artists.join(", ")}
-                                </Text>
-                              </View>
-                              <Pressable
-                                accessibilityLabel={`Remove ${submission.song.title}`}
-                                accessibilityRole="button"
-                                disabled={onlineRoom.isMutating}
-                                style={[
-                                  styles.smallButton,
-                                  onlineRoom.isMutating ? styles.disabledButton : undefined,
-                                ]}
-                                onPress={() => void removeSubmission(submission.id)}
-                              >
-                                <Text style={styles.smallButtonText}>Remove</Text>
-                              </Pressable>
-                            </View>
-                          ))}
-                        </View>
-                      ) : null}
-
-                      {songsRemaining > 0 ? (
-                        <>
-                          <TextInput
-                            accessibilityLabel="Search for a song"
-                            autoCapitalize="words"
-                            autoCorrect={false}
-                            editable={!onlineRoom.isMutating && !songSearch.isSearching}
-                            onChangeText={(nextQuery) => {
-                              songSearch.setQuery(nextQuery);
-                              onlineRoom.clearError();
-                            }}
-                            onSubmitEditing={() => void searchSongs()}
-                            placeholder="Search song or artist"
-                            placeholderTextColor="#64748B"
-                            returnKeyType="search"
-                            style={styles.input}
-                            value={songSearch.query}
-                          />
-                          <Pressable
-                            accessibilityLabel="Search songs"
-                            accessibilityRole="button"
-                            disabled={songSearch.isSearching}
-                            style={[
-                              styles.primaryButton,
-                              songSearch.isSearching ? styles.disabledButton : undefined,
-                            ]}
-                            onPress={() => void searchSongs()}
-                          >
-                            {songSearch.isSearching ? (
-                              <ActivityIndicator color="#082F49" />
-                            ) : (
-                              <Text style={styles.primaryButtonText}>Search</Text>
-                            )}
-                          </Pressable>
-                          <Text style={styles.audioStatus}>{previewAudio.audioStatus}</Text>
-                          {songSearch.errorMessage ? (
-                            <Text style={styles.errorText}>{songSearch.errorMessage}</Text>
-                          ) : null}
-                          {songSearch.results.length > 0 ? (
-                            <View style={styles.resultsList}>
-                              {songSearch.results.map((song) => {
-                                const isDuplicate = hasDuplicateOnlineSongSubmission(
-                                  submissions,
-                                  song,
-                                );
-
-                                return (
-                                  <SongActionCard
-                                    key={`${song.id}:${song.title}`}
-                                    primaryDisabled={
-                                      !canSubmitSong || isResolvingSubmission || isDuplicate
-                                    }
-                                    primaryLabel={
-                                      isResolvingSubmission
-                                        ? "Checking..."
-                                        : isDuplicate
-                                          ? "Already Picked"
-                                          : "Submit"
-                                    }
-                                    secondaryDisabled={isResolvingSubmission}
-                                    secondaryLabel="Play Preview"
-                                    song={song}
-                                    onPrimaryPress={() => void submitSong(song)}
-                                    onSecondaryPress={() => void previewAudio.playSongPreview(song)}
-                                  />
-                                );
-                              })}
-                            </View>
-                          ) : null}
-                        </>
-                      ) : (
-                        <Text style={styles.body}>Your songs are locked in.</Text>
-                      )}
-                    </View>
-                  )}
-                </View>
+                <OnlineSubmissionPanel
+                  audioStatus={previewAudio.audioStatus}
+                  canSubmitSong={canSubmitSong}
+                  contestantMembers={contestantMembers}
+                  isJudge={isJudge}
+                  isMutating={onlineRoom.isMutating}
+                  isResolvingSubmission={isResolvingSubmission}
+                  isSearching={songSearch.isSearching}
+                  ownSubmissions={ownSubmissions}
+                  query={songSearch.query}
+                  requiredSubmissionCount={requiredSubmissionCount}
+                  results={songSearch.results}
+                  searchErrorMessage={songSearch.errorMessage}
+                  songsPerPlayer={songsPerPlayer}
+                  songsRemaining={songsRemaining}
+                  submissions={submissions}
+                  onChangeQuery={songSearch.setQuery}
+                  onClearError={onlineRoom.clearError}
+                  onPlayPreview={(song) => void previewAudio.playSongPreview(song)}
+                  onRemoveSubmission={(submissionId) => void removeSubmission(submissionId)}
+                  onSearch={() => void searchSongs()}
+                  onSubmitSong={(song) => void submitSong(song)}
+                />
               ) : null}
 
               {currentRound?.status === "judging" ? (
@@ -777,16 +664,6 @@ const styles = StyleSheet.create({
     fontSize: 26,
     fontWeight: "900",
   },
-  input: {
-    backgroundColor: "#111827",
-    borderColor: "#334155",
-    borderRadius: 8,
-    borderWidth: 1,
-    color: "#F9FAFB",
-    fontSize: 16,
-    minHeight: 52,
-    paddingHorizontal: 14,
-  },
   errorText: {
     color: "#FCA5A5",
     fontSize: 14,
@@ -798,93 +675,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
   },
-  progressText: {
-    color: "#F9FAFB",
-    fontSize: 20,
-    fontWeight: "900",
-    marginTop: 2,
-  },
-  progressRow: {
-    alignItems: "center",
-    borderColor: "#334155",
-    borderTopWidth: 1,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingTop: 10,
-  },
-  memberName: {
-    color: "#F9FAFB",
-    fontSize: 16,
-    fontWeight: "800",
-  },
-  progressCount: {
-    color: "#7DD3FC",
-    fontSize: 16,
-    fontWeight: "900",
-  },
-  submissionArea: {
-    gap: 10,
-  },
-  submittedList: {
-    gap: 8,
-  },
-  submittedRow: {
-    alignItems: "center",
-    backgroundColor: "#111827",
-    borderColor: "#334155",
-    borderRadius: 8,
-    borderWidth: 1,
-    flexDirection: "row",
-    gap: 10,
-    justifyContent: "space-between",
-    padding: 12,
-  },
-  submittedText: {
-    flex: 1,
-    gap: 2,
-  },
-  submittedTitle: {
-    color: "#F9FAFB",
-    fontSize: 16,
-    fontWeight: "900",
-  },
-  submittedArtist: {
-    color: "#94A3B8",
-    fontSize: 14,
-  },
-  smallButton: {
-    alignItems: "center",
-    borderColor: "#FCA5A5",
-    borderRadius: 8,
-    borderWidth: 1,
-    justifyContent: "center",
-    minHeight: 38,
-    paddingHorizontal: 12,
-  },
-  smallButtonText: {
-    color: "#FCA5A5",
-    fontSize: 13,
-    fontWeight: "900",
-  },
   audioStatus: {
     color: "#94A3B8",
     fontSize: 13,
     fontWeight: "700",
-  },
-  resultsList: {
-    gap: 10,
-  },
-  primaryButton: {
-    alignItems: "center",
-    backgroundColor: "#38BDF8",
-    borderRadius: 8,
-    justifyContent: "center",
-    minHeight: 52,
-  },
-  primaryButtonText: {
-    color: "#082F49",
-    fontSize: 16,
-    fontWeight: "900",
   },
   secondaryButton: {
     alignItems: "center",

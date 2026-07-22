@@ -35,6 +35,7 @@ Components are reusable visual pieces.
 - `JudgeSetupPanel` shows judge topic setup and round settings.
 - `OnlinePlayerList` shows online room members, host removal controls, and Presence status.
 - `OnlineRemotePlayback` shows Remote Sync preview controls and locked playback progress.
+- `OnlineSubmissionPanel` shows online submission progress, contestant search, preview, submit, and remove controls.
 - `OnlineTopicPanel` shows the current online judge, topic display, and judge-only topic input.
 - `PlayerList` shows lobby players, guest removal, and start readiness.
 - `RoundResultPanel` shows the completed round winner and next-round action.
