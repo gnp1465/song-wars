@@ -100,6 +100,16 @@ export function useRemotePreviewPlayback(
           return;
         }
 
+        if (plan.hasEnded) {
+          setState({
+            isLocked: false,
+            phase: "finished",
+            progress: 1,
+            statusLabel: "Synced preview finished",
+          });
+          return;
+        }
+
         setState({
           isLocked: true,
           phase: plan.isLate ? "playing" : "scheduled",
@@ -124,6 +134,17 @@ export function useRemotePreviewPlayback(
               localNowMs: Date.now(),
               serverStartAtMs: Date.parse(playbackEvent.serverStartAt),
             });
+
+            if (startPlan.hasEnded) {
+              setState({
+                isLocked: false,
+                phase: "finished",
+                progress: 1,
+                statusLabel: "Synced preview finished",
+              });
+              return;
+            }
+
             const { sound } = await Audio.Sound.createAsync(
               { uri: cachedUri },
               {

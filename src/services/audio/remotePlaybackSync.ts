@@ -16,6 +16,7 @@ export interface RemotePlaybackPlanOptions {
 
 export interface RemotePlaybackPlan {
   delayMs: number;
+  hasEnded: boolean;
   isLate: boolean;
   localPreloadAtMs: number;
   localStartAtMs: number;
@@ -53,14 +54,16 @@ export function createRemotePlaybackPlan({
   const localStartAtMs = serverStartAtMs - clockOffsetMs;
   const delayMs = Math.max(0, localStartAtMs - localNowMs);
   const progressMsAtLocalNow = clamp(localNowMs - localStartAtMs, 0, durationMs);
+  const uiUnlockAtMs = localStartAtMs + durationMs;
 
   return {
     delayMs,
+    hasEnded: localNowMs >= uiUnlockAtMs,
     isLate: localStartAtMs <= localNowMs,
     localPreloadAtMs: Math.max(localNowMs, localStartAtMs - preloadLeadMs),
     localStartAtMs,
     progressMsAtLocalNow,
-    uiUnlockAtMs: localStartAtMs + durationMs,
+    uiUnlockAtMs,
   };
 }
 

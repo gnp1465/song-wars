@@ -71,6 +71,19 @@ assert.equal(remotePlan.localPreloadAtMs, 2050);
 assert.equal(remotePlan.uiUnlockAtMs, 35050);
 assert.equal(remotePlan.progressMsAtLocalNow, 0);
 assert.equal(remotePlan.isLate, false);
+assert.equal(remotePlan.hasEnded, false);
+
+const expiredRemotePlan = createRemotePlaybackPlan({
+  clockOffsetMs: 0,
+  durationMs: 30000,
+  localNowMs: 41000,
+  serverStartAtMs: 10000,
+});
+
+assert.equal(expiredRemotePlan.delayMs, 0);
+assert.equal(expiredRemotePlan.isLate, true);
+assert.equal(expiredRemotePlan.hasEnded, true);
+assert.equal(expiredRemotePlan.progressMsAtLocalNow, 30000);
 assert.equal(getRemotePlaybackProgress(-500, 30000), 0);
 assert.equal(getRemotePlaybackProgress(15000, 30000), 0.5);
 assert.equal(getRemotePlaybackProgress(45000, 30000), 1);
