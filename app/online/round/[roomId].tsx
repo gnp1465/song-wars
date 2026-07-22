@@ -204,6 +204,7 @@ export default function OnlineRoundSetupScreen() {
   }
 
   async function searchSongs() {
+    Keyboard.dismiss();
     await songSearch.search();
   }
 
@@ -212,6 +213,7 @@ export default function OnlineRoundSetupScreen() {
       return;
     }
 
+    Keyboard.dismiss();
     setIsResolvingSubmission(true);
 
     try {
