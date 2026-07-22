@@ -33,6 +33,9 @@ Components are reusable visual pieces.
 - `BattleStatusHeader` shows topic, judge, mode, and win condition during judging.
 - `GameOverPanel` shows the final winner and restart actions.
 - `JudgeSetupPanel` shows judge topic setup and round settings.
+- `OnlinePlayerList` shows online room members, host removal controls, and Presence status.
+- `OnlineRemotePlayback` shows Remote Sync preview controls and locked playback progress.
+- `OnlineTopicPanel` shows the current online judge, topic display, and judge-only topic input.
 - `PlayerList` shows lobby players, guest removal, and start readiness.
 - `RoundResultPanel` shows the completed round winner and next-round action.
 - `RoomSettingsPanel` shows room settings controls.
@@ -68,8 +71,9 @@ Services hold business logic and provider/API logic.
 - `services/online/onlineRoomPresence.ts` formats online/offline status and active-room presence summaries.
 - `services/online/onlineRoomResume.ts` decides whether a verified snapshot can resume to lobby or round.
 - `services/online/onlineRoomResumeStorage.ts` stores only the last room ID for this app installation.
+- `services/online/onlineRoomSnapshotMapper.ts` maps raw Supabase RPC JSON into app-level online room types.
 - `services/online/onlineRoundTopic.ts` holds the client-side topic input rules used before calling the server.
-- `services/online/onlineRoundSubmissions.ts` holds the client-side submission eligibility and progress helpers used before calling the server.
+- `services/online/onlineRoundSubmissions.ts` holds the client-side submission eligibility, duplicate-song checks, and progress helpers used before calling the server.
 - `services/online/onlineRoundJudging.ts` holds the client-side active-matchup and judging eligibility helpers used before calling the server.
 - `services/audio/remotePlaybackSync.ts` holds server-clock offset and synced playback timing math.
 - `services/audio/previewCache.ts` holds local preview-cache helpers for remote synchronized playback and cleanup on room/round lifecycle exits.

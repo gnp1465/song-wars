@@ -78,6 +78,18 @@ Example:
 
 Memorize: screens can have multiple steps without changing files.
 
+### Mapper
+
+A function that converts data from one shape into another shape.
+
+Example:
+
+```ts
+const snapshot = mapOnlineRoomSnapshot(rawSupabaseJson);
+```
+
+Memorize: mappers keep messy outside data away from UI components.
+
 ## TypeScript
 
 ### Type
