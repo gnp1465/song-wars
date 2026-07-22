@@ -16,7 +16,9 @@ import {
 import { restoreOrCreateAnonymousSession } from "../../src/services/online/AuthSessionService";
 import { joinOnlineRoom } from "../../src/services/online/OnlineRoomService";
 import {
-  hasOnlineDisplayName,
+  getOnlineDisplayNameValidationMessage,
+  isValidOnlineDisplayName,
+  MAX_ONLINE_DISPLAY_NAME_LENGTH,
   normalizeOnlineDisplayName,
 } from "../../src/services/online/displayName";
 import { reportAppError, reportAppEvent } from "../../src/services/diagnostics/logger";
@@ -35,8 +37,9 @@ export default function JoinOnlineRoomScreen() {
   const [isJoining, setIsJoining] = useState(false);
   const hasSupabaseConfig = Boolean(getSupabaseConfig());
   const normalizedRoomCode = roomCode.replace(/\D/g, "").slice(0, 6);
+  const displayNameValidationMessage = getOnlineDisplayNameValidationMessage(displayName);
   const canJoin =
-    hasOnlineDisplayName(displayName) &&
+    isValidOnlineDisplayName(displayName) &&
     normalizedRoomCode.length === 6 &&
     !isJoining &&
     hasSupabaseConfig;
@@ -131,6 +134,7 @@ export default function JoinOnlineRoomScreen() {
             autoCapitalize="words"
             autoCorrect={false}
             editable={!isJoining}
+            maxLength={MAX_ONLINE_DISPLAY_NAME_LENGTH + 1}
             onChangeText={(nextDisplayName) => {
               setDisplayName(nextDisplayName);
               setErrorMessage(undefined);
@@ -142,6 +146,9 @@ export default function JoinOnlineRoomScreen() {
             style={styles.input}
             value={displayName}
           />
+          {displayNameValidationMessage && displayName.length > 0 ? (
+            <Text style={styles.errorText}>{displayNameValidationMessage}</Text>
+          ) : null}
 
           {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
 

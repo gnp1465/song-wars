@@ -18,7 +18,9 @@ import { reportAppError, reportAppEvent } from "../../src/services/diagnostics/l
 import { restoreOrCreateAnonymousSession } from "../../src/services/online/AuthSessionService";
 import { createOnlineRoom } from "../../src/services/online/OnlineRoomService";
 import {
-  hasOnlineDisplayName,
+  getOnlineDisplayNameValidationMessage,
+  isValidOnlineDisplayName,
+  MAX_ONLINE_DISPLAY_NAME_LENGTH,
   normalizeOnlineDisplayName,
 } from "../../src/services/online/displayName";
 import { getLastDisplayName, saveLastDisplayName } from "../../src/services/online/displayNameStorage";
@@ -34,7 +36,8 @@ export default function CreateOnlineRoomScreen() {
   const [errorMessage, setErrorMessage] = useState<string | undefined>();
   const [isCreating, setIsCreating] = useState(false);
   const hasSupabaseConfig = Boolean(getSupabaseConfig());
-  const canCreate = hasOnlineDisplayName(displayName) && !isCreating && hasSupabaseConfig;
+  const displayNameValidationMessage = getOnlineDisplayNameValidationMessage(displayName);
+  const canCreate = isValidOnlineDisplayName(displayName) && !isCreating && hasSupabaseConfig;
 
   useEffect(() => {
     void getLastDisplayName().then(setDisplayName);
@@ -110,6 +113,7 @@ export default function CreateOnlineRoomScreen() {
             autoCapitalize="words"
             autoCorrect={false}
             editable={!isCreating}
+            maxLength={MAX_ONLINE_DISPLAY_NAME_LENGTH + 1}
             onChangeText={(nextDisplayName) => {
               setDisplayName(nextDisplayName);
               setErrorMessage(undefined);
@@ -121,6 +125,9 @@ export default function CreateOnlineRoomScreen() {
             style={styles.input}
             value={displayName}
           />
+          {displayNameValidationMessage && displayName.length > 0 ? (
+            <Text style={styles.errorText}>{displayNameValidationMessage}</Text>
+          ) : null}
 
           <RoomSettingsPanel
             disabled={isCreating}
