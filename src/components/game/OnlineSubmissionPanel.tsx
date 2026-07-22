@@ -3,6 +3,7 @@ import {
   getOnlineSubmissionCountForMember,
   hasDuplicateOnlineSongSubmission,
 } from "../../services/online/onlineRoundSubmissions";
+import { getOnlineSubmissionSearchMessage } from "../../services/online/onlineSubmissionSearchState";
 import type { MediaTrack } from "../../types/media";
 import type { OnlineRoomMember, OnlineRoundSubmission } from "../../types/onlineRoom";
 import { SongActionCard } from "./SongActionCard";
@@ -11,6 +12,7 @@ export interface OnlineSubmissionPanelProps {
   audioStatus: string;
   canSubmitSong: boolean;
   contestantMembers: OnlineRoomMember[];
+  hasSearched: boolean;
   isJudge: boolean;
   isMutating: boolean;
   isResolvingSubmission: boolean;
@@ -35,6 +37,7 @@ export function OnlineSubmissionPanel({
   audioStatus,
   canSubmitSong,
   contestantMembers,
+  hasSearched,
   isJudge,
   isMutating,
   isResolvingSubmission,
@@ -54,6 +57,13 @@ export function OnlineSubmissionPanel({
   onSearch,
   onSubmitSong,
 }: OnlineSubmissionPanelProps) {
+  const searchMessage = getOnlineSubmissionSearchMessage({
+    errorMessage: searchErrorMessage,
+    hasSearched,
+    isSearching,
+    resultCount: results.length,
+  });
+
   return (
     <View style={styles.panel}>
       <View style={styles.progressHeader}>
@@ -142,7 +152,11 @@ export function OnlineSubmissionPanel({
                 )}
               </Pressable>
               <Text style={styles.audioStatus}>{audioStatus}</Text>
-              {searchErrorMessage ? <Text style={styles.errorText}>{searchErrorMessage}</Text> : null}
+              {searchMessage ? (
+                <Text style={searchErrorMessage ? styles.errorText : styles.emptyText}>
+                  {searchMessage}
+                </Text>
+              ) : null}
               {results.length > 0 ? (
                 <View style={styles.resultsList}>
                   {results.map((song) => {
@@ -195,6 +209,12 @@ const styles = StyleSheet.create({
   },
   errorText: {
     color: "#FCA5A5",
+    fontSize: 14,
+    fontWeight: "700",
+    lineHeight: 20,
+  },
+  emptyText: {
+    color: "#CBD5E1",
     fontSize: 14,
     fontWeight: "700",
     lineHeight: 20,

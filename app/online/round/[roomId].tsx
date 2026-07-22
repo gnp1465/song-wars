@@ -65,6 +65,7 @@ export default function OnlineRoundSetupScreen() {
   const params = useLocalSearchParams<{ roomId?: string }>();
   const roomId = typeof params.roomId === "string" ? params.roomId : undefined;
   const [currentUserId, setCurrentUserId] = useState<string | undefined>();
+  const [hasSearchedSongs, setHasSearchedSongs] = useState(false);
   const [isResolvingSubmission, setIsResolvingSubmission] = useState(false);
   const [topicInput, setTopicInput] = useState("");
   const onlineRoom = useOnlineRoom(roomId, currentUserId);
@@ -206,7 +207,11 @@ export default function OnlineRoundSetupScreen() {
 
   async function searchSongs() {
     Keyboard.dismiss();
-    await songSearch.search();
+    const result = await songSearch.search();
+
+    if (result.ok) {
+      setHasSearchedSongs(true);
+    }
   }
 
   async function runRoundCleanup(action: OnlineRoundCleanupAction) {
@@ -220,6 +225,7 @@ export default function OnlineRoundSetupScreen() {
 
     if (cleanupPlan.clearSearchResults) {
       songSearch.clearResults();
+      setHasSearchedSongs(false);
     }
   }
 
@@ -431,6 +437,7 @@ export default function OnlineRoundSetupScreen() {
                   audioStatus={previewAudio.audioStatus}
                   canSubmitSong={canSubmitSong}
                   contestantMembers={contestantMembers}
+                  hasSearched={hasSearchedSongs}
                   isJudge={isJudge}
                   isMutating={onlineRoom.isMutating}
                   isResolvingSubmission={isResolvingSubmission}
@@ -443,7 +450,10 @@ export default function OnlineRoundSetupScreen() {
                   songsPerPlayer={songsPerPlayer}
                   songsRemaining={songsRemaining}
                   submissions={submissions}
-                  onChangeQuery={songSearch.setQuery}
+                  onChangeQuery={(nextQuery) => {
+                    setHasSearchedSongs(false);
+                    songSearch.setQuery(nextQuery);
+                  }}
                   onClearError={onlineRoom.clearError}
                   onPlayPreview={(song) => void previewAudio.playSongPreview(song)}
                   onRemoveSubmission={(submissionId) => void removeSubmission(submissionId)}
