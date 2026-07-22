@@ -1,7 +1,6 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
   Alert,
   Keyboard,
   KeyboardAvoidingView,
@@ -13,14 +12,9 @@ import {
   Text,
   View,
 } from "react-native";
-import { ActiveMatchupPanel } from "../../../src/components/game/ActiveMatchupPanel";
-import { BracketProgress } from "../../../src/components/game/BracketProgress";
 import { GameOverPanel } from "../../../src/components/game/GameOverPanel";
 import { OnlineConnectionStatus } from "../../../src/components/game/OnlineConnectionStatus";
-import {
-  RemotePlaybackControls,
-  RemotePlaybackPanel,
-} from "../../../src/components/game/OnlineRemotePlayback";
+import { OnlineJudgingPanel } from "../../../src/components/game/OnlineJudgingPanel";
 import { OnlineSubmissionPanel } from "../../../src/components/game/OnlineSubmissionPanel";
 import { OnlineTopicPanel } from "../../../src/components/game/OnlineTopicPanel";
 import { RoundResultPanel } from "../../../src/components/game/RoundResultPanel";
@@ -445,47 +439,21 @@ export default function OnlineRoundSetupScreen() {
               ) : null}
 
               {currentRound?.status === "judging" ? (
-                <View style={styles.panel}>
-                  <View style={styles.progressHeader}>
-                    <Text style={styles.sectionTitle}>Judging bracket</Text>
-                    {onlineRoom.isMutating ? <ActivityIndicator color="#38BDF8" /> : null}
-                  </View>
-                  {activeMatchup ? (
-                    isJudge ? (
-                      <>
-                        <ActiveMatchupPanel
-                          isPickingWinner={onlineRoom.isMutating || remotePlayback.isLocked}
-                          matchup={activeMatchup}
-                          showPreviewActions={snapshot.room.mode !== "remote"}
-                          onPickWinner={(winnerSubmissionId) =>
-                            void pickMatchupWinner(winnerSubmissionId)
-                          }
-                          onPlayPreview={(song) => void previewAudio.playSongPreview(song)}
-                        />
-                        {snapshot.room.mode === "remote" ? (
-                          <RemotePlaybackControls
-                            isDisabled={onlineRoom.isMutating || remotePlayback.isLocked}
-                            left={activeMatchup.left}
-                            right={activeMatchup.right}
-                            onSchedule={(entry) => void scheduleSyncedPreview(entry)}
-                          />
-                        ) : null}
-                        <Text style={styles.audioStatus}>{previewAudio.audioStatus}</Text>
-                      </>
-                    ) : (
-                      <Text style={styles.body}>
-                        Waiting for {judgeMember?.displayName ?? "the judge"} to pick a winner.
-                      </Text>
-                    )
-                  ) : (
-                    <Text style={styles.body}>Preparing the next matchup...</Text>
-                  )}
-                  {snapshot.room.mode === "remote" ? (
-                    <RemotePlaybackPanel playback={remotePlayback} />
-                  ) : null}
-                  <BracketProgress activeMatchupId={activeMatchup?.id} matchups={matchups} />
-                  <Scoreboard players={onlinePlayers} scores={playerScores} />
-                </View>
+                <OnlineJudgingPanel
+                  activeMatchup={activeMatchup}
+                  audioStatus={previewAudio.audioStatus}
+                  isJudge={isJudge}
+                  isMutating={onlineRoom.isMutating}
+                  isRemoteMode={snapshot.room.mode === "remote"}
+                  judgeName={judgeMember?.displayName ?? "the judge"}
+                  matchups={matchups}
+                  players={onlinePlayers}
+                  remotePlayback={remotePlayback}
+                  scores={playerScores}
+                  onPickWinner={(winnerSubmissionId) => void pickMatchupWinner(winnerSubmissionId)}
+                  onPlayPreview={(song) => void previewAudio.playSongPreview(song)}
+                  onScheduleSyncedPreview={(entry) => void scheduleSyncedPreview(entry)}
+                />
               ) : null}
 
               {currentRound?.status === "complete" && snapshot.room.status !== "complete" ? (
@@ -669,16 +637,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "700",
     lineHeight: 20,
-  },
-  progressHeader: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  audioStatus: {
-    color: "#94A3B8",
-    fontSize: 13,
-    fontWeight: "700",
   },
   secondaryButton: {
     alignItems: "center",
