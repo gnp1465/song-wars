@@ -46,6 +46,10 @@ import {
   getOnlineRoundTitle,
 } from "../../../src/services/online/onlineRoundDisplay";
 import {
+  getOnlineRoundCleanupPlan,
+  type OnlineRoundCleanupAction,
+} from "../../../src/services/online/onlineRoundCleanup";
+import {
   getLatestOnlinePlaybackEvent,
   isOnlinePlaybackEventActive,
 } from "../../../src/services/online/onlinePlaybackEvents";
@@ -206,6 +210,20 @@ export default function OnlineRoundSetupScreen() {
     await songSearch.search();
   }
 
+  async function runRoundCleanup(action: OnlineRoundCleanupAction) {
+    const cleanupPlan = getOnlineRoundCleanupPlan(action);
+
+    await previewAudio.stopSongPreview(cleanupPlan.audioStatus);
+
+    if (cleanupPlan.clearPreviewCache) {
+      await clearPreviewCache();
+    }
+
+    if (cleanupPlan.clearSearchResults) {
+      songSearch.clearResults();
+    }
+  }
+
   async function submitSong(song: MediaTrack) {
     if (
       !canSubmitSong ||
@@ -231,8 +249,7 @@ export default function OnlineRoundSetupScreen() {
         return;
       }
 
-      await previewAudio.stopSongPreview("Submitted");
-      songSearch.clearResults();
+      await runRoundCleanup("submission_submitted");
     } catch (error) {
       previewAudio.setAudioStatus(
         error instanceof Error ? error.message : "No playable preview found for this song.",
@@ -249,7 +266,7 @@ export default function OnlineRoundSetupScreen() {
       return;
     }
 
-    await previewAudio.stopSongPreview("Removed submission");
+    await runRoundCleanup("submission_removed");
   }
 
   async function pickMatchupWinner(winnerSubmissionId: string) {
@@ -263,7 +280,7 @@ export default function OnlineRoundSetupScreen() {
       return;
     }
 
-    await previewAudio.stopSongPreview("Winner picked");
+    await runRoundCleanup("matchup_winner_picked");
   }
 
   async function scheduleSyncedPreview(entry: MatchupEntry | undefined) {
@@ -271,7 +288,7 @@ export default function OnlineRoundSetupScreen() {
       return;
     }
 
-    await previewAudio.stopSongPreview("Scheduling synced preview");
+    await runRoundCleanup("synced_preview_scheduled");
     await onlineRoom.scheduleMatchupPreview(activeMatchup.id, entry.submissionId);
   }
 
@@ -286,9 +303,7 @@ export default function OnlineRoundSetupScreen() {
       return;
     }
 
-    await previewAudio.stopSongPreview("No preview playing");
-    await clearPreviewCache();
-    songSearch.clearResults();
+    await runRoundCleanup("next_round_started");
   }
 
   async function playAgain() {
@@ -302,9 +317,7 @@ export default function OnlineRoundSetupScreen() {
       return;
     }
 
-    await previewAudio.stopSongPreview("No preview playing");
-    await clearPreviewCache();
-    songSearch.clearResults();
+    await runRoundCleanup("game_restarted");
   }
 
   async function resetRoom() {
@@ -318,8 +331,7 @@ export default function OnlineRoundSetupScreen() {
       return;
     }
 
-    await previewAudio.stopSongPreview("No preview playing");
-    await clearPreviewCache();
+    await runRoundCleanup("room_closed");
   }
 
   async function exitOnlineRoom() {
@@ -333,8 +345,7 @@ export default function OnlineRoundSetupScreen() {
       return;
     }
 
-    await previewAudio.stopSongPreview("No preview playing");
-    await clearPreviewCache();
+    await runRoundCleanup(isHost ? "room_closed" : "room_left");
 
     await clearLastOnlineRoomId();
     router.replace("/");
@@ -365,8 +376,7 @@ export default function OnlineRoundSetupScreen() {
   }
 
   function goHome() {
-    void previewAudio.stopSongPreview("No preview playing");
-    void clearPreviewCache();
+    void runRoundCleanup("home_navigation");
     router.replace("/");
   }
 

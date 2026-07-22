@@ -76,6 +76,7 @@ Services hold business logic and provider/API logic.
 - `services/online/onlineRoomResumeStorage.ts` stores only the last room ID for this app installation.
 - `services/online/onlineRoomSnapshotMapper.ts` maps raw Supabase RPC JSON into app-level online room types.
 - `services/online/onlineRoundDisplay.ts` maps online round status values to player-facing titles and helper copy.
+- `services/online/onlineRoundCleanup.ts` maps online round actions to the audio/search/cache cleanup each action should run.
 - `services/online/onlineRoundTopic.ts` holds the client-side topic input rules used before calling the server.
 - `services/online/onlineRoundSubmissions.ts` holds the client-side submission eligibility, duplicate-song checks, and progress helpers used before calling the server.
 - `services/online/onlineRoundJudging.ts` holds the client-side active-matchup and judging eligibility helpers used before calling the server.
