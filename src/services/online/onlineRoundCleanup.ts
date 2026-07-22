@@ -7,6 +7,7 @@ export type OnlineRoundCleanupAction =
   | "game_restarted"
   | "room_closed"
   | "room_left"
+  | "forced_room_exit"
   | "home_navigation";
 
 export interface OnlineRoundCleanupPlan {
@@ -56,6 +57,7 @@ export function getOnlineRoundCleanupPlan(
     clearSearchResults:
       action === "next_round_started" ||
       action === "game_restarted" ||
+      action === "forced_room_exit" ||
       action === "home_navigation",
   };
 }

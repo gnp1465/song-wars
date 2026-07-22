@@ -61,13 +61,16 @@ export default function OnlineLobbyScreen() {
 
   useEffect(() => {
     if (exitNotice) {
-      void clearLastOnlineRoomId();
-      router.replace({
-        pathname: "/",
-        params: {
-          notice: exitNotice,
-        },
-      });
+      void (async () => {
+        await clearPreviewCache();
+        await clearLastOnlineRoomId();
+        router.replace({
+          pathname: "/",
+          params: {
+            notice: exitNotice,
+          },
+        });
+      })();
     }
   }, [exitNotice]);
 

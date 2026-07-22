@@ -155,13 +155,16 @@ export default function OnlineRoundSetupScreen() {
 
   useEffect(() => {
     if (exitNotice) {
-      void clearLastOnlineRoomId();
-      router.replace({
-        pathname: "/",
-        params: {
-          notice: exitNotice,
-        },
-      });
+      void (async () => {
+        await runRoundCleanup("forced_room_exit");
+        await clearLastOnlineRoomId();
+        router.replace({
+          pathname: "/",
+          params: {
+            notice: exitNotice,
+          },
+        });
+      })();
     }
   }, [exitNotice]);
 

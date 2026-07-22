@@ -25,7 +25,7 @@ assert.deepEqual(getOnlineRoundCleanupPlan("synced_preview_scheduled"), {
   clearSearchResults: false,
 });
 
-for (const action of ["next_round_started", "game_restarted", "home_navigation"] satisfies OnlineRoundCleanupAction[]) {
+for (const action of ["next_round_started", "game_restarted", "forced_room_exit", "home_navigation"] satisfies OnlineRoundCleanupAction[]) {
   assert.deepEqual(getOnlineRoundCleanupPlan(action), {
     audioStatus: "No preview playing",
     clearPreviewCache: true,
