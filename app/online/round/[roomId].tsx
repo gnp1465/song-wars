@@ -42,6 +42,10 @@ import {
   getActiveOnlineMatchup,
 } from "../../../src/services/online/onlineRoundJudging";
 import {
+  getOnlineRoundSubtitle,
+  getOnlineRoundTitle,
+} from "../../../src/services/online/onlineRoundDisplay";
+import {
   getLatestOnlinePlaybackEvent,
   isOnlinePlaybackEventActive,
 } from "../../../src/services/online/onlinePlaybackEvents";
@@ -376,8 +380,8 @@ export default function OnlineRoundSetupScreen() {
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <View style={styles.header}>
             <Text style={styles.eyebrow}>Round {currentRound?.roundNumber ?? 1}</Text>
-            <Text style={styles.title}>{getRoundTitle(currentRound?.status)}</Text>
-            <Text style={styles.body}>{getRoundSubtitle(currentRound?.status)}</Text>
+            <Text style={styles.title}>{getOnlineRoundTitle(currentRound?.status)}</Text>
+            <Text style={styles.body}>{getOnlineRoundSubtitle(currentRound?.status)}</Text>
           </View>
 
           {onlineRoom.errorMessage && onlineRoom.connectionStatus !== "error" ? (
@@ -513,38 +517,6 @@ export default function OnlineRoundSetupScreen() {
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
-}
-
-function getRoundTitle(status: string | undefined): string {
-  if (status === "submitting") {
-    return "Submissions";
-  }
-
-  if (status === "judging") {
-    return "Judging next";
-  }
-
-  if (status === "complete") {
-    return "Round complete";
-  }
-
-  return "Topic setup";
-}
-
-function getRoundSubtitle(status: string | undefined): string {
-  if (status === "submitting") {
-    return "Contestants pick songs for the locked topic.";
-  }
-
-  if (status === "judging") {
-    return "The submission phase is complete.";
-  }
-
-  if (status === "complete") {
-    return "Scores are updated and the next judge is set.";
-  }
-
-  return "The judge sets the prompt for this round.";
 }
 
 const styles = StyleSheet.create({
