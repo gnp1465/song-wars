@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import {
+  getOnlineRoomResumeFailureDecision,
   getOnlineRoomResumeFailureMessage,
   getOnlineRoomResumeRoute,
 } from "../services/online/onlineRoomResume.ts";
@@ -40,6 +41,22 @@ assert.equal(
   getOnlineRoomResumeFailureMessage(),
   "Could not verify your last online room. Check your connection and retry.",
   "failed resume lookups should show a retryable message",
+);
+assert.deepEqual(
+  getOnlineRoomResumeFailureDecision("You are not a member of this room."),
+  {
+    message: "You are no longer in that room.",
+    shouldClearSavedRoom: true,
+  },
+  "permanent membership failures should clear the saved room",
+);
+assert.deepEqual(
+  getOnlineRoomResumeFailureDecision("Network request failed"),
+  {
+    message: "Could not verify your last online room. Check your connection and retry.",
+    shouldClearSavedRoom: false,
+  },
+  "temporary connection failures should keep the saved room for retry",
 );
 
 console.log("Online room resume checks passed.");

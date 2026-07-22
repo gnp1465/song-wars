@@ -5,7 +5,7 @@ import { reportAppError, reportAppEvent } from "../src/services/diagnostics/logg
 import { restoreOrCreateAnonymousSession } from "../src/services/online/AuthSessionService";
 import { fetchOnlineRoomSnapshot } from "../src/services/online/OnlineRoomService";
 import {
-  getOnlineRoomResumeFailureMessage,
+  getOnlineRoomResumeFailureDecision,
   getOnlineRoomResumeRoute,
 } from "../src/services/online/onlineRoomResume";
 import {
@@ -65,6 +65,10 @@ export default function HomeScreen() {
         },
       });
     } catch (error) {
+      const failureDecision = getOnlineRoomResumeFailureDecision(
+        error instanceof Error ? error.message : undefined,
+      );
+
       reportAppError(error, {
         area: "online-room-resume",
         detail: "Failed to restore the last online room snapshot.",
@@ -72,10 +76,15 @@ export default function HomeScreen() {
       reportAppEvent("online_room_resume_failed", {
         area: "online-room-resume",
       });
+
+      if (failureDecision.shouldClearSavedRoom) {
+        await clearLastOnlineRoomId();
+      }
+
       setResumeRoom({
-        errorMessage: getOnlineRoomResumeFailureMessage(),
+        errorMessage: failureDecision.message,
         isChecking: false,
-        roomId,
+        roomId: failureDecision.shouldClearSavedRoom ? undefined : roomId,
       });
     }
   }, [hasSupabaseConfig]);
