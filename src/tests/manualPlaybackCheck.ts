@@ -17,6 +17,9 @@ import {
   getPreviewCacheFileName,
   getPreviewCacheUri,
 } from "../services/audio/previewCacheKey.ts";
+import { getMatchupPreviewCacheTargets } from "../services/audio/previewPreloadQueue.ts";
+import type { MatchupEntry } from "../types/game.ts";
+import type { MediaTrack } from "../types/media.ts";
 
 const offsetMs = estimateClockOffsetMs({
   serverNowMs: 1100,
@@ -91,6 +94,23 @@ assert.equal(
   true,
 );
 
+const preloadableSong = makePreviewSong("track-1", "https://example.com/preview-1.m4a");
+const duplicatePreloadableSong = makePreviewSong("track-1", "https://example.com/preview-1.m4a");
+const metadataOnlySong = makePreviewSong("track-2");
+const cacheTargets = getMatchupPreviewCacheTargets([
+  makeMatchupEntry("submission-1", preloadableSong),
+  makeMatchupEntry("submission-2", duplicatePreloadableSong),
+  makeMatchupEntry("submission-3", metadataOnlySong),
+  undefined,
+]);
+
+assert.deepEqual(cacheTargets, [
+  {
+    previewUrl: "https://example.com/preview-1.m4a",
+    trackId: "track-1",
+  },
+]);
+
 let state = initialPlaybackState;
 
 state = reducePlaybackState(state, { type: "start" });
@@ -121,3 +141,29 @@ assert.equal(state.name, "finished");
 assert.equal(isPlaybackUiLocked(state), false);
 
 console.log("Playback scheduling and state checks passed.");
+
+function makeMatchupEntry(submissionId: string, song: MediaTrack): MatchupEntry {
+  return {
+    playerId: `${submissionId}-player`,
+    song,
+    submissionId,
+  };
+}
+
+function makePreviewSong(id: string, previewUrl?: string): MediaTrack {
+  return {
+    artists: ["Artist"],
+    attribution: [],
+    capabilities: previewUrl ? ["stream_preview"] : ["metadata_only"],
+    id,
+    preview: previewUrl
+      ? {
+          providerId: "apple_itunes",
+          streamUrl: previewUrl,
+        }
+      : undefined,
+    providerRefs: [],
+    resolutionStatus: previewUrl ? "resolved" : "preview_unavailable",
+    title: id,
+  };
+}

@@ -25,7 +25,8 @@ import { useOnlineRoom } from "../../../src/hooks/useOnlineRoom";
 import { usePreviewAudio } from "../../../src/hooks/usePreviewAudio";
 import { useRemotePreviewPlayback } from "../../../src/hooks/useRemotePreviewPlayback";
 import { useSongSearch } from "../../../src/hooks/useSongSearch";
-import { clearPreviewCache } from "../../../src/services/audio/previewCache";
+import { clearPreviewCache, precachePreview } from "../../../src/services/audio/previewCache";
+import { getMatchupPreviewCacheTargets } from "../../../src/services/audio/previewPreloadQueue";
 import { resolvePlayablePreviewTrack } from "../../../src/services/media/previewResolution";
 import { getDeviceStorefrontCode } from "../../../src/services/media/storefront";
 import { restoreOrCreateAnonymousSession } from "../../../src/services/online/AuthSessionService";
@@ -163,6 +164,25 @@ export default function OnlineRoundSetupScreen() {
       void previewAudio.stopSongPreview("No preview playing");
     }
   }, [currentRound?.status]);
+
+  useEffect(() => {
+    if (snapshot?.room.mode !== "remote" || currentRound?.status !== "judging" || !activeMatchup) {
+      return;
+    }
+
+    let isCancelled = false;
+    const preloadTargets = getMatchupPreviewCacheTargets([activeMatchup.left, activeMatchup.right]);
+
+    void Promise.all(preloadTargets.map((target) => precachePreview(target))).catch(() => {
+      if (!isCancelled) {
+        previewAudio.setAudioStatus("Synced preview will load when played.");
+      }
+    });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [activeMatchup?.id, currentRound?.status, snapshot?.room.mode]);
 
   async function submitTopic() {
     if (!canSubmitTopic) {
