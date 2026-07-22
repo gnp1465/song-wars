@@ -42,6 +42,7 @@ import {
   canSubmitOnlineSong,
   getOnlineSongsRemaining,
   getOnlineSubmissionCountForMember,
+  hasDuplicateOnlineSongSubmission,
 } from "../../../src/services/online/onlineRoundSubmissions";
 import {
   canJudgeOnlineMatchup,
@@ -209,7 +210,11 @@ export default function OnlineRoundSetupScreen() {
   }
 
   async function submitSong(song: MediaTrack) {
-    if (!canSubmitSong || isResolvingSubmission || isSongAlreadySubmitted(song, submissions)) {
+    if (
+      !canSubmitSong ||
+      isResolvingSubmission ||
+      hasDuplicateOnlineSongSubmission(submissions, song)
+    ) {
       return;
     }
 
@@ -515,7 +520,10 @@ export default function OnlineRoundSetupScreen() {
                           {songSearch.results.length > 0 ? (
                             <View style={styles.resultsList}>
                               {songSearch.results.map((song) => {
-                                const isDuplicate = isSongAlreadySubmitted(song, submissions);
+                                const isDuplicate = hasDuplicateOnlineSongSubmission(
+                                  submissions,
+                                  song,
+                                );
 
                                 return (
                                   <SongActionCard
@@ -714,18 +722,6 @@ function getRoundSubtitle(status: string | undefined): string {
   }
 
   return "The judge sets the prompt for this round.";
-}
-
-function isSongAlreadySubmitted(song: MediaTrack, submissions: { song: MediaTrack }[]): boolean {
-  const songKey = getSongKey(song);
-
-  return submissions.some((submission) => getSongKey(submission.song) === songKey);
-}
-
-function getSongKey(song: MediaTrack): string {
-  return `${song.title.trim().toLowerCase()}:${song.artists
-    .map((artist) => artist.trim().toLowerCase())
-    .join(",")}`;
 }
 
 const styles = StyleSheet.create({

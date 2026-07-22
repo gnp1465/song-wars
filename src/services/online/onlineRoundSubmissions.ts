@@ -3,6 +3,8 @@ import type {
   OnlineRound,
   OnlineRoundSubmission,
 } from "../../types/onlineRoom";
+import type { MediaTrack } from "../../types/media";
+import { getSongKey } from "../game/submissions.ts";
 
 export interface OnlineSubmissionState {
   currentMember?: OnlineRoomMember;
@@ -49,4 +51,13 @@ export function canSubmitOnlineSong({
       getOnlineSongsRemaining({ currentMember, songsPerPlayer, submissions }) > 0 &&
       !isMutating,
   );
+}
+
+export function hasDuplicateOnlineSongSubmission(
+  submissions: Array<Pick<OnlineRoundSubmission, "song">>,
+  song: MediaTrack,
+): boolean {
+  const songKey = getSongKey(song);
+
+  return submissions.some((submission) => getSongKey(submission.song) === songKey);
 }

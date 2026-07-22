@@ -3,6 +3,7 @@ import {
   canSubmitOnlineSong,
   getOnlineSongsRemaining,
   getOnlineSubmissionCountForMember,
+  hasDuplicateOnlineSongSubmission,
 } from "../services/online/onlineRoundSubmissions.ts";
 import type {
   OnlineRoomMember,
@@ -70,6 +71,28 @@ assert.equal(
   false,
   "submissions should stop after the round leaves submitting",
 );
+assert.equal(
+  hasDuplicateOnlineSongSubmission(
+    [contestantSubmission],
+    makeSubmission("submission-duplicate", "other-member", {
+      artists: [" artist "],
+      title: " song ",
+    }).song,
+  ),
+  true,
+  "duplicate online song checks should ignore casing and outside spaces",
+);
+assert.equal(
+  hasDuplicateOnlineSongSubmission(
+    [contestantSubmission],
+    makeSubmission("submission-new", "other-member", {
+      artists: ["Different Artist"],
+      title: "Song",
+    }).song,
+  ),
+  false,
+  "songs with different artist keys should remain selectable",
+);
 
 console.log("Online submission checks passed.");
 
@@ -85,14 +108,20 @@ function makeMember(id: string): OnlineRoomMember {
   };
 }
 
-function makeSubmission(id: string, memberId: string): OnlineRoundSubmission {
+function makeSubmission(
+  id: string,
+  memberId: string,
+  songOverrides?: {
+    artists?: string[];
+    title?: string;
+  },
+): OnlineRoundSubmission {
   return {
     id,
     memberId,
     roomId: "room-id",
     roundId: "round-id",
     song: {
-      artists: ["Artist"],
       attribution: [],
       capabilities: ["stream_preview"],
       id: "track-id",
@@ -102,7 +131,8 @@ function makeSubmission(id: string, memberId: string): OnlineRoundSubmission {
       },
       providerRefs: [],
       resolutionStatus: "resolved",
-      title: "Song",
+      title: songOverrides?.title ?? "Song",
+      artists: songOverrides?.artists ?? ["Artist"],
     },
     submittedAt: "2026-07-19T00:00:00.000Z",
   };
