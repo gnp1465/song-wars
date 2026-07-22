@@ -5,9 +5,11 @@ import { createClient } from "@supabase/supabase-js";
 loadLocalEnv();
 
 const SESSION_CACHE_PATH = ".cache/online-room-check-sessions.json";
+const SESSION_CACHE_VERSION = 2;
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 const shouldVerifyCapacity = process.env.CHECK_ONLINE_ROOM_CAPACITY === "1";
+const sessionCacheProjectKey = getSessionCacheProjectKey(supabaseUrl);
 const sessionCache = loadSessionCache();
 const rpcMigrationHints = {
   close_room: "202607140001_online_room_lobby.sql",
@@ -610,7 +612,7 @@ async function createSignedInTestClient(label) {
       persistSession: false,
     },
   });
-  const cachedSession = sessionCache[sessionCacheKey(label)];
+  const cachedSession = readCachedSession(label);
 
   if (cachedSession?.access_token && cachedSession?.refresh_token) {
     const restoreResult = await client.auth.setSession({
@@ -620,8 +622,11 @@ async function createSignedInTestClient(label) {
 
     if (!restoreResult.error && restoreResult.data.session) {
       saveSession(label, restoreResult.data.session);
+      console.log(`Reused cached anonymous test session for ${label}.`);
       return client;
     }
+
+    forgetSession(label);
   }
 
   const result = await client.auth.signInAnonymously();
@@ -644,6 +649,7 @@ async function createSignedInTestClient(label) {
 
   if (result.data.session) {
     saveSession(label, result.data.session);
+    console.log(`Created and cached anonymous test session for ${label}.`);
   }
 
   return client;
@@ -761,26 +767,117 @@ function loadLocalEnv() {
 
 function loadSessionCache() {
   if (!existsSync(SESSION_CACHE_PATH)) {
-    return {};
+    return createEmptySessionCache();
   }
 
   try {
     const parsed = JSON.parse(readFileSync(SESSION_CACHE_PATH, "utf8"));
 
-    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      return createEmptySessionCache();
+    }
+
+    if (parsed.projects && typeof parsed.projects === "object" && !Array.isArray(parsed.projects)) {
+      return {
+        projects: parsed.projects,
+        version: SESSION_CACHE_VERSION,
+      };
+    }
+
+    return migrateLegacySessionCache(parsed);
   } catch {
-    return {};
+    return createEmptySessionCache();
   }
 }
 
+function readCachedSession(label) {
+  const cachedSession = getProjectSessionCache()[sessionCacheKey(label)];
+
+  if (
+    !cachedSession ||
+    typeof cachedSession !== "object" ||
+    Array.isArray(cachedSession) ||
+    typeof cachedSession.access_token !== "string" ||
+    typeof cachedSession.refresh_token !== "string"
+  ) {
+    return undefined;
+  }
+
+  return cachedSession;
+}
+
 function saveSession(label, session) {
-  sessionCache[sessionCacheKey(label)] = {
+  getProjectSessionCache()[sessionCacheKey(label)] = {
     access_token: session.access_token,
+    expires_at: session.expires_at ?? null,
     refresh_token: session.refresh_token,
+    updated_at: new Date().toISOString(),
+    user_id: session.user?.id ?? null,
   };
 
+  writeSessionCache();
+}
+
+function forgetSession(label) {
+  delete getProjectSessionCache()[sessionCacheKey(label)];
+  writeSessionCache();
+}
+
+function writeSessionCache() {
   mkdirSync(dirname(SESSION_CACHE_PATH), { recursive: true });
   writeFileSync(SESSION_CACHE_PATH, `${JSON.stringify(sessionCache, null, 2)}\n`);
+}
+
+function getProjectSessionCache() {
+  sessionCache.projects[sessionCacheProjectKey] ??= {};
+
+  return sessionCache.projects[sessionCacheProjectKey];
+}
+
+function createEmptySessionCache() {
+  return {
+    projects: {},
+    version: SESSION_CACHE_VERSION,
+  };
+}
+
+function migrateLegacySessionCache(legacyCache) {
+  const nextCache = createEmptySessionCache();
+  const projectCache = {};
+
+  for (const [key, value] of Object.entries(legacyCache)) {
+    if (
+      value &&
+      typeof value === "object" &&
+      !Array.isArray(value) &&
+      typeof value.access_token === "string" &&
+      typeof value.refresh_token === "string"
+    ) {
+      projectCache[key] = {
+        access_token: value.access_token,
+        expires_at: value.expires_at ?? null,
+        refresh_token: value.refresh_token,
+        updated_at: value.updated_at ?? null,
+        user_id: value.user_id ?? null,
+      };
+    }
+  }
+
+  nextCache.projects[sessionCacheProjectKey] = projectCache;
+
+  return nextCache;
+}
+
+function getSessionCacheProjectKey(projectUrl) {
+  if (!projectUrl) {
+    return "missing-project-url";
+  }
+
+  try {
+    return new URL(projectUrl).host.toLowerCase();
+  } catch {
+    return "invalid-project-url";
+  }
 }
 
 function sessionCacheKey(label) {
