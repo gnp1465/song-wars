@@ -34,6 +34,7 @@ Components are reusable visual pieces.
 - `GameOverPanel` shows the final winner and restart actions.
 - `JudgeSetupPanel` shows judge topic setup and round settings.
 - `OnlineJudgingPanel` shows active online matchup judging, bracket progress, Remote Sync controls, and scores.
+- `OnlineOutcomePanels` shows online round-complete and game-complete states.
 - `OnlinePlayerList` shows online room members, host removal controls, and Presence status.
 - `OnlineRemotePlayback` shows Remote Sync preview controls and locked playback progress.
 - `OnlineSubmissionPanel` shows online submission progress, contestant search, preview, submit, and remove controls.

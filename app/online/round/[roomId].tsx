@@ -12,13 +12,14 @@ import {
   Text,
   View,
 } from "react-native";
-import { GameOverPanel } from "../../../src/components/game/GameOverPanel";
 import { OnlineConnectionStatus } from "../../../src/components/game/OnlineConnectionStatus";
 import { OnlineJudgingPanel } from "../../../src/components/game/OnlineJudgingPanel";
+import {
+  OnlineGameCompletePanel,
+  OnlineRoundCompletePanel,
+} from "../../../src/components/game/OnlineOutcomePanels";
 import { OnlineSubmissionPanel } from "../../../src/components/game/OnlineSubmissionPanel";
 import { OnlineTopicPanel } from "../../../src/components/game/OnlineTopicPanel";
-import { RoundResultPanel } from "../../../src/components/game/RoundResultPanel";
-import { Scoreboard } from "../../../src/components/game/Scoreboard";
 import { useOnlineRoom } from "../../../src/hooks/useOnlineRoom";
 import { usePreviewAudio } from "../../../src/hooks/usePreviewAudio";
 import { useRemotePreviewPlayback } from "../../../src/hooks/useRemotePreviewPlayback";
@@ -457,60 +458,27 @@ export default function OnlineRoundSetupScreen() {
               ) : null}
 
               {currentRound?.status === "complete" && snapshot.room.status !== "complete" ? (
-                <View style={styles.panel}>
-                  {roundWinnerMember && winningSubmission ? (
-                    canPrepareNextRound ? (
-                      <RoundResultPanel
-                        winnerName={roundWinnerMember.displayName}
-                        winningSongLabel={`Winning song: ${winningSubmission.song.title} by ${winningSubmission.song.artists.join(", ")}`}
-                        onStartNextRound={() => void startNextRound()}
-                      />
-                    ) : (
-                      <>
-                        <Text style={styles.sectionTitle}>Round complete</Text>
-                        <Text style={styles.judgeName}>{roundWinnerMember.displayName} wins</Text>
-                        <Text style={styles.body}>
-                          Waiting for the host or next judge to start the next round.
-                        </Text>
-                      </>
-                    )
-                  ) : (
-                    <Text style={styles.body}>Round complete.</Text>
-                  )}
-                  <Scoreboard players={onlinePlayers} scores={playerScores} />
-                </View>
+                <OnlineRoundCompletePanel
+                  canPrepareNextRound={canPrepareNextRound}
+                  players={onlinePlayers}
+                  scores={playerScores}
+                  winningSong={winningSubmission?.song}
+                  winnerName={roundWinnerMember?.displayName}
+                  onStartNextRound={() => void startNextRound()}
+                />
               ) : null}
 
               {snapshot.room.status === "complete" ? (
-                <View style={styles.panel}>
-                  {isHost && gameWinnerMember ? (
-                    <GameOverPanel
-                      players={onlinePlayers}
-                      pointsToWin={snapshot.room.pointsToWin}
-                      scores={playerScores}
-                      winnerName={gameWinnerMember.displayName}
-                      onPlayAgain={() => void playAgain()}
-                      onResetRoom={() => void resetRoom()}
-                    />
-                  ) : (
-                    <>
-                      <Text style={styles.sectionTitle}>Game complete</Text>
-                      <Text style={styles.judgeName}>
-                        {gameWinnerMember?.displayName ?? "Winner"} wins
-                      </Text>
-                      {winningSubmission ? (
-                        <Text style={styles.body}>
-                          Final song: {winningSubmission.song.title} by{" "}
-                          {winningSubmission.song.artists.join(", ")}
-                        </Text>
-                      ) : null}
-                      <Text style={styles.body}>
-                        Waiting for the host to play again or reset the room.
-                      </Text>
-                      <Scoreboard players={onlinePlayers} scores={playerScores} />
-                    </>
-                  )}
-                </View>
+                <OnlineGameCompletePanel
+                  gameWinnerName={gameWinnerMember?.displayName}
+                  isHost={isHost}
+                  players={onlinePlayers}
+                  pointsToWin={snapshot.room.pointsToWin}
+                  scores={playerScores}
+                  winningSong={winningSubmission?.song}
+                  onPlayAgain={() => void playAgain()}
+                  onResetRoom={() => void resetRoom()}
+                />
               ) : null}
             </>
           ) : (
@@ -612,25 +580,6 @@ const styles = StyleSheet.create({
     color: "#CBD5E1",
     fontSize: 16,
     lineHeight: 23,
-  },
-  panel: {
-    backgroundColor: "#1F2937",
-    borderColor: "#334155",
-    borderRadius: 8,
-    borderWidth: 1,
-    gap: 12,
-    padding: 14,
-  },
-  sectionTitle: {
-    color: "#CBD5E1",
-    fontSize: 14,
-    fontWeight: "800",
-    textTransform: "uppercase",
-  },
-  judgeName: {
-    color: "#F9FAFB",
-    fontSize: 26,
-    fontWeight: "900",
   },
   errorText: {
     color: "#FCA5A5",
