@@ -1,6 +1,8 @@
 import {
   addGuestToRoom,
   canStartRoom,
+  clampPointsToWin,
+  clampSongsPerPlayer,
   createLocalRoom,
   getRoomStatusLabel,
   hasDuplicateDisplayName,
@@ -83,6 +85,14 @@ assert(
 assert(
   clampedLowPointsRoom.settings.pointsToWin === MIN_POINTS_TO_WIN,
   "The exported min points constant should match the clamp rule.",
+);
+assert(
+  clampSongsPerPlayer(MAX_SONGS_PER_PLAYER + 1) === MAX_SONGS_PER_PLAYER,
+  "The exported songs clamp should be reusable by online room services.",
+);
+assert(
+  clampPointsToWin(MIN_POINTS_TO_WIN - 1) === MIN_POINTS_TO_WIN,
+  "The exported points clamp should be reusable by online room services.",
 );
 
 const unstartableRoom = startRoom(room);

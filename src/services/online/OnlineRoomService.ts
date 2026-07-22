@@ -1,5 +1,6 @@
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import type { RoomMode } from "../../types/game";
+import { clampPointsToWin, clampSongsPerPlayer } from "../game/room";
 import type {
   OnlineRoomMemberPresence,
   OnlineRoomSettingsUpdate,
@@ -31,9 +32,9 @@ export async function createOnlineRoom(
 ): Promise<OnlineRoomSnapshot> {
   const result = await getSupabaseClient().rpc("create_room", {
     host_display_name: options.displayName,
-    points_to_win_value: options.pointsToWin,
+    points_to_win_value: clampPointsToWin(options.pointsToWin),
     room_mode: options.mode,
-    songs_per_player_value: options.songsPerPlayer,
+    songs_per_player_value: clampSongsPerPlayer(options.songsPerPlayer),
   });
 
   return unwrapSnapshotResult(result.data, result.error);
@@ -83,10 +84,12 @@ export async function updateOnlineRoomSettings(
   update: OnlineRoomSettingsUpdate,
 ): Promise<OnlineRoomSnapshot> {
   const result = await getSupabaseClient().rpc("update_room_settings", {
-    points_to_win_value: update.pointsToWin ?? null,
+    points_to_win_value:
+      update.pointsToWin === undefined ? null : clampPointsToWin(update.pointsToWin),
     room_id_value: roomId,
     room_mode: update.mode ?? null,
-    songs_per_player_value: update.songsPerPlayer ?? null,
+    songs_per_player_value:
+      update.songsPerPlayer === undefined ? null : clampSongsPerPlayer(update.songsPerPlayer),
   });
 
   return unwrapSnapshotResult(result.data, result.error);

@@ -66,7 +66,7 @@ Memorize: hooks are the "brain" a component or screen can reuse.
 Services hold business logic and provider/API logic.
 
 - `services/game/bracket.ts` creates and advances brackets.
-- `services/game/room.ts` creates and updates room objects.
+- `services/game/room.ts` creates and updates room objects and exports shared setting clamps used by local and online room flows.
 - `services/game/scoring.ts` scores completed rounds.
 - `services/online/*` creates anonymous sessions, normalizes and validates display names and room codes, stores display names, and calls room RPC functions.
 - `services/online/onlineRoomAccess.ts` centralizes when online users should be returned Home after removal, room closure, or expiration.

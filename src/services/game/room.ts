@@ -141,11 +141,11 @@ function createHostPlayer(hostName: string): Player {
   };
 }
 
-function clampSongsPerPlayer(songsPerPlayer: number): number {
+export function clampSongsPerPlayer(songsPerPlayer: number): number {
   return Math.min(MAX_SONGS_PER_PLAYER, Math.max(MIN_SONGS_PER_PLAYER, songsPerPlayer));
 }
 
-function clampPointsToWin(pointsToWin: number): number {
+export function clampPointsToWin(pointsToWin: number): number {
   return Math.min(MAX_POINTS_TO_WIN, Math.max(MIN_POINTS_TO_WIN, pointsToWin));
 }
 
