@@ -22,6 +22,7 @@ import {
   RemotePlaybackControls,
   RemotePlaybackPanel,
 } from "../../../src/components/game/OnlineRemotePlayback";
+import { OnlineTopicPanel } from "../../../src/components/game/OnlineTopicPanel";
 import { RoundResultPanel } from "../../../src/components/game/RoundResultPanel";
 import { Scoreboard } from "../../../src/components/game/Scoreboard";
 import { SongActionCard } from "../../../src/components/game/SongActionCard";
@@ -52,7 +53,6 @@ import {
 } from "../../../src/services/online/onlinePlaybackEvents";
 import {
   canSubmitOnlineTopic,
-  MAX_ONLINE_TOPIC_LENGTH,
   normalizeOnlineTopic,
 } from "../../../src/services/online/onlineRoundTopic";
 import type { MediaTrack } from "../../../src/types/media";
@@ -395,76 +395,25 @@ export default function OnlineRoundSetupScreen() {
                 status={onlineRoom.connectionStatus}
               />
 
-              <View style={styles.panel}>
-                <View style={styles.progressHeader}>
-                  <Text style={styles.sectionTitle}>Current judge</Text>
-                  {presenceSummary ? (
-                    <Text
-                      style={
-                        presenceSummary.onlineCount === presenceSummary.totalCount
-                          ? styles.readyText
-                          : styles.waitingText
-                      }
-                    >
-                      {presenceSummary.label}
-                    </Text>
-                  ) : null}
-                </View>
-                <Text style={styles.judgeName}>{judgeMember?.displayName ?? "Waiting..."}</Text>
-                {currentRound?.topic ? (
-                  <View style={styles.topicBox}>
-                    <Text style={styles.sectionTitle}>Topic</Text>
-                    <Text style={styles.topicText}>{currentRound.topic}</Text>
-                  </View>
-                ) : null}
-                {currentRound?.status === "waiting_for_topic" ? (
-                  isJudge ? (
-                    <View style={styles.topicForm}>
-                      <TextInput
-                        accessibilityLabel="Round topic"
-                        autoCapitalize="sentences"
-                        autoCorrect
-                        editable={!onlineRoom.isMutating}
-                        maxLength={MAX_ONLINE_TOPIC_LENGTH}
-                        onChangeText={(nextTopic) => {
-                          setTopicInput(nextTopic);
-                          onlineRoom.clearError();
-                        }}
-                        onSubmitEditing={submitTopic}
-                        placeholder="Beach vibes"
-                        placeholderTextColor="#64748B"
-                        returnKeyType="done"
-                        style={styles.input}
-                        value={topicInput}
-                      />
-                      <Text style={styles.helpText}>
-                        {normalizedTopic.length}/{MAX_ONLINE_TOPIC_LENGTH}
-                      </Text>
-                      <Pressable
-                        accessibilityLabel="Submit round topic"
-                        accessibilityRole="button"
-                        accessibilityState={{ disabled: !canSubmitTopic }}
-                        disabled={!canSubmitTopic}
-                        style={[
-                          styles.primaryButton,
-                          !canSubmitTopic ? styles.disabledButton : undefined,
-                        ]}
-                        onPress={submitTopic}
-                      >
-                        {onlineRoom.isMutating ? (
-                          <ActivityIndicator color="#082F49" />
-                        ) : (
-                          <Text style={styles.primaryButtonText}>Lock Topic</Text>
-                        )}
-                      </Pressable>
-                    </View>
-                  ) : (
-                    <Text style={styles.body}>
-                      Waiting for {judgeMember?.displayName ?? "the judge"} to set the topic.
-                    </Text>
-                  )
-                ) : null}
-              </View>
+              <OnlineTopicPanel
+                canSubmitTopic={canSubmitTopic}
+                isJudge={isJudge}
+                isMutating={onlineRoom.isMutating}
+                judgeName={judgeMember?.displayName ?? "the judge"}
+                normalizedTopicLength={normalizedTopic.length}
+                presenceLabel={presenceSummary?.label}
+                presenceReady={Boolean(
+                  presenceSummary && presenceSummary.onlineCount === presenceSummary.totalCount,
+                )}
+                roundStatus={currentRound?.status}
+                topic={currentRound?.topic}
+                topicInput={topicInput}
+                onChangeTopic={(nextTopic) => {
+                  setTopicInput(nextTopic);
+                  onlineRoom.clearError();
+                }}
+                onSubmitTopic={submitTopic}
+              />
 
               {currentRound?.status === "submitting" ? (
                 <View style={styles.panel}>
@@ -821,17 +770,6 @@ const styles = StyleSheet.create({
     gap: 12,
     padding: 14,
   },
-  topicForm: {
-    gap: 10,
-  },
-  topicBox: {
-    backgroundColor: "#111827",
-    borderColor: "#334155",
-    borderRadius: 8,
-    borderWidth: 1,
-    gap: 4,
-    padding: 12,
-  },
   sectionTitle: {
     color: "#CBD5E1",
     fontSize: 14,
@@ -843,12 +781,6 @@ const styles = StyleSheet.create({
     fontSize: 26,
     fontWeight: "900",
   },
-  topicText: {
-    color: "#F9FAFB",
-    fontSize: 20,
-    fontWeight: "900",
-    lineHeight: 26,
-  },
   input: {
     backgroundColor: "#111827",
     borderColor: "#334155",
@@ -858,12 +790,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     minHeight: 52,
     paddingHorizontal: 14,
-  },
-  helpText: {
-    color: "#94A3B8",
-    fontSize: 12,
-    fontWeight: "700",
-    textAlign: "right",
   },
   errorText: {
     color: "#FCA5A5",
@@ -899,16 +825,6 @@ const styles = StyleSheet.create({
     color: "#7DD3FC",
     fontSize: 16,
     fontWeight: "900",
-  },
-  readyText: {
-    color: "#7DD3FC",
-    fontSize: 14,
-    fontWeight: "800",
-  },
-  waitingText: {
-    color: "#FCA5A5",
-    fontSize: 14,
-    fontWeight: "800",
   },
   submissionArea: {
     gap: 10,
