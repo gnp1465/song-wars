@@ -215,6 +215,16 @@ assert(
   /when insufficient_privilege or undefined_table then/.test(migration),
   "Realtime Presence policy setup should not abort the rest of the hosted migration when the dashboard cannot own realtime.messages.",
 );
+assert(
+  /if target_room\.status = 'lobby' then delete from public\.room_members/.test(migration),
+  "leave_room should only hard-delete guests while the room is still in the lobby.",
+);
+assert(
+  /if target_room\.status <> 'lobby' then raise exception 'players can only be removed before the game starts\.'/.test(
+    migration,
+  ),
+  "remove_room_member should only hard-delete guests while the room is still in the lobby.",
+);
 
 console.log("Online room schema checks passed.");
 

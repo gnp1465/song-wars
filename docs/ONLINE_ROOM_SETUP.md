@@ -38,6 +38,7 @@ supabase/migrations/202607190002_online_round_submissions.sql
 supabase/migrations/202607190003_online_round_judging.sql
 supabase/migrations/202607190004_online_game_reset.sql
 supabase/migrations/202607210001_online_playback_events.sql
+supabase/migrations/202607220001_online_member_leave_safety.sql
 ```
 
 This creates the `rooms`, `room_members`, `rounds`, `round_submissions`, `round_matchups`, and `room_scores` tables plus the RPC functions used by the app.
