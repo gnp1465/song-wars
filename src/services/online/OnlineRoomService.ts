@@ -236,7 +236,7 @@ export function subscribeToOnlineRoom(
       presence: {
         key: memberId,
       },
-      private: true,
+      private: false,
     },
   });
 

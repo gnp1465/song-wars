@@ -44,4 +44,4 @@ Mark each check as `Pass`, `Fail`, or `Needs follow-up`.
 - Remaining backend blockers:
 - Notes:
 
-If `npm run print:supabase-migrations:core` was used because Supabase rejected `realtime.messages` policy creation, note that here and keep the status incomplete until private Realtime Presence authorization is resolved.
+If `npm run print:supabase-migrations:core` was used because Supabase rejected `realtime.messages` policy creation, note that here. The beta app uses public Realtime room channels for live updates, so private Presence authorization is a later hardening task rather than a blocker for the hosted backend pass.

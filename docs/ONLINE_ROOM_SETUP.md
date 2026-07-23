@@ -55,7 +55,7 @@ The main migration catches Supabase `realtime.messages` ownership errors and pri
 npm run print:supabase-migrations:core
 ```
 
-Paste that output into the SQL editor, wait for the schema cache to refresh, then run `npm run check:online-room`. This core path should create the rooms, rounds, submissions, bracket, scoring, reset, and playback-event RPCs. Do not mark the Supabase migration pass log complete until private Realtime Presence authorization is also resolved or verified.
+Paste that output into the SQL editor, wait for the schema cache to refresh, then run `npm run check:online-room`. This core path should create the rooms, rounds, submissions, bracket, scoring, reset, and playback-event RPCs. The beta app uses a public Realtime room channel for live updates because the dashboard SQL editor may not be allowed to manage `realtime.messages`. Room data and game actions are still protected by RPC functions and RLS.
 
 To print only one migration file, pass its filename after `--`:
 

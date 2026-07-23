@@ -56,7 +56,7 @@ function prepareMigrationSql(sql, migrationPath) {
     [
       "-- Skipped private Realtime Presence policies on realtime.messages.",
       "-- Some hosted Supabase dashboards reject this with ERROR 42501: must be owner of table messages.",
-      "-- Apply the core schema first, then resolve private Realtime Presence authorization before beta.",
+      "-- The beta app uses public Realtime room channels; keep private Presence authorization as a later hardening task.",
     ].join("\n"),
   );
 }
