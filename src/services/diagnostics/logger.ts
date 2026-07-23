@@ -29,7 +29,8 @@ export type AppEventName =
   | "online_room_action_succeeded"
   | "online_room_resume_available"
   | "online_room_resume_failed"
-  | "online_room_snapshot_loaded";
+  | "online_room_snapshot_loaded"
+  | "online_room_subscription_status";
 
 export interface DiagnosticSink {
   record: (diagnosticRecord: DiagnosticRecord) => void;

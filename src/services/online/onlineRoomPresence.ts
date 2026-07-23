@@ -10,6 +10,11 @@ export interface OnlinePresenceSummary {
   totalCount: number;
 }
 
+export interface OnlinePresenceLabelOptions {
+  currentMemberId?: string;
+  presenceHasSynced: boolean;
+}
+
 export function getOnlineMemberPresenceStatus(
   snapshot: Pick<OnlineRoomSnapshot, "presence">,
   member: Pick<OnlineRoomMember, "id">,
@@ -32,4 +37,20 @@ export function getOnlinePresenceSummary(
     onlineCount,
     totalCount,
   };
+}
+
+export function getOnlineMemberPresenceLabel(
+  snapshot: Pick<OnlineRoomSnapshot, "presence">,
+  member: Pick<OnlineRoomMember, "id">,
+  options: OnlinePresenceLabelOptions,
+): string {
+  if (member.id === options.currentMemberId) {
+    return "This device";
+  }
+
+  if (getOnlineMemberPresenceStatus(snapshot, member) === "online") {
+    return "Online";
+  }
+
+  return options.presenceHasSynced ? "Offline" : "Joined";
 }

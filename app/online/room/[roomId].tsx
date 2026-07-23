@@ -199,6 +199,7 @@ export default function OnlineLobbyScreen() {
               currentMemberId={currentMember?.id}
               isHost={isHost}
               isMutating={onlineRoom.isMutating}
+              presenceHasSynced={onlineRoom.presenceHasSynced}
               snapshot={snapshot}
               onRemoveMember={(memberId) => void onlineRoom.removeMember(memberId)}
             />
@@ -226,8 +227,10 @@ export default function OnlineLobbyScreen() {
 
             <Text style={playersNeeded > 0 ? styles.waitingText : styles.readyText}>
               {playersNeeded > 0
-                ? `Need ${playersNeeded} more ${playersNeeded === 1 ? "player" : "players"} to start.`
-                : "Ready to start."}
+                ? `${snapshot.members.length}/${MINIMUM_PLAYERS_TO_START} players joined · Need ${playersNeeded} more ${
+                    playersNeeded === 1 ? "player" : "players"
+                  } to start.`
+                : `${snapshot.members.length}/${MINIMUM_PLAYERS_TO_START} players joined · Ready to start.`}
             </Text>
 
             {isHost ? (

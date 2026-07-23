@@ -1,11 +1,12 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { getOnlineMemberPresenceStatus } from "../../services/online/onlineRoomPresence";
+import { getOnlineMemberPresenceLabel } from "../../services/online/onlineRoomPresence";
 import type { OnlineRoomMember, OnlineRoomSnapshot } from "../../types/onlineRoom";
 
 export interface OnlinePlayerListProps {
   currentMemberId?: string;
   isHost: boolean;
   isMutating: boolean;
+  presenceHasSynced: boolean;
   snapshot: OnlineRoomSnapshot;
   onRemoveMember: (memberId: string) => void;
 }
@@ -14,6 +15,7 @@ export function OnlinePlayerList({
   currentMemberId,
   isHost,
   isMutating,
+  presenceHasSynced,
   snapshot,
   onRemoveMember,
 }: OnlinePlayerListProps) {
@@ -31,7 +33,8 @@ export function OnlinePlayerList({
               {member.id === currentMemberId ? " (You)" : ""}
             </Text>
             <Text style={styles.playerMeta}>
-              {member.role === "host" ? "Host" : "Guest"} · {getPresenceLabel(snapshot, member)}
+              {member.role === "host" ? "Host" : "Guest"} ·{" "}
+              {getPresenceLabel(snapshot, member, currentMemberId, presenceHasSynced)}
             </Text>
           </View>
           {isHost && member.role === "guest" ? (
@@ -52,8 +55,16 @@ export function OnlinePlayerList({
   );
 }
 
-function getPresenceLabel(snapshot: OnlineRoomSnapshot, member: OnlineRoomMember): string {
-  return getOnlineMemberPresenceStatus(snapshot, member) === "online" ? "Online" : "Offline";
+function getPresenceLabel(
+  snapshot: OnlineRoomSnapshot,
+  member: OnlineRoomMember,
+  currentMemberId: string | undefined,
+  presenceHasSynced: boolean,
+): string {
+  return getOnlineMemberPresenceLabel(snapshot, member, {
+    currentMemberId,
+    presenceHasSynced,
+  });
 }
 
 const styles = StyleSheet.create({

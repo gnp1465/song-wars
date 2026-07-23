@@ -17,6 +17,7 @@ import {
   submitOnlineRoundTopic,
   subscribeToOnlineRoom,
   updateOnlineRoomSettings,
+  type OnlineRoomSubscriptionStatus,
 } from "../services/online/OnlineRoomService";
 import type { OnlineRoomSettingsUpdate } from "../types/onlineRoom";
 import type { MediaTrack } from "../types/media";
@@ -31,6 +32,7 @@ export interface UseOnlineRoomResult {
   isLoading: boolean;
   isMutating: boolean;
   lastSyncedAt?: number;
+  presenceHasSynced: boolean;
   refresh: () => Promise<void>;
   snapshot?: OnlineRoomSnapshot;
   clearError: () => void;
@@ -60,9 +62,12 @@ export function useOnlineRoom(
     roomId ? "loading" : "idle",
   );
   const [lastSyncedAt, setLastSyncedAt] = useState<number | undefined>();
+  const [presenceHasSynced, setPresenceHasSynced] = useState(false);
   const isMutatingRef = useRef(false);
   const snapshotRef = useRef<OnlineRoomSnapshot | undefined>(undefined);
   const subscriptionRef = useRef<{ unsubscribe: () => Promise<void> } | undefined>(undefined);
+  const subscriptionKeyRef = useRef<string | undefined>(undefined);
+  const currentMemberId = snapshot?.members.find((member) => member.userId === currentUserId)?.id;
 
   useEffect(() => {
     snapshotRef.current = snapshot;
@@ -144,19 +149,36 @@ export function useOnlineRoom(
   }, [currentUserId, refresh, roomId]);
 
   useEffect(() => {
-    if (!roomId || !snapshot) {
+    if (!roomId || !currentMemberId) {
       return undefined;
     }
 
-    const currentMember = snapshot.members.find((member) => member.userId === currentUserId);
+    const subscriptionKey = `${roomId}:${currentMemberId}`;
 
-    subscriptionRef.current = subscribeToOnlineRoom(
+    if (subscriptionKeyRef.current === subscriptionKey && subscriptionRef.current) {
+      return undefined;
+    }
+
+    const previousSubscription = subscriptionRef.current;
+    subscriptionRef.current = undefined;
+    subscriptionKeyRef.current = undefined;
+    setPresenceHasSynced(false);
+    void previousSubscription?.unsubscribe();
+
+    let isActive = true;
+
+    const subscription = subscribeToOnlineRoom(
       roomId,
-      currentMember?.id,
+      currentMemberId,
       () => {
         void refresh({ silent: true });
       },
       (presence) => {
+        if (!isActive) {
+          return;
+        }
+
+        setPresenceHasSynced(true);
         setSnapshot((currentSnapshot) =>
           currentSnapshot
             ? {
@@ -166,13 +188,46 @@ export function useOnlineRoom(
             : currentSnapshot,
         );
       },
+      (status) => {
+        if (!isActive) {
+          return;
+        }
+
+        handleSubscriptionStatus(status);
+      },
     );
+    subscriptionRef.current = subscription;
+    subscriptionKeyRef.current = subscriptionKey;
 
     return () => {
-      void subscriptionRef.current?.unsubscribe();
-      subscriptionRef.current = undefined;
+      isActive = false;
+
+      if (subscriptionRef.current === subscription) {
+        subscriptionRef.current = undefined;
+        subscriptionKeyRef.current = undefined;
+      }
+
+      void subscription.unsubscribe();
     };
-  }, [currentUserId, refresh, roomId, snapshot?.room.id]);
+  }, [currentMemberId, refresh, roomId]);
+
+  function handleSubscriptionStatus(status: OnlineRoomSubscriptionStatus) {
+    reportAppEvent("online_room_subscription_status", {
+      area: "online-room",
+      metadata: {
+        status,
+      },
+    });
+
+    if (status === "SUBSCRIBED" || status === "TRACKED") {
+      setErrorMessage(undefined);
+      setConnectionStatus("connected");
+      return;
+    }
+
+    setErrorMessage("Live updates are delayed. The room will keep syncing in the background.");
+    setConnectionStatus(status === "CLOSED" ? "reconnecting" : "error");
+  }
 
   async function runMutation(
     actionName: string,
@@ -232,6 +287,7 @@ export function useOnlineRoom(
     isLoading,
     isMutating,
     lastSyncedAt,
+    presenceHasSynced,
     leaveRoom: () =>
       runMutation("leave_room", () => (roomId ? leaveOnlineRoom(roomId) : Promise.resolve())),
     refresh,

@@ -144,11 +144,13 @@ Run the app on two phones or simulators:
 - Create an online room on device A.
 - Join with the six-digit code or QR code on device B.
 - Confirm both devices see the same player list.
+- Confirm joined players show as `This device`, `Joined`, or `Online`; they should not all appear as `Offline` before Presence syncs.
 - Change settings as host and confirm the guest sees updates.
 - Briefly background and reopen one device, then confirm it refetches the latest room state.
 - Start with at least three players and confirm all devices transition to Round 1 setup.
 - Submit a topic as judge and confirm all devices transition to song submissions.
 - Submit songs from every non-judge and confirm all devices transition to judging.
+- If another device takes about 15 seconds to show joins, submissions, or judging changes, Realtime is not the fast path and the heartbeat refetch is carrying the room.
 - Pick matchup winners as judge and confirm contestants cannot pick winners.
 - In Remote Sync mode, schedule a synced preview and confirm every device shows locked playback progress.
 - Finish the bracket and confirm the round winner becomes the next judge.

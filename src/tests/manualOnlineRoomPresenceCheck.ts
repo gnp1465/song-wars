@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import {
+  getOnlineMemberPresenceLabel,
   getOnlineMemberPresenceStatus,
   getOnlinePresenceSummary,
 } from "../services/online/onlineRoomPresence.ts";
@@ -16,6 +17,30 @@ assert.equal(
   getOnlineMemberPresenceStatus(snapshot, snapshot.members[1]),
   "offline",
   "missing presence should count as offline",
+);
+assert.equal(
+  getOnlineMemberPresenceLabel(snapshot, snapshot.members[0], {
+    currentMemberId: snapshot.members[0].id,
+    presenceHasSynced: false,
+  }),
+  "This device",
+  "the current member should be labeled as the current device before presence syncs",
+);
+assert.equal(
+  getOnlineMemberPresenceLabel(snapshot, snapshot.members[1], {
+    currentMemberId: snapshot.members[0].id,
+    presenceHasSynced: false,
+  }),
+  "Joined",
+  "members should not show as offline before presence has synced",
+);
+assert.equal(
+  getOnlineMemberPresenceLabel(snapshot, snapshot.members[1], {
+    currentMemberId: snapshot.members[0].id,
+    presenceHasSynced: true,
+  }),
+  "Offline",
+  "missing members can show offline after presence has synced",
 );
 assert.deepEqual(
   getOnlinePresenceSummary(snapshot),

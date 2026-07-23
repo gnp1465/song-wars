@@ -421,9 +421,17 @@ export default function OnlineRoundSetupScreen() {
                 isMutating={onlineRoom.isMutating}
                 judgeName={judgeMember?.displayName ?? "the judge"}
                 normalizedTopicLength={normalizedTopic.length}
-                presenceLabel={presenceSummary?.label}
+                presenceLabel={
+                  onlineRoom.presenceHasSynced
+                    ? presenceSummary?.label
+                    : snapshot
+                      ? `${snapshot.members.length} players joined`
+                      : undefined
+                }
                 presenceReady={Boolean(
-                  presenceSummary && presenceSummary.onlineCount === presenceSummary.totalCount,
+                  onlineRoom.presenceHasSynced &&
+                    presenceSummary &&
+                    presenceSummary.onlineCount === presenceSummary.totalCount,
                 )}
                 roundStatus={currentRound?.status}
                 topic={currentRound?.topic}

@@ -61,6 +61,12 @@ reportAppEvent("online_room_action_ignored", {
     reason: "mutation_in_progress",
   },
 });
+reportAppEvent("online_room_subscription_status", {
+  area: "online-room",
+  metadata: {
+    status: "SUBSCRIBED",
+  },
+});
 reportAppError(new Error(`Failed with jwt=${fakeJwt}`), {
   area: "online-room",
   metadata: {
@@ -69,7 +75,7 @@ reportAppError(new Error(`Failed with jwt=${fakeJwt}`), {
 });
 restoreSink();
 
-assert.equal(records.length, 4);
+assert.equal(records.length, 5);
 assert.equal(records[0].kind, "event");
 assert.equal(records[0].detail?.includes("songwars-dev.supabase.co"), false);
 assert.equal(records[0].metadata?.access_token, "[redacted]");
@@ -78,8 +84,10 @@ assert.equal(records[1].kind, "event");
 assert.equal(records[1].metadata?.action, "submit_topic");
 assert.equal(records[2].kind, "event");
 assert.equal(records[2].metadata?.reason, "mutation_in_progress");
-assert.equal(records[3].kind, "error");
-assert.equal(records[3].message.includes(fakeJwt), false);
-assert.equal(records[3].metadata?.service_role, "[redacted]");
+assert.equal(records[3].kind, "event");
+assert.equal(records[3].metadata?.status, "SUBSCRIBED");
+assert.equal(records[4].kind, "error");
+assert.equal(records[4].message.includes(fakeJwt), false);
+assert.equal(records[4].metadata?.service_role, "[redacted]");
 
 console.log("Diagnostics redaction checks passed.");

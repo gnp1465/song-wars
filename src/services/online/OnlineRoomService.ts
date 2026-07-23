@@ -27,6 +27,14 @@ export interface OnlineRoomSubscription {
   unsubscribe: () => Promise<void>;
 }
 
+export type OnlineRoomSubscriptionStatus =
+  | "SUBSCRIBED"
+  | "CHANNEL_ERROR"
+  | "TIMED_OUT"
+  | "CLOSED"
+  | "TRACKED"
+  | "TRACK_ERROR";
+
 export async function createOnlineRoom(
   options: CreateOnlineRoomOptions,
 ): Promise<OnlineRoomSnapshot> {
@@ -217,15 +225,16 @@ export async function closeOnlineRoom(roomId: string): Promise<OnlineRoomSnapsho
 
 export function subscribeToOnlineRoom(
   roomId: string,
-  memberId: string | undefined,
+  memberId: string,
   onSnapshotNeeded: () => void,
   onPresenceChange: (presence: OnlineRoomMemberPresence[]) => void,
+  onStatusChange: (status: OnlineRoomSubscriptionStatus) => void,
 ): OnlineRoomSubscription {
   const supabase = getSupabaseClient();
   const channel = supabase.channel(`online-room:${roomId}`, {
     config: {
       presence: {
-        key: memberId ?? "unknown",
+        key: memberId,
       },
       private: true,
     },
@@ -291,8 +300,17 @@ export function subscribeToOnlineRoom(
       onPresenceChange(readPresence(channel));
     })
     .subscribe(async (status) => {
-      if (status === "SUBSCRIBED" && memberId) {
-        await channel.track({ member_id: memberId, online_at: new Date().toISOString() });
+      if (isOnlineRoomSubscriptionStatus(status)) {
+        onStatusChange(status);
+      }
+
+      if (status === "SUBSCRIBED") {
+        const trackStatus = await channel.track({
+          member_id: memberId,
+          online_at: new Date().toISOString(),
+        });
+
+        onStatusChange(trackStatus === "ok" ? "TRACKED" : "TRACK_ERROR");
       }
     });
 
@@ -302,6 +320,15 @@ export function subscribeToOnlineRoom(
       await supabase.removeChannel(channel);
     },
   };
+}
+
+function isOnlineRoomSubscriptionStatus(status: string): status is OnlineRoomSubscriptionStatus {
+  return (
+    status === "SUBSCRIBED" ||
+    status === "CHANNEL_ERROR" ||
+    status === "TIMED_OUT" ||
+    status === "CLOSED"
+  );
 }
 
 function unwrapSnapshotResult(data: Json, error: Error | null): OnlineRoomSnapshot {
