@@ -155,6 +155,13 @@ assert(
   "submit_round_song should require playable preview URLs.",
 );
 assert(
+  countOccurrences(
+    migration,
+    "if length(trim(coalesce(preview_url_value, ''))) < 1 then",
+  ) >= 2,
+  "every submit_round_song replacement should require playable preview URLs.",
+);
+assert(
   /set status = 'judging'/.test(migration),
   "submit_round_song should advance the round after all required submissions.",
 );
@@ -210,3 +217,7 @@ assert(
 );
 
 console.log("Online room schema checks passed.");
+
+function countOccurrences(value, searchValue) {
+  return value.split(searchValue).length - 1;
+}

@@ -403,6 +403,10 @@ begin
     raise exception 'At least one artist is required.';
   end if;
 
+  if length(trim(coalesce(preview_url_value, ''))) < 1 then
+    raise exception 'A playable preview is required.';
+  end if;
+
   select count(*)
   into member_submission_count
   from public.round_submissions
