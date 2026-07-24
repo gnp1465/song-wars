@@ -178,8 +178,10 @@ assert(
   "select_matchup_winner should complete the game at the win condition.",
 );
 assert(
-  /current_member\.id <> active_round\.winning_member_id/.test(migration),
-  "prepare_next_round should allow the next judge to start the next round.",
+  /if current_member\.user_id <> target_room\.host_user_id then raise exception 'only the host can start the next round\.'/.test(
+    migration,
+  ),
+  "prepare_next_round should require the host to start the next round.",
 );
 assert(
   /if target_room\.status <> 'complete' then/.test(migration),

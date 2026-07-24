@@ -36,9 +36,7 @@ export function OnlineRoundCompletePanel({
           <>
             <Text style={styles.sectionTitle}>Round complete</Text>
             <Text style={styles.resultName}>{winnerName} wins</Text>
-            <Text style={styles.body}>
-              Waiting for the host or next judge to start the next round.
-            </Text>
+            <Text style={styles.body}>Waiting for the host to start the next round.</Text>
           </>
         )
       ) : (

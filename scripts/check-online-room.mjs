@@ -129,6 +129,7 @@ const joinedOne = await rpc(guestOne, "join_room", {
 });
 
 assert(joinedOne.members.length === 2, "first guest should join");
+const guestOneMemberId = joinedOne.members.find((member) => member.display_name === "Maya")?.id;
 
 const joinedTwo = await rpc(guestTwo, "join_room", {
   guest_display_name: "Jay",
@@ -136,6 +137,7 @@ const joinedTwo = await rpc(guestTwo, "join_room", {
 });
 
 assert(joinedTwo.members.length === 3, "second guest should join");
+const guestTwoMemberId = joinedTwo.members.find((member) => member.display_name === "Jay")?.id;
 
 await expectRpcFailure(
   guestOne,
@@ -361,6 +363,24 @@ assert(
   ),
   "round winner should receive one point",
 );
+
+const roundWinnerClient =
+  judgingSnapshot.current_round?.winning_member_id === guestOneMemberId
+    ? guestOne
+    : judgingSnapshot.current_round?.winning_member_id === guestTwoMemberId
+      ? guestTwo
+      : undefined;
+
+if (roundWinnerClient) {
+  await expectRpcFailure(
+    roundWinnerClient,
+    "prepare_next_round",
+    {
+      room_id_value: roomId,
+    },
+    "round winners should not start the next round unless they are the host",
+  );
+}
 
 const nextRound = await rpc(host, "prepare_next_round", {
   room_id_value: roomId,

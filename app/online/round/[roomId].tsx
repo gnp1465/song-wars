@@ -116,12 +116,7 @@ export default function OnlineRoundSetupScreen() {
   const gameWinnerMember = snapshot?.members.find(
     (member) => member.id === snapshot.room.gameWinnerMemberId,
   );
-  const canPrepareNextRound = Boolean(
-    currentMember &&
-      currentRound?.winningMemberId &&
-      (currentMember.id === currentRound.winningMemberId ||
-        currentUserId === snapshot?.room.hostUserId),
-  );
+  const canPrepareNextRound = Boolean(isHost && currentRound?.winningMemberId);
   const songsRemaining = getOnlineSongsRemaining({
     currentMember,
     songsPerPlayer,
@@ -148,6 +143,10 @@ export default function OnlineRoundSetupScreen() {
     matchups,
   });
   const normalizedTopic = normalizeOnlineTopic(topicInput);
+  const roundPresenceLabel =
+    snapshot && (!onlineRoom.presenceHasSynced || !presenceSummary?.onlineCount)
+      ? `${snapshot.members.length} players joined`
+      : presenceSummary?.label;
 
   useEffect(() => {
     void restoreOrCreateAnonymousSession().then((session) => setCurrentUserId(session.userId));
@@ -421,13 +420,7 @@ export default function OnlineRoundSetupScreen() {
                 isMutating={onlineRoom.isMutating}
                 judgeName={judgeMember?.displayName ?? "the judge"}
                 normalizedTopicLength={normalizedTopic.length}
-                presenceLabel={
-                  onlineRoom.presenceHasSynced
-                    ? presenceSummary?.label
-                    : snapshot
-                      ? `${snapshot.members.length} players joined`
-                      : undefined
-                }
+                presenceLabel={roundPresenceLabel}
                 presenceReady={Boolean(
                   onlineRoom.presenceHasSynced &&
                     presenceSummary &&
